@@ -545,4 +545,35 @@ b2b-project/
 - `php artisan serve` - Запуск сервера разработки
 - `php artisan migrate` - Запуск миграций
 - `php artisan make:controller` - Создание контроллера
-- `php artisan make:model` - Создание модели 
+- `php artisan make:model` - Создание модели
+
+## CI/CD
+
+Проект настроен с автоматическим деплоем через GitHub Actions. При пуше в ветку `main` происходит автоматический деплой на сервер.
+
+### Структура проекта
+
+- `b2b-project/frontend/` - Vue.js фронтенд
+- `b2b-project/backend/` - Laravel бэкенд
+
+### Технологии
+
+- **Frontend**: Vue.js 3, Tailwind CSS, Vite
+- **Backend**: Laravel 11, SQLite, Sanctum
+- **Deployment**: GitHub Actions, Nginx, PHP-FPM
+
+### Быстрый старт
+
+1. Клонируйте репозиторий
+2. Настройте окружение для разработки
+3. Запустите фронтенд: `cd b2b-project/frontend && npm run dev`
+4. Запустите бэкенд: `cd b2b-project/backend && php artisan serve`
+
+### Деплой
+
+Автоматический деплой происходит при пуше в ветку `main`. GitHub Actions:
+- Собирает фронтенд
+- Устанавливает зависимости бэкенда
+- Загружает файлы на сервер
+- Настраивает права доступа
+- Перезапускает сервисы 
