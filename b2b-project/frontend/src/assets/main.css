@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+/* Устанавливаем шрифт по умолчанию */
+* {
+  font-family: "Nunito Sans", sans-serif;
+}
+
+#app {
+  font-weight: normal;
+}
