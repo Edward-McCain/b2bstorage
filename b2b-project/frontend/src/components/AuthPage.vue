@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-white">
+  <div class="bg-white">
     <Header />
     
     <main class="flex-1">
@@ -14,8 +14,6 @@
         @register-success="handleAuthSuccess"
       />
     </main>
-    
-    <Footer />
   </div>
 </template>
 
@@ -23,7 +21,6 @@
 import LoginForm from './LoginForm.vue'
 import RegisterForm from './RegisterForm.vue'
 import Header from './Header.vue'
-import Footer from './Footer.vue'
 import { useRouter } from 'vue-router'
 
 export default {
@@ -31,8 +28,7 @@ export default {
   components: {
     LoginForm,
     RegisterForm,
-    Header,
-    Footer
+    Header
   },
   setup() {
     const router = useRouter()
