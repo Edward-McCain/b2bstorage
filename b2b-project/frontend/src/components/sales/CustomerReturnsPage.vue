@@ -1,0 +1,61 @@
+<template>
+  <div>
+    <SalesMenu />
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h1 class="text-3xl font-bold text-gray-900 mb-6">Возвраты покупателей</h1>
+        <p class="text-gray-700 mb-4">Обработка возвратов от покупателей. Здесь вы можете управлять возвратами товаров и оформлять соответствующие документы.</p>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Номер возврата</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Покупатель</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Дата возврата</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Причина</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Сумма</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Статус</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Действия</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <tr>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#RET-2024-001</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">ООО "Покупатель 1"</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">18.01.2024</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Брак</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">12,500 ₽</td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Обработан</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <button class="text-blue-600 hover:text-blue-900 mr-3">Просмотр</button>
+                  <button class="text-gray-600 hover:text-gray-900">Печать</button>
+                </td>
+              </tr>
+              <tr>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#RET-2024-002</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">ИП Петров</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">19.01.2024</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Не подошел</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">8,900 ₽</td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">В обработке</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <button class="text-blue-600 hover:text-blue-900 mr-3">Просмотр</button>
+                  <button class="text-green-600 hover:text-green-900">Подтвердить</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import SalesMenu from './SalesMenu.vue'
+document.title = 'Возвраты покупателей - B2B Storage'
+</script> 

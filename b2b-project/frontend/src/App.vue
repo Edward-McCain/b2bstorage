@@ -1,12 +1,13 @@
-<script>
-export default {
-  name: 'App'
-}
+<script setup>
+import Header from './components/Header.vue'
+import Footer from './components/Footer.vue'
 </script>
 
 <template>
-  <div class="pt-20">
+  <div>
+    <Header />
     <router-view />
+    <Footer />
   </div>
 </template>
 
