@@ -56,6 +56,7 @@ const handleLogout = () => {
   productsMenuOpen.value = false
   purchasesMenuOpen.value = false
   salesMenuOpen.value = false
+  // Обновляем страницу после выхода
   window.location.reload()
 }
 

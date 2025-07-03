@@ -48,8 +48,8 @@ export default {
   },
   methods: {
     handleAuthSuccess(data) {
-      // Перенаправляем на главную страницу после успешной авторизации
-      this.router.push('/')
+      // Обновляем страницу после успешной авторизации, чтобы Header обновился
+      window.location.href = '/'
     }
   }
 }
