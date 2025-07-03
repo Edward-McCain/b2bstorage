@@ -1,40 +1,10 @@
 <script setup>
-import Header from './Header.vue'
 import Footer from './Footer.vue'
 import HeroSection from './HeroSection.vue'
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-
-const router = useRouter()
-const isAuthenticated = ref(false)
-const user = ref(null)
-
-onMounted(() => {
-  const token = localStorage.getItem('auth_token')
-  const userData = localStorage.getItem('user')
-  
-  if (token && userData) {
-    isAuthenticated.value = true
-    user.value = JSON.parse(userData)
-  }
-})
-
-const handleLogout = () => {
-  localStorage.removeItem('auth_token')
-  localStorage.removeItem('user')
-  isAuthenticated.value = false
-  user.value = null
-  window.location.reload()
-}
-
-const handleLogin = () => {
-  router.push('/auth')
-}
 </script>
 
 <template>
   <div class="min-h-screen bg-white transition-colors">
-    <Header />
     <HeroSection />
     
     <!-- Возможности системы -->

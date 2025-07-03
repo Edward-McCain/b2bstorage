@@ -2,11 +2,6 @@
 // Компонент шапки сайта
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import IconCommunity from './icons/IconCommunity.vue'
-import IconDocumentation from './icons/IconDocumentation.vue'
-import IconEcosystem from './icons/IconEcosystem.vue'
-import IconSupport from './icons/IconSupport.vue'
-import IconTooling from './icons/IconTooling.vue'
 
 const router = useRouter()
 const isAuthenticated = ref(false)
@@ -130,25 +125,10 @@ const toggleSalesMenu = () => {
 const closeSalesMenu = () => {
   salesMenuOpen.value = false
 }
-
-const productsMenu = [
-  { label: 'Остатки', to: '/products/balances', icon: IconCommunity },
-  { label: 'Внутренние заказы', to: '/products/internal-orders', icon: IconDocumentation },
-  { label: 'Инвентаризация', to: '/products/inventory', icon: IconEcosystem },
-  { label: 'Маркировка', to: '/products/marking', icon: IconSupport },
-  { label: 'Коды маркировки', to: '/products/marking-codes', icon: IconTooling },
-  { label: 'Прайс-листы', to: '/products/price-lists', icon: IconDocumentation },
-  { label: 'Товары', to: '/products', icon: IconCommunity },
-  { label: 'Приемки', to: '/products/receipts', icon: IconSupport },
-  { label: 'Серийные номера', to: '/products/serial-numbers', icon: IconTooling },
-  { label: 'Перемещения', to: '/products/transfers', icon: IconEcosystem },
-  { label: 'Обороты', to: '/products/turnovers', icon: IconDocumentation },
-  { label: 'Списания', to: '/products/write-offs', icon: IconSupport },
-]
 </script>
 
 <template>
-  <header class="fixed inset-x-0 top-0 z-50 bg-white/90 backdrop-blur border-b border-gray-200">
+  <header class="fixed inset-x-0 top-0 z-[9998] bg-white/90 backdrop-blur border-b border-gray-200">
     <nav class="flex items-center justify-between p-4 lg:px-8" aria-label="Global">
       <!-- Логотип -->
       <div class="flex lg:flex-1">
@@ -198,8 +178,8 @@ const productsMenu = [
 
           <!-- Dropdown menu для товаров -->
           <div
-            v-show="productsMenuOpen"
-            class="absolute left-0 z-10 mt-2 w-56 origin-top-left rounded-md bg-white shadow-lg focus:outline-none"
+            v-if="productsMenuOpen"
+            class="absolute left-0 z-[9999] mt-2 w-56 origin-top-left rounded-md bg-white shadow-lg focus:outline-none border border-gray-200"
             role="menu"
             aria-orientation="vertical"
             aria-labelledby="products-menu-button"
@@ -333,8 +313,8 @@ const productsMenu = [
             </svg>
           </button>
           <div
-            v-show="purchasesMenuOpen"
-            class="absolute left-0 z-10 mt-2 w-72 origin-top-left rounded-md bg-white shadow-lg focus:outline-none"
+            v-if="purchasesMenuOpen"
+            class="absolute left-0 z-[9999] mt-2 w-72 origin-top-left rounded-md bg-white shadow-lg focus:outline-none border border-gray-200"
             role="menu"
             aria-orientation="vertical"
             aria-labelledby="purchases-menu-button"
@@ -414,8 +394,8 @@ const productsMenu = [
             </svg>
           </button>
           <div
-            v-show="salesMenuOpen"
-            class="absolute left-0 z-10 mt-2 w-72 origin-top-left rounded-md bg-white shadow-lg focus:outline-none"
+            v-if="salesMenuOpen"
+            class="absolute left-0 z-[9999] mt-2 w-72 origin-top-left rounded-md bg-white shadow-lg focus:outline-none border border-gray-200"
             role="menu"
             aria-orientation="vertical"
             aria-labelledby="sales-menu-button"
@@ -539,8 +519,8 @@ const productsMenu = [
 
             <!-- Dropdown menu -->
             <div
-              v-show="userMenuOpen"
-              class="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg focus:outline-none"
+              v-if="userMenuOpen"
+              class="absolute right-0 z-[9999] mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg focus:outline-none border border-gray-200"
               role="menu"
               aria-orientation="vertical"
               aria-labelledby="user-menu-button"
