@@ -36,9 +36,7 @@ const handleLogin = () => {
       <!-- Логотип -->
       <div class="flex lg:flex-1">
         <a href="/" class="-m-1.5 p-1.5 flex items-center gap-2">
-          <span class="sr-only">B2B Storage</span>
-          <!-- <img class="h-8 w-auto" src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600" alt="" /> -->
-          <span class="text-xl font-bold text-primary">B2B Storage</span>
+          <img class="h-8 w-auto" src="../assets/skladlogo.png" alt="" />
         </a>
       </div>
       <!-- Мобильная кнопка входа -->
