@@ -24,8 +24,32 @@ class RouteServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Rate limiting для API - более мягкие ограничения
         RateLimiter::for('api', function (Request $request) {
-            return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
+            // Увеличиваем лимит для лучшей поддержки международных пользователей
+            return Limit::perMinute(120)->by($request->user()?->id ?: $request->ip());
+        });
+
+        // Специальный rate limiting для аутентификации
+        RateLimiter::for('auth', function (Request $request) {
+            // Более мягкие ограничения для регистрации и входа
+            return Limit::perMinute(30)->by($request->ip())->response(function () {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Too many requests. Please try again later.'
+                ], 429);
+            });
+        });
+
+        // Rate limiting для регистрации
+        RateLimiter::for('register', function (Request $request) {
+            // Ограничение: 10 попыток регистрации в час с одного IP
+            return Limit::perHour(10)->by($request->ip())->response(function () {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Too many registration attempts. Please try again in an hour.'
+                ], 429);
+            });
         });
 
         $this->routes(function () {

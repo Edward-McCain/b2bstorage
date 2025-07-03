@@ -21,14 +21,46 @@ return [
 
     'allowed_origins' => ['*'],
 
-    'allowed_origins_patterns' => [],
+    'allowed_origins_patterns' => [
+        'https://*.b2bstorage.ru',
+        'https://b2bstorage.ru',
+        'https://www.b2bstorage.ru',
+        'https://api.b2bstorage.ru',
+        'http://localhost:*',
+        'https://localhost:*',
+        'http://127.0.0.1:*',
+        'https://127.0.0.1:*',
+    ],
 
-    'allowed_headers' => ['*'],
+    'allowed_headers' => [
+        'Origin',
+        'X-Requested-With',
+        'Content-Type',
+        'Accept',
+        'Authorization',
+        'X-CSRF-TOKEN',
+        'X-XSRF-TOKEN',
+        'Cache-Control',
+        'Pragma',
+        'User-Agent',
+        'Referer',
+        'Accept-Language',
+        'Accept-Encoding',
+        'Connection',
+        'Upgrade-Insecure-Requests',
+    ],
 
-    'exposed_headers' => [],
+    'exposed_headers' => [
+        'Cache-Control',
+        'Content-Language',
+        'Content-Type',
+        'Expires',
+        'Last-Modified',
+        'Pragma',
+    ],
 
-    'max_age' => 0,
+    'max_age' => 86400, // 24 hours
 
-    'supports_credentials' => false,
+    'supports_credentials' => true,
 
 ]; 

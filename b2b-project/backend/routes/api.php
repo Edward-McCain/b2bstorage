@@ -19,9 +19,11 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-// Auth routes
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
+// Auth routes с улучшенным rate limiting и международной поддержкой
+Route::middleware(['throttle:auth', 'international'])->group(function () {
+    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:register');
+    Route::post('/login', [AuthController::class, 'login']);
+});
 
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
