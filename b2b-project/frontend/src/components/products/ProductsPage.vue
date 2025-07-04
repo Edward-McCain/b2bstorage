@@ -6,19 +6,13 @@
     <!-- Верхнее меню и фильтры -->
     <div class="bg-white border-b border-gray-200">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-wrap items-center gap-2 py-4">
-        <router-link to="/products/create" class="flex items-center gap-1 bg-blue-50 border border-blue-200 text-blue-700 font-medium px-3 py-1.5 rounded">
+        <router-link to="/products/create" class="flex items-center gap-1 bg-blue-50 border border-blue-200 text-blue-700 font-medium px-3 py-1.5 rounded text-sm">
           <span class="text-lg">＋</span>Товар
         </router-link>
-        <!-- <button class="flex items-center gap-1 bg-blue-50 border border-blue-200 text-blue-700 font-medium px-3 py-1.5 rounded"><span class="text-lg">＋</span>Комплект</button>
-        <button class="flex items-center gap-1 bg-blue-50 border border-blue-200 text-blue-700 font-medium px-3 py-1.5 rounded"><span class="text-lg">＋</span>Группа</button> -->
-        <button class="bg-gray-100 border border-gray-200 text-gray-700 font-medium px-3 py-1.5 rounded">Фильтр</button>
+        <button class="bg-gray-100 border border-gray-200 text-gray-700 font-medium px-3 py-1.5 rounded text-sm">Фильтр</button>
         <input type="text" placeholder="Наименование, код или артикул" class="border border-gray-300 rounded px-3 py-1.5 text-sm w-64" />
-        <!-- <input type="number" min="0" value="0" class="border border-gray-300 rounded px-2 py-1.5 text-sm w-16 text-center" />
-        <button class="bg-white border border-gray-300 px-3 py-1.5 rounded font-medium text-sm flex items-center gap-1">Изменить <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg></button>
-        <button class="bg-white border border-gray-300 px-3 py-1.5 rounded font-medium text-sm flex items-center gap-1">Печать <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 9v6h12V9M6 9V7a2 2 0 012-2h8a2 2 0 012 2v2M6 15v2a2 2 0 002 2h8a2 2 0 002-2v-2" /></svg></button> -->
         <button class="bg-white border border-gray-300 px-3 py-1.5 rounded font-medium text-sm">Импорт <svg class="h-4 w-4 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg></button>
         <button class="bg-white border border-gray-300 px-3 py-1.5 rounded font-medium text-sm">Экспорт</button>
-        <!-- <button class="bg-white border border-gray-300 px-2 py-1.5 rounded font-medium text-sm"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg></button> -->
       </div>
     </div>
 

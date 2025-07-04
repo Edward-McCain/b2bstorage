@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 
 class CategoryController extends Controller
 {
-    public function categories()
+    public function index()
     {
         $categories = DB::table('categories')->orderBy('name_ru')->get();
         return response()->json($categories);

@@ -8,3 +8,8 @@
 #app {
   font-weight: normal;
 }
+
+/* Глобальные стили для dropzone */
+.dropzone .dz-preview .dz-progress {
+  z-index: 1 !important;
+}

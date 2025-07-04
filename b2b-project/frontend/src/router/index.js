@@ -274,4 +274,27 @@ const router = createRouter({
   routes
 })
 
+// Навигационные guards для защиты роутов
+router.beforeEach((to, from, next) => {
+  const isAuthenticated = localStorage.getItem('auth_token')
+  
+  // Список роутов, требующих авторизации
+  const protectedRoutes = [
+    '/products', '/purchases', '/sales', '/analytics', '/counterparties', '/account-settings'
+  ]
+  
+  // Проверяем, требует ли роут авторизации
+  const requiresAuth = protectedRoutes.some(route => to.path.startsWith(route))
+  
+  if (requiresAuth && !isAuthenticated) {
+    // Если роут требует авторизации, но пользователь не авторизован
+    next('/')
+  } else if (to.path === '/auth' && isAuthenticated) {
+    // Если пользователь авторизован и пытается зайти на страницу авторизации
+    next('/')
+  } else {
+    next()
+  }
+})
+
 export default router 

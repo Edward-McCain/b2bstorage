@@ -2,7 +2,7 @@
 const API_CONFIG = {
   // Локальная разработка
   development: {
-    baseURL: 'https://api.b2bstorage.ru/api',
+    baseURL: 'http://127.0.0.1:8080/api',
     timeout: 10000
   },
   // Продакшн
@@ -29,12 +29,16 @@ export const apiRequest = async (endpoint, options = {}) => {
   
   const defaultOptions = {
     headers: {
-      'Content-Type': 'application/json',
       'Accept': 'application/json',
       ...options.headers
     },
     timeout: apiConfig.timeout,
     ...options
+  }
+
+  // Добавляем Content-Type только если это не FormData
+  if (!(options.body instanceof FormData)) {
+    defaultOptions.headers['Content-Type'] = 'application/json'
   }
 
   // Добавляем токен авторизации, если он есть
