@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white border-b border-gray-200 pt-20">
+  <div class="bg-white border-b border-gray-200">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <nav class="flex space-x-8 overflow-x-auto">
         <router-link 
@@ -30,20 +30,20 @@
         >
           Инвентаризации
         </router-link>
-        <router-link 
+        <!-- <router-link 
           to="/products/internal-orders" 
           class="border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap"
           :class="{ 'border-blue-700 text-blue-700': route.path === '/products/internal-orders' }"
         >
           Внутренние заказы
-        </router-link>
-        <router-link 
+        </router-link> -->
+        <!-- <router-link 
           to="/products/transfers" 
           class="border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap"
           :class="{ 'border-blue-700 text-blue-700': route.path === '/products/transfers' }"
         >
           Перемещения
-        </router-link>
+        </router-link> -->
         <router-link 
           to="/products/price-lists" 
           class="border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap"
@@ -58,7 +58,7 @@
         >
           Остатки
         </router-link>
-        <router-link 
+        <!-- <router-link 
           to="/products/turnovers" 
           class="border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap"
           :class="{ 'border-blue-700 text-blue-700': route.path === '/products/turnovers' }"
@@ -85,7 +85,7 @@
           :class="{ 'border-blue-700 text-blue-700': route.path === '/products/marking' }"
         >
           Маркировка
-        </router-link>
+        </router-link> -->
       </nav>
     </div>
   </div>

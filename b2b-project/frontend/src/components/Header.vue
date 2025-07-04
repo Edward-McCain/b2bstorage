@@ -223,7 +223,7 @@ const closeSalesMenu = () => {
               >
                 Инвентаризации
               </router-link>
-              <router-link
+              <!-- <router-link
                 to="/products/internal-orders"
                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 role="menuitem"
@@ -240,7 +240,7 @@ const closeSalesMenu = () => {
                 @click="closeProductsMenu"
               >
                 Перемещения
-              </router-link>
+              </router-link> -->
               <router-link
                 to="/products/price-lists"
                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -259,7 +259,7 @@ const closeSalesMenu = () => {
               >
                 Остатки
               </router-link>
-              <router-link
+              <!-- <router-link
                 to="/products/turnovers"
                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 role="menuitem"
@@ -294,7 +294,7 @@ const closeSalesMenu = () => {
                 @click="closeProductsMenu"
               >
                 Маркировка
-              </router-link>
+              </router-link> -->
             </div>
           </div>
         </div>
@@ -439,7 +439,7 @@ const closeSalesMenu = () => {
               >
                 Отгрузки
               </router-link>
-              <router-link
+              <!-- <router-link
                 to="/sales/commission-reports"
                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 role="menuitem"
@@ -447,7 +447,7 @@ const closeSalesMenu = () => {
                 @click="closeSalesMenu"
               >
                 Отчеты комиссионера
-              </router-link>
+              </router-link> -->
               <router-link
                 to="/sales/customer-returns"
                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -457,7 +457,7 @@ const closeSalesMenu = () => {
               >
                 Возвраты покупателей
               </router-link>
-              <router-link
+              <!-- <router-link
                 to="/sales/issued-invoices"
                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 role="menuitem"
@@ -501,7 +501,7 @@ const closeSalesMenu = () => {
                 @click="closeSalesMenu"
               >
                 Юнит-экономика
-              </router-link>
+              </router-link> -->
             </div>
           </div>
         </div>

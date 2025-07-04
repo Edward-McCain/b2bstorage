@@ -6,7 +6,7 @@
         <nav class="flex space-x-8 overflow-x-auto">
           <router-link 
             to="/counterparties" 
-            class="border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap"
+            class="border-b-2 py-4 px-1 text-sm font-medium hover:text-gray-700 whitespace-nowrap border-blue-700 text-blue-700 font-semibold router-link-active"
             :class="{ 'border-blue-700 text-blue-700 font-semibold router-link-active': $route.path === '/counterparties' }"
           >
             Контрагенты

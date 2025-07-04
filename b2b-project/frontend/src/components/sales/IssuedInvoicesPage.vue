@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="min-h-screen bg-gray-50" style="padding-top: 66px;">
     <SalesMenu />
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
