@@ -17,6 +17,7 @@ import SerialNumbersPage from '../components/products/SerialNumbersPage.vue'
 import MarkingCodesPage from '../components/products/MarkingCodesPage.vue'
 import MarkingPage from '../components/products/MarkingPage.vue'
 import ProductCreatePage from '../components/products/ProductCreatePage.vue'
+import ProductEditPage from '../components/products/ProductEditPage.vue'
 
 // Purchase pages
 import SupplierOrdersPage from '../components/purchases/SupplierOrdersPage.vue'
@@ -139,6 +140,11 @@ const routes = [
     path: '/products/create',
     name: 'ProductCreate',
     component: ProductCreatePage
+  },
+  {
+    path: '/products/edit/:id',
+    name: 'ProductEdit',
+    component: ProductEditPage
   },
   // Purchase routes
   {

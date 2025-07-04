@@ -86,6 +86,10 @@ class ProductController extends Controller
     public function getImages($id)
     {
         $images = ProductImage::where('product_id', $id)->orderBy('id')->get();
+        
+        // Преобразуем URL изображений
+        $images = $this->transformImageUrls($images);
+        
         return response()->json(['images' => $images]);
     }
 
@@ -170,5 +174,142 @@ class ProductController extends Controller
         }
         $image->delete();
         return response()->json(['success' => true]);
+    }
+
+    /**
+     * Преобразовать относительные пути изображений в полные URL
+     * @param \Illuminate\Database\Eloquent\Collection $images
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    private function transformImageUrls($images)
+    {
+        // Определяем базовый URL в зависимости от окружения
+        $baseUrl = '';
+        
+        if (app()->environment('local', 'development')) {
+            // Для локальной разработки
+            $baseUrl = 'http://localhost:8000/storage/';
+        } else {
+            // Для продакшена
+            $baseUrl = config('app.url') . '/storage/';
+        }
+        
+        return $images->map(function($image) use ($baseUrl) {
+            $image->image_url = $baseUrl . $image->image_url;
+            return $image;
+        });
+    }
+
+    /**
+     * Получить список товаров с пагинацией
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function index(Request $request)
+    {
+        $user = Auth::user();
+        
+        if (!$user) {
+            return response()->json(['error' => 'Пользователь не авторизован'], 401);
+        }
+
+        $perPage = $request->get('per_page', 15);
+        $search = $request->get('search', '');
+        
+        $query = ProductSklad::where('user_id', $user->id)
+            ->with(['images' => function($query) {
+                $query->orderBy('created_at', 'asc')->limit(1);
+            }]);
+
+        // Поиск по названию, коду, артикулу
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'ilike', "%{$search}%")
+                  ->orWhere('code', 'ilike', "%{$search}%")
+                  ->orWhere('article', 'ilike', "%{$search}%");
+            });
+        }
+
+        $products = $query->orderBy('created_at', 'desc')
+                         ->paginate($perPage);
+
+        // Преобразуем URL изображений
+        $products->getCollection()->transform(function($product) {
+            if ($product->images) {
+                $product->images = $this->transformImageUrls($product->images);
+            }
+            return $product;
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $products
+        ]);
+    }
+
+    /**
+     * Получить товар по ID с изображениями
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function show($id)
+    {
+        $user = Auth::user();
+        
+        if (!$user) {
+            return response()->json(['error' => 'Пользователь не авторизован'], 401);
+        }
+
+        $product = ProductSklad::where('id', $id)
+            ->where('user_id', $user->id)
+            ->with('images')
+            ->first();
+
+        if (!$product) {
+            return response()->json(['error' => 'Товар не найден'], 404);
+        }
+
+        // Преобразуем URL изображений
+        if ($product->images) {
+            $product->images = $this->transformImageUrls($product->images);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $product
+        ]);
+    }
+
+    /**
+     * Удалить товар
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function destroy($id)
+    {
+        $user = Auth::user();
+        
+        if (!$user) {
+            return response()->json(['error' => 'Пользователь не авторизован'], 401);
+        }
+
+        $product = ProductSklad::where('id', $id)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (!$product) {
+            return response()->json(['error' => 'Товар не найден'], 404);
+        }
+
+        // Удаляем изображения товара
+        $product->images()->delete();
+        
+        // Удаляем товар
+        $product->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Товар успешно удален'
+        ]);
     }
 } 
