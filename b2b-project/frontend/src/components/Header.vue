@@ -505,6 +505,18 @@ const closeSalesMenu = () => {
             </div>
           </div>
         </div>
+        <router-link
+          to="/analytics"
+          class="text-sm font-semibold text-gray-900 hover:text-blue-600 transition-colors flex items-center gap-1"
+        >
+          Аналитика
+        </router-link>
+        <router-link
+          to="/counterparties"
+          class="text-sm font-semibold text-gray-900 hover:text-blue-600 transition-colors flex items-center gap-1"
+        >
+          Контрагенты
+        </router-link>
       </div>
       <!-- Справа: кнопки авторизации -->
       <div class="hidden lg:flex lg:flex-1 lg:justify-end items-center gap-4">

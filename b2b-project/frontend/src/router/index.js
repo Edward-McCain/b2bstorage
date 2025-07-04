@@ -37,6 +37,16 @@ import ConsignmentGoodsPage from '../components/sales/ConsignmentGoodsPage.vue'
 import SalesFunnelPage from '../components/sales/SalesFunnelPage.vue'
 import UnitEconomicsPage from '../components/sales/UnitEconomicsPage.vue'
 
+import AnalyticsPage from '../components/AnalyticsPage.vue'
+import CounterpartiesPage from '../components/CounterpartiesPage.vue'
+import AnalyticsSalesPage from '../components/analytics/AnalyticsSalesPage.vue'
+import AnalyticsMoneyPage from '../components/analytics/AnalyticsMoneyPage.vue'
+import AnalyticsOverdueOrdersPage from '../components/analytics/AnalyticsOverdueOrdersPage.vue'
+import AnalyticsOverdueInvoicesPage from '../components/analytics/AnalyticsOverdueInvoicesPage.vue'
+import CounterpartiesBuyersPage from '../components/counterparties/CounterpartiesBuyersPage.vue'
+import CounterpartiesSuppliersPage from '../components/counterparties/CounterpartiesSuppliersPage.vue'
+import CounterpartiesGroupsPage from '../components/counterparties/CounterpartiesGroupsPage.vue'
+
 const routes = [
   {
     path: '/',
@@ -205,6 +215,51 @@ const routes = [
     path: '/sales/unit-economics',
     name: 'UnitEconomics',
     component: UnitEconomicsPage
+  },
+  {
+    path: '/analytics',
+    name: 'Analytics',
+    component: AnalyticsPage
+  },
+  {
+    path: '/counterparties',
+    name: 'Counterparties',
+    component: CounterpartiesPage
+  },
+  {
+    path: '/analytics/sales',
+    name: 'AnalyticsSales',
+    component: AnalyticsSalesPage
+  },
+  {
+    path: '/analytics/money',
+    name: 'AnalyticsMoney',
+    component: AnalyticsMoneyPage
+  },
+  {
+    path: '/analytics/overdue-orders',
+    name: 'AnalyticsOverdueOrders',
+    component: AnalyticsOverdueOrdersPage
+  },
+  {
+    path: '/analytics/overdue-invoices',
+    name: 'AnalyticsOverdueInvoices',
+    component: AnalyticsOverdueInvoicesPage
+  },
+  {
+    path: '/counterparties/buyers',
+    name: 'CounterpartiesBuyers',
+    component: CounterpartiesBuyersPage
+  },
+  {
+    path: '/counterparties/suppliers',
+    name: 'CounterpartiesSuppliers',
+    component: CounterpartiesSuppliersPage
+  },
+  {
+    path: '/counterparties/groups',
+    name: 'CounterpartiesGroups',
+    component: CounterpartiesGroupsPage
   }
 ]
 
