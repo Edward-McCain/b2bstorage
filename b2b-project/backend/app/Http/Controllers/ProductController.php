@@ -183,16 +183,8 @@ class ProductController extends Controller
      */
     private function transformImageUrls($images)
     {
-        // Определяем базовый URL в зависимости от окружения
-        $baseUrl = '';
-        
-        if (app()->environment('local', 'development')) {
-            // Для локальной разработки
-            $baseUrl = 'http://localhost:8000/storage/';
-        } else {
-            // Для продакшена
-            $baseUrl = config('app.url') . '/storage/';
-        }
+        // Автоматически определяем базовый URL из текущего запроса
+        $baseUrl = request()->getSchemeAndHttpHost() . '/storage/';
         
         return $images->map(function($image) use ($baseUrl) {
             $image->image_url = $baseUrl . $image->image_url;
