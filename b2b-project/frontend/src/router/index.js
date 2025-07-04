@@ -16,6 +16,7 @@ import TurnoversPage from '../components/products/TurnoversPage.vue'
 import SerialNumbersPage from '../components/products/SerialNumbersPage.vue'
 import MarkingCodesPage from '../components/products/MarkingCodesPage.vue'
 import MarkingPage from '../components/products/MarkingPage.vue'
+import ProductCreatePage from '../components/products/ProductCreatePage.vue'
 
 // Purchase pages
 import SupplierOrdersPage from '../components/purchases/SupplierOrdersPage.vue'
@@ -133,6 +134,11 @@ const routes = [
     path: '/products/marking',
     name: 'Marking',
     component: MarkingPage
+  },
+  {
+    path: '/products/create',
+    name: 'ProductCreate',
+    component: ProductCreatePage
   },
   // Purchase routes
   {

@@ -6,7 +6,9 @@
     <!-- Верхнее меню и фильтры -->
     <div class="bg-white border-b border-gray-200">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-wrap items-center gap-2 py-4">
-        <button class="flex items-center gap-1 bg-blue-50 border border-blue-200 text-blue-700 font-medium px-3 py-1.5 rounded"><span class="text-lg">＋</span>Товар</button>
+        <router-link to="/products/create" class="flex items-center gap-1 bg-blue-50 border border-blue-200 text-blue-700 font-medium px-3 py-1.5 rounded">
+          <span class="text-lg">＋</span>Товар
+        </router-link>
         <!-- <button class="flex items-center gap-1 bg-blue-50 border border-blue-200 text-blue-700 font-medium px-3 py-1.5 rounded"><span class="text-lg">＋</span>Комплект</button>
         <button class="flex items-center gap-1 bg-blue-50 border border-blue-200 text-blue-700 font-medium px-3 py-1.5 rounded"><span class="text-lg">＋</span>Группа</button> -->
         <button class="bg-gray-100 border border-gray-200 text-gray-700 font-medium px-3 py-1.5 rounded">Фильтр</button>
@@ -27,7 +29,9 @@
           <div class="flex flex-col items-center md:items-start">
             <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 mb-6 text-center md:text-left">Здесь будут все ваши товары</h1>
             <div class="flex gap-4 mb-6 w-full justify-center md:justify-center">
-              <button class="flex items-center gap-2 bg-blue-100 hover:bg-blue-200 text-blue-900 font-semibold px-6 py-3 rounded-lg text-lg transition"><span>Добавить товар</span><span class="text-2xl">＋</span></button>
+              <router-link to="/products/create" class="flex items-center gap-2 bg-blue-100 hover:bg-blue-200 text-blue-900 font-semibold px-6 py-3 rounded-lg text-lg transition">
+                <span>Добавить товар</span><span class="text-2xl">＋</span>
+              </router-link>
             </div>
             <div class="text-gray-600 mb-4 text-center md:text-left">
               Если у вас уже есть каталог товаров, загрузите его из <a href="#" class="text-blue-600 hover:underline">документа Excel</a>.
