@@ -86,6 +86,8 @@
 </template>
 
 <script>
+import { apiRequest } from '@/config/api'
+
 export default {
   name: 'LoginForm',
   emits: ['switch-to-register', 'login-success'],
@@ -108,31 +110,25 @@ export default {
       this.errors = {}
 
       try {
-        const response = await fetch('https://api.b2bstorage.ru/api/login', {
+        const response = await apiRequest('/login', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
           body: JSON.stringify({
             email: this.form.email,
             password: this.form.password
           })
         })
 
-        const data = await response.json()
-
         if (response.ok) {
           // Сохраняем токен
-          localStorage.setItem('auth_token', data.data.token)
-          localStorage.setItem('user', JSON.stringify(data.data.user))
+          localStorage.setItem('auth_token', response.data.data.token)
+          localStorage.setItem('user', JSON.stringify(response.data.data.user))
           
-          this.$emit('login-success', data.data)
+          this.$emit('login-success', response.data.data)
         } else {
-          if (data.errors) {
-            this.errors = data.errors
+          if (response.data.errors) {
+            this.errors = response.data.errors
           } else {
-            this.error = data.message || 'Ошибка входа'
+            this.error = response.data.message || 'Ошибка входа'
           }
         }
       } catch (err) {

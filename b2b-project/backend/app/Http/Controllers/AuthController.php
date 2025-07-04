@@ -142,7 +142,7 @@ class AuthController extends Controller
 
         $user = User::where('email', $request->email)->first();
 
-        if ($user->banned) {
+        if ($user->isBanned()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Account is banned or inactive'

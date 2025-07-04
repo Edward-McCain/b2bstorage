@@ -19,18 +19,25 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*'],
-
-    'allowed_origins_patterns' => [
-        'https://*.b2bstorage.ru',
+    'allowed_origins' => [
         'https://b2bstorage.ru',
         'https://www.b2bstorage.ru',
         'https://api.b2bstorage.ru',
-        'http://localhost:*',
-        'https://localhost:*',
-        'http://127.0.0.1:*',
-        'https://127.0.0.1:*',
+        'http://localhost:3000',
+        'https://localhost:3000',
+        'http://127.0.0.1:3000',
+        'https://127.0.0.1:3000',
+        'http://localhost:5173',
+        'https://localhost:5173',
+        'http://127.0.0.1:5173',
+        'https://127.0.0.1:5173',
+        'http://localhost',
+        'https://localhost',
+        'http://127.0.0.1',
+        'https://127.0.0.1',
     ],
+
+    'allowed_origins_patterns' => [],
 
     'allowed_headers' => [
         'Origin',

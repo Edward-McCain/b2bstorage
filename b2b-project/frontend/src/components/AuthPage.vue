@@ -44,8 +44,8 @@ export default {
   },
   methods: {
     handleAuthSuccess(data) {
-      // Обновляем страницу после успешной авторизации, чтобы Header обновился
-      window.location.href = '/'
+      // После успешной авторизации/регистрации переходим на страницу /products
+      window.location.href = '/products'
     }
   }
 }

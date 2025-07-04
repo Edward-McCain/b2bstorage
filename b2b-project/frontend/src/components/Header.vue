@@ -323,6 +323,15 @@ const closeSalesMenu = () => {
           >
             <div class="py-1" role="none">
               <router-link
+                to="/purchases"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                role="menuitem"
+                tabindex="-1"
+                @click="closePurchasesMenu"
+              >
+                Закупки
+              </router-link>
+              <router-link
                 to="/purchases/supplier-orders"
                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 role="menuitem"
@@ -393,7 +402,7 @@ const closeSalesMenu = () => {
             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
             </svg>
-          </button>
+          </button> 
           <div
             v-if="salesMenuOpen"
             class="absolute left-0 z-[9999] mt-2 w-72 origin-top-left rounded-md bg-white shadow-lg focus:outline-none border border-gray-200"
@@ -404,13 +413,13 @@ const closeSalesMenu = () => {
           >
             <div class="py-1" role="none">
               <router-link
-                to="/sales/customer-orders"
+                to="/sales"
                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 role="menuitem"
                 tabindex="-1"
                 @click="closeSalesMenu"
               >
-                Заказы покупателей
+                Продажи
               </router-link>
               <router-link
                 to="/sales/customer-invoices"

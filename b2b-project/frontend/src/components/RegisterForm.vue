@@ -117,6 +117,8 @@
 </template>
 
 <script>
+import { apiRequest } from '@/config/api'
+
 export default {
   name: 'RegisterForm',
   emits: ['switch-to-login', 'register-success'],
@@ -140,12 +142,8 @@ export default {
       this.errors = {}
 
       try {
-        const response = await fetch('https://api.b2bstorage.ru/api/register', {
+        const response = await apiRequest('/register', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
           body: JSON.stringify({
             email: this.form.email,
             user_name: this.form.user_name,
@@ -161,19 +159,17 @@ export default {
           })
         })
 
-        const data = await response.json()
-
         if (response.ok) {
           // Сохраняем токен
-          localStorage.setItem('auth_token', data.data.token)
-          localStorage.setItem('user', JSON.stringify(data.data.user))
+          localStorage.setItem('auth_token', response.data.data.token)
+          localStorage.setItem('user', JSON.stringify(response.data.data.user))
           
-          this.$emit('register-success', data.data)
+          this.$emit('register-success', response.data.data)
         } else {
-          if (data.errors) {
-            this.errors = data.errors
+          if (response.data.errors) {
+            this.errors = response.data.errors
           } else {
-            this.error = data.message || 'Ошибка регистрации'
+            this.error = response.data.message || 'Ошибка регистрации'
           }
         }
       } catch (err) {
