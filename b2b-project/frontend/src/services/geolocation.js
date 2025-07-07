@@ -135,6 +135,7 @@ function convertTimezoneToUTC(timezone) {
  * Получить информацию о местоположении по IP
  */
 export async function getLocationByIP() {
+  console.log('getLocationByIP вызвана')
   try {
     // Пробуем несколько бесплатных сервисов
     const services = [
@@ -145,6 +146,7 @@ export async function getLocationByIP() {
     
     for (const service of services) {
       try {
+        console.log(`Пробуем сервис: ${service}`)
         const response = await fetch(service, { 
           timeout: 5000,
           headers: {
@@ -152,13 +154,16 @@ export async function getLocationByIP() {
           }
         })
         
+        console.log(`Ответ от ${service}:`, response.status, response.ok)
+        
         if (response.ok) {
           const data = await response.json()
+          console.log(`Данные от ${service}:`, data)
           
           // Обрабатываем разные форматы ответов
           if (data.country_name) {
             // ipapi.co формат
-            return {
+            const result = {
               country: data.country_name,
               countryCode: data.country_code,
               city: data.city,
@@ -166,9 +171,11 @@ export async function getLocationByIP() {
               latitude: data.latitude,
               longitude: data.longitude
             }
+            console.log('Результат ipapi.co:', result)
+            return result
           } else if (data.country) {
             // ipinfo.io формат
-            return {
+            const result = {
               country: data.country,
               countryCode: data.country,
               city: data.city,
@@ -176,6 +183,8 @@ export async function getLocationByIP() {
               latitude: data.loc?.split(',')[0],
               longitude: data.loc?.split(',')[1]
             }
+            console.log('Результат ipinfo.io:', result)
+            return result
           }
         }
       } catch (error) {
@@ -184,6 +193,7 @@ export async function getLocationByIP() {
       }
     }
     
+    console.log('Все сервисы не сработали')
     return null
   } catch (error) {
     console.error('Ошибка получения геолокации по IP:', error)
@@ -269,19 +279,62 @@ export async function getLocationByBrowser() {
  * Автоопределение местоположения пользователя
  */
 export async function autoDetectLocation() {
+  console.log('autoDetectLocation вызвана')
   try {
     // Сначала пробуем получить по IP (быстрее)
+    console.log('Пробуем получить местоположение по IP...')
     const ipLocation = await getLocationByIP()
     if (ipLocation) {
+      console.log('Получено местоположение по IP:', ipLocation)
       return ipLocation
     }
     
+    console.log('Не удалось получить местоположение по IP, пробуем браузерное API...')
     // Если не получилось, пробуем браузерное API
     const browserLocation = await getLocationByBrowser()
     if (browserLocation) {
+      console.log('Получено местоположение через браузер:', browserLocation)
       return browserLocation
     }
     
+    // Fallback: определяем по часовому поясу браузера
+    console.log('Пробуем определить по часовому поясу браузера...')
+    const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+    console.log('Часовой пояс браузера:', browserTimezone)
+    
+    // Определяем страну по часовому поясу
+    const timezoneToCountry = {
+      'Asia/Tashkent': 'Uzbekistan',
+      'Asia/Almaty': 'Kazakhstan',
+      'Asia/Bishkek': 'Kyrgyzstan',
+      'Asia/Dushanbe': 'Tajikistan',
+      'Asia/Ashgabat': 'Turkmenistan',
+      'Europe/Moscow': 'Russia',
+      'Asia/Yekaterinburg': 'Russia',
+      'Asia/Novosibirsk': 'Russia',
+      'Asia/Krasnoyarsk': 'Russia',
+      'Asia/Vladivostok': 'Russia',
+      'Europe/Kiev': 'Ukraine',
+      'Europe/Minsk': 'Belarus',
+      'Asia/Tbilisi': 'Georgia',
+      'Asia/Yerevan': 'Armenia',
+      'Asia/Baku': 'Azerbaijan'
+    }
+    
+    const detectedCountry = timezoneToCountry[browserTimezone]
+    if (detectedCountry) {
+      console.log('Определена страна по часовому поясу:', detectedCountry)
+      return {
+        country: detectedCountry,
+        countryCode: getCountryCode(detectedCountry),
+        city: '',
+        timezone: convertTimezoneToUTC(browserTimezone),
+        latitude: null,
+        longitude: null
+      }
+    }
+    
+    console.log('Не удалось получить местоположение ни одним способом')
     return null
   } catch (error) {
     console.error('Ошибка автоопределения местоположения:', error)
@@ -290,28 +343,62 @@ export async function autoDetectLocation() {
 }
 
 /**
+ * Получить код страны по названию
+ */
+function getCountryCode(countryName) {
+  const countryMap = {
+    'Uzbekistan': 'UZ',
+    'Kazakhstan': 'KZ',
+    'Kyrgyzstan': 'KG',
+    'Tajikistan': 'TJ',
+    'Turkmenistan': 'TM',
+    'Russia': 'RU',
+    'Ukraine': 'UA',
+    'Belarus': 'BY',
+    'Georgia': 'GE',
+    'Armenia': 'AM',
+    'Azerbaijan': 'AZ'
+  }
+  return countryMap[countryName] || null
+}
+
+/**
  * Найти страну в нашем списке по коду или названию
  */
 export function findCountryInList(location, countriesList) {
-  if (!location) return null
+  console.log('findCountryInList вызвана с:', location, 'countriesList length:', countriesList.length)
+  
+  if (!location) {
+    console.log('location пустой, возвращаем null')
+    return null
+  }
   
   // Сначала ищем по коду страны
   if (location.countryCode) {
+    console.log('Ищем по коду страны:', location.countryCode)
     const countryByCode = countriesList.find(
       country => country.code.toLowerCase() === location.countryCode.toLowerCase()
     )
-    if (countryByCode) return countryByCode
+    if (countryByCode) {
+      console.log('Найдена страна по коду:', countryByCode)
+      return countryByCode
+    }
   }
   
   // Затем ищем по названию
   if (location.country) {
+    console.log('Ищем по названию страны:', location.country)
     const countryByName = countriesList.find(
       country => country.name.toLowerCase().includes(location.country.toLowerCase()) ||
                  location.country.toLowerCase().includes(country.name.toLowerCase())
     )
-    if (countryByName) return countryByName
+    if (countryByName) {
+      console.log('Найдена страна по названию:', countryByName)
+      return countryByName
+    }
   }
   
+  console.log('Страна не найдена в списке')
   return null
 }
 

@@ -329,4 +329,208 @@ class AuthController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Update personal data
+     */
+    public function updatePersonalData(Request $request)
+    {
+        $user = $request->user();
+        
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not authenticated'
+            ], 401);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'firstName' => 'sometimes|string|max:255',
+            'position' => 'sometimes|string|max:255',
+            'phone' => 'sometimes|string|max:255',
+            'email' => 'sometimes|string|email|max:255|unique:users,email,' . $user->id,
+            'country' => 'sometimes|string|max:255',
+            'city' => 'sometimes|string|max:255',
+            'timezone' => 'sometimes|string|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $updateData = [];
+        
+        if ($request->has('firstName')) {
+            $updateData['first_name'] = $request->firstName;
+            $updateData['user_name'] = trim($request->firstName . ' ' . $user->last_name);
+        }
+        
+        if ($request->has('position')) {
+            $updateData['position'] = $request->position;
+        }
+        
+        if ($request->has('phone')) {
+            $updateData['phone_number'] = $request->phone;
+        }
+        
+        if ($request->has('email')) {
+            $updateData['email'] = $request->email;
+        }
+        
+        if ($request->has('country')) {
+            $updateData['country'] = $request->country;
+        }
+        
+        if ($request->has('city')) {
+            $updateData['city'] = $request->city;
+        }
+        
+        if ($request->has('timezone')) {
+            $updateData['timezone'] = $request->timezone;
+        }
+
+        $user->update($updateData);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Personal data updated successfully',
+            'data' => [
+                'user' => $user
+            ]
+        ]);
+    }
+
+    /**
+     * Update company data
+     */
+    public function updateCompanyData(Request $request)
+    {
+        $user = $request->user();
+        
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not authenticated'
+            ], 401);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'sometimes|string|max:255',
+            'inn' => 'sometimes|string|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $updateData = [];
+        
+        if ($request->has('name')) {
+            $updateData['company_name'] = $request->name;
+        }
+        
+        if ($request->has('inn')) {
+            $updateData['inn'] = $request->inn;
+        }
+
+        $user->update($updateData);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Company data updated successfully',
+            'data' => [
+                'user' => $user
+            ]
+        ]);
+    }
+
+    /**
+     * Change password
+     */
+    public function changePassword(Request $request)
+    {
+        $user = $request->user();
+        
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not authenticated'
+            ], 401);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'oldPassword' => 'required|string',
+            'newPassword' => 'required|string|min:8',
+            'confirmPassword' => 'required|string|same:newPassword',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        // Check if old password is correct
+        if (!Hash::check($request->oldPassword, $user->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Current password is incorrect'
+            ], 400);
+        }
+
+        // Update password
+        $user->update([
+            'password' => Hash::make($request->newPassword)
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Password changed successfully'
+        ]);
+    }
+
+    /**
+     * Get user settings data
+     */
+    public function getUserSettings(Request $request)
+    {
+        $user = $request->user();
+        
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not authenticated'
+            ], 401);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'personal' => [
+                    'firstName' => $user->first_name,
+                    'position' => $user->position,
+                    'phone' => $user->phone_number,
+                    'email' => $user->email,
+                    'country' => $user->country,
+                    'city' => $user->city,
+                    'timezone' => $user->timezone,
+                    'avatar_url' => $user->avatar_url,
+                ],
+                'company' => [
+                    'name' => $user->company_name,
+                    'inn' => $user->inn,
+                ]
+            ]
+        ]);
+    }
 }

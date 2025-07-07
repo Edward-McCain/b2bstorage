@@ -27,20 +27,30 @@ export const getApiUrl = (endpoint) => {
 
 // Функция для получения URL файла (аватара, изображений и т.д.)
 export const getFileUrl = (filePath) => {
-  if (!filePath) return null
+  console.log('getFileUrl вызвана с:', filePath)
+  
+  if (!filePath) {
+    console.log('filePath пустой, возвращаем null')
+    return null
+  }
   
   // Если уже полный URL, возвращаем как есть
   if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
+    console.log('Полный URL, возвращаем как есть:', filePath)
     return filePath
   }
   
   // Если относительный путь, добавляем базовый URL
   if (filePath.startsWith('/')) {
-    return `${apiConfig.storageURL}${filePath}`
+    const result = `${apiConfig.storageURL}${filePath}`
+    console.log('Относительный путь, результат:', result)
+    return result
   }
   
   // Если путь без слеша, добавляем /storage/
-  return `${apiConfig.storageURL}/storage/${filePath}`
+  const result = `${apiConfig.storageURL}/storage/${filePath}`
+  console.log('Путь без слеша, результат:', result)
+  return result
 }
 
 // Функция для выполнения API запросов

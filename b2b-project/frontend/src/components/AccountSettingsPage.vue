@@ -52,17 +52,27 @@
             <div class="flex items-center gap-3 mb-6">
               <User class="w-5 h-5 text-blue-600" />
               <h2 class="text-xl font-semibold text-gray-900">Личные данные</h2>
-              <!-- <button 
+              <button 
+                v-if="!loadingSettings"
                 @click="detectLocation"
                 :disabled="isDetectingLocation"
                 class="ml-auto bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white font-medium px-4 py-2 rounded-lg transition-colors flex items-center gap-2 text-sm"
               >
                 <Loader2 v-if="isDetectingLocation" class="animate-spin h-4 w-4" />
                 {{ isDetectingLocation ? 'Определение...' : (locationDetected ? 'Обновить' : 'Автоопределение') }}
-              </button> -->
+              </button>
             </div>
             
-            <form @submit.prevent="savePersonalData" class="space-y-6">
+            <!-- Прелоадер для личных данных -->
+            <div v-if="loadingSettings" class="flex items-center justify-center py-12">
+              <div class="text-center">
+                <Loader2 class="animate-spin h-8 w-8 text-blue-600 mx-auto mb-4" />
+                <p class="text-gray-600 text-sm">Загрузка личных данных...</p>
+              </div>
+            </div>
+            
+            <!-- Основная форма -->
+            <form v-else @submit.prevent="savePersonalData" class="space-y-6">
               <!-- Блок аватара -->
               <div class="mb-8">
                 <label class="block text-sm font-medium text-gray-700 mb-4">Фото профиля</label>
@@ -71,10 +81,12 @@
                   <div class="relative group">
                     <div class="w-24 h-24 rounded-full overflow-hidden bg-gray-100 border-2 border-gray-200">
                       <img 
-                        v-if="avatarDisplayUrl" 
-                        :src="avatarDisplayUrl" 
+                        v-if="avatarUrl" 
+                        :src="getFileUrl(avatarUrl)" 
                         alt="Аватар" 
                         class="w-full h-full object-cover"
+                        @error="handleAvatarError"
+                        @load="handleAvatarLoad"
                       />
                       <div v-else class="w-full h-full flex items-center justify-center">
                         <User class="w-8 h-8 text-gray-400" />
@@ -193,15 +205,18 @@
                 <!-- Страна -->
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-2">Страна</label>
-                  <select 
-                    v-model="personalData.country" 
-                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-                  >
-                    <option value="">Выберите страну</option>
-                    <option v-for="country in countries" :key="country.id" :value="country.id">
-                      {{ country.name }}
-                    </option>
-                  </select>
+                  <Multiselect
+                    v-model="personalData.country"
+                    :options="countryOptions"
+                    label="label"
+                    value="value"
+                    :object="true"
+                    placeholder="Выберите страну"
+                    searchable
+                    :search-placeholder="'Поиск страны'"
+                    :max-height="400"
+                    class="w-full text-sm multiselect-custom"
+                  />
                 </div>
 
                 <!-- Город -->
@@ -218,15 +233,18 @@
                 <!-- Часовой пояс -->
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-2">Часовой пояс</label>
-                  <select 
-                    v-model="personalData.timezone" 
-                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-                  >
-                    <option value="">Выберите часовой пояс</option>
-                    <option v-for="timezone in timezones" :key="timezone.value" :value="timezone.value">
-                      {{ timezone.label }}
-                    </option>
-                  </select>
+                  <Multiselect
+                    v-model="personalData.timezone"
+                    :options="timezoneOptions"
+                    label="label"
+                    value="value"
+                    :object="true"
+                    placeholder="Выберите часовой пояс"
+                    searchable
+                    :search-placeholder="'Поиск часового пояса'"
+                    :max-height="400"
+                    class="w-full text-sm multiselect-custom"
+                  />
                 </div>
               </div>
 
@@ -250,7 +268,16 @@
               <h2 class="text-xl font-semibold text-gray-900">Данные компании</h2>
             </div>
             
-            <form @submit.prevent="saveCompanyData" class="space-y-6">
+            <!-- Прелоадер для данных компании -->
+            <div v-if="loadingSettings" class="flex items-center justify-center py-12">
+              <div class="text-center">
+                <Loader2 class="animate-spin h-8 w-8 text-blue-600 mx-auto mb-4" />
+                <p class="text-gray-600 text-sm">Загрузка данных компании...</p>
+              </div>
+            </div>
+            
+            <!-- Основная форма -->
+            <form v-else @submit.prevent="saveCompanyData" class="space-y-6">
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Наименование компании -->
                 <div class="md:col-span-2">
@@ -295,7 +322,16 @@
               <h2 class="text-xl font-semibold text-gray-900">Смена пароля</h2>
             </div>
             
-            <form @submit.prevent="changePassword" class="space-y-6">
+            <!-- Прелоадер для смены пароля -->
+            <div v-if="loadingSettings" class="flex items-center justify-center py-12">
+              <div class="text-center">
+                <Loader2 class="animate-spin h-8 w-8 text-blue-600 mx-auto mb-4" />
+                <p class="text-gray-600 text-sm">Загрузка настроек пароля...</p>
+              </div>
+            </div>
+            
+            <!-- Основная форма -->
+            <form v-else @submit.prevent="changePassword" class="space-y-6">
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Старый пароль -->
                 <div>
@@ -394,6 +430,8 @@
 <script setup>
 import { ref, reactive, onMounted, onUnmounted, computed } from 'vue'
 import { User, Building, Lock, Eye, EyeOff, ChevronDown, Loader2, X } from 'lucide-vue-next'
+import Multiselect from '@vueform/multiselect'
+import '@vueform/multiselect/themes/default.css'
 import countriesData from '@/data/countries.json'
 import timezonesData from '@/data/timezones.json'
 import { apiRequest, getFileUrl } from '@/config/api'
@@ -409,11 +447,7 @@ const activeSection = ref('personal')
 const avatarUrl = ref('')
 const fileInput = ref(null)
 
-// Computed свойство для правильного URL аватара
-const avatarDisplayUrl = computed(() => {
-  if (!avatarUrl.value) return null
-  return getFileUrl(avatarUrl.value)
-})
+
 
 // Состояние форм
 const personalData = reactive({
@@ -421,9 +455,9 @@ const personalData = reactive({
   position: '',
   phone: '',
   email: '',
-  country: '',
+  country: null,
   city: '',
-  timezone: 'UTC+5'
+  timezone: null
 })
 
 const companyData = reactive({
@@ -436,6 +470,9 @@ const passwordData = reactive({
   newPassword: '',
   confirmPassword: ''
 })
+
+// Состояние загрузки данных
+const loadingSettings = ref(false)
 
 // Состояние загрузки
 const savingPersonal = ref(false)
@@ -463,6 +500,25 @@ const countries = ref(countriesData)
 
 // Данные часовых поясов
 const timezones = ref(timezonesData)
+
+// Опции стран для Multiselect
+const countryOptions = computed(() => {
+  return countries.value.map(country => ({
+    label: country.name,
+    value: country.id,
+    code: country.code,
+    phone_code: country.phone_code,
+    flag: country.flag
+  }))
+})
+
+// Опции часовых поясов для Multiselect
+const timezoneOptions = computed(() => {
+  return timezones.value.map(timezone => ({
+    label: timezone.label,
+    value: timezone.value
+  }))
+})
 
 // Состояние автоопределения
 const isDetectingLocation = ref(false)
@@ -591,11 +647,122 @@ const formatPhoneNumber = () => {
   }
 }
 
+// Функция загрузки данных пользователя
+const loadUserSettings = async () => {
+  console.log('loadUserSettings вызвана')
+  loadingSettings.value = true
+  try {
+    console.log('Отправляем запрос на /user/settings')
+    const response = await apiRequest('/user/settings', {
+      method: 'GET'
+    })
+    
+    console.log('Ответ сервера:', response)
+    
+    if (response.ok && response.data.success) {
+      const { personal, company } = response.data.data
+      console.log('Полученные данные:', { personal, company })
+      
+      // Заполняем личные данные
+      personalData.firstName = personal.firstName || ''
+      personalData.position = personal.position || ''
+      personalData.phone = personal.phone || ''
+      personalData.email = personal.email || ''
+      
+      // Находим опцию страны для Multiselect
+      console.log('Загружаем страну из данных:', personal.country)
+      if (personal.country) {
+        // Ищем по названию страны, так как в БД хранится название, а не ID
+        const countryOption = countryOptions.value.find(option => 
+          option.label.toLowerCase() === personal.country.toLowerCase()
+        )
+        console.log('Найдена опция страны:', countryOption)
+        personalData.country = countryOption || null
+      } else {
+        console.log('Страна не найдена в данных')
+        personalData.country = null
+      }
+      
+      personalData.city = personal.city || ''
+      
+      // Находим опцию часового пояса для Multiselect
+      console.log('Загружаем часовой пояс из данных:', personal.timezone)
+      if (personal.timezone) {
+        const timezoneOption = timezoneOptions.value.find(option => option.value === personal.timezone)
+        console.log('Найдена опция часового пояса:', timezoneOption)
+        personalData.timezone = timezoneOption || null
+      } else {
+        console.log('Часовой пояс не найден в данных')
+        personalData.timezone = null
+      }
+      
+      console.log('Заполненные личные данные:', {
+        firstName: personalData.firstName,
+        position: personalData.position,
+        phone: personalData.phone,
+        email: personalData.email,
+        country: personalData.country ? personalData.country.label : null,
+        city: personalData.city,
+        timezone: personalData.timezone ? personalData.timezone.value : null
+      })
+      
+      // Заполняем данные компании
+      companyData.name = company.name || ''
+      companyData.inn = company.inn || ''
+      
+      // Устанавливаем аватар
+      console.log('Проверяем аватар в данных:', personal.avatar_url)
+      if (personal.avatar_url) {
+        console.log('Устанавливаем аватар из данных пользователя:', personal.avatar_url)
+        avatarUrl.value = personal.avatar_url
+        console.log('avatarUrl установлен на:', avatarUrl.value)
+      } else {
+        console.log('Аватар не найден в данных пользователя')
+        // Проверяем, есть ли аватар в localStorage
+        const userData = localStorage.getItem('user')
+        if (userData) {
+          const user = JSON.parse(userData)
+          if (user.avatar_url) {
+            console.log('Найден аватар в localStorage:', user.avatar_url)
+            avatarUrl.value = user.avatar_url
+          }
+        }
+      }
+      
+      // Определяем страну для телефона
+      if (personal.phone) {
+        const phoneDigits = extractDigits(personal.phone)
+        if (phoneDigits) {
+          // Пытаемся найти страну по коду в номере
+          const phoneCode = phoneDigits.substring(0, 4) // Берем первые 4 цифры
+          const country = countries.value.find(c => phoneDigits.startsWith(c.phone_code))
+          if (country) {
+            selectedCountry.value = country
+          }
+        }
+      }
+      
+      console.log('Данные пользователя загружены:', response.data.data)
+    } else {
+      console.error('Ошибка загрузки данных пользователя:', response.data.message)
+    }
+  } catch (error) {
+    console.error('Ошибка загрузки данных пользователя:', error)
+  } finally {
+    loadingSettings.value = false
+  }
+}
+
 // Функция автоопределения местоположения
 const detectLocation = async () => {
-  if (isDetectingLocation.value) return
+  console.log('detectLocation вызвана')
+  if (isDetectingLocation.value) {
+    console.log('detectLocation уже выполняется, пропускаем')
+    return
+  }
   
   isDetectingLocation.value = true
+  console.log('Начинаем автоопределение местоположения...')
   
   try {
     const location = await autoDetectLocation()
@@ -608,7 +775,11 @@ const detectLocation = async () => {
       if (detectedCountry) {
         console.log('Найдена страна:', detectedCountry)
         selectedCountry.value = detectedCountry
-        personalData.country = detectedCountry.id
+        // Находим соответствующую опцию для Multiselect
+        const countryOption = countryOptions.value.find(option => option.value === detectedCountry.id)
+        if (countryOption) {
+          personalData.country = countryOption
+        }
         
         // Автоматически применяем маску для телефона при автоопределении
         const phoneMask = getPhoneMask(detectedCountry.phone_code)
@@ -636,7 +807,11 @@ const detectLocation = async () => {
       const detectedTimezone = findTimezoneInList(location.timezone, timezones.value)
       if (detectedTimezone) {
         console.log('Найден часовой пояс:', detectedTimezone)
-        personalData.timezone = detectedTimezone.value
+        // Находим соответствующую опцию для Multiselect
+        const timezoneOption = timezoneOptions.value.find(option => option.value === detectedTimezone.value)
+        if (timezoneOption) {
+          personalData.timezone = timezoneOption
+        }
       } else {
         console.log('Часовой пояс не найден для:', location.timezone)
       }
@@ -663,9 +838,24 @@ const savePersonalData = async () => {
   
   savingPersonal.value = true
   try {
-    // Здесь будет API вызов для сохранения личных данных
-    await new Promise(resolve => setTimeout(resolve, 1000)) // Имитация API
-    console.log('Личные данные сохранены:', personalData)
+    const response = await apiRequest('/user/personal', {
+      method: 'PUT',
+      body: JSON.stringify({
+        firstName: personalData.firstName,
+        position: personalData.position,
+        phone: personalData.phone,
+        email: personalData.email,
+        country: personalData.country ? personalData.country.label : null,
+        city: personalData.city,
+        timezone: personalData.timezone ? personalData.timezone.value : null
+      })
+    })
+    
+    if (response.ok && response.data.success) {
+      console.log('Личные данные сохранены:', response.data)
+    } else {
+      console.error('Ошибка сохранения личных данных:', response.data.message)
+    }
   } catch (error) {
     console.error('Ошибка сохранения личных данных:', error)
   } finally {
@@ -676,9 +866,19 @@ const savePersonalData = async () => {
 const saveCompanyData = async () => {
   savingCompany.value = true
   try {
-    // Здесь будет API вызов для сохранения данных компании
-    await new Promise(resolve => setTimeout(resolve, 1000)) // Имитация API
-    console.log('Данные компании сохранены:', companyData)
+    const response = await apiRequest('/user/company', {
+      method: 'PUT',
+      body: JSON.stringify({
+        name: companyData.name,
+        inn: companyData.inn
+      })
+    })
+    
+    if (response.ok && response.data.success) {
+      console.log('Данные компании сохранены:', response.data)
+    } else {
+      console.error('Ошибка сохранения данных компании:', response.data.message)
+    }
   } catch (error) {
     console.error('Ошибка сохранения данных компании:', error)
   } finally {
@@ -694,14 +894,25 @@ const changePassword = async () => {
   
   changingPassword.value = true
   try {
-    // Здесь будет API вызов для смены пароля
-    await new Promise(resolve => setTimeout(resolve, 1000)) // Имитация API
-    console.log('Пароль изменен')
+    const response = await apiRequest('/user/password', {
+      method: 'PUT',
+      body: JSON.stringify({
+        oldPassword: passwordData.oldPassword,
+        newPassword: passwordData.newPassword,
+        confirmPassword: passwordData.confirmPassword
+      })
+    })
     
-    // Очищаем поля паролей
-    passwordData.oldPassword = ''
-    passwordData.newPassword = ''
-    passwordData.confirmPassword = ''
+    if (response.ok && response.data.success) {
+      console.log('Пароль изменен')
+      
+      // Очищаем поля паролей
+      passwordData.oldPassword = ''
+      passwordData.newPassword = ''
+      passwordData.confirmPassword = ''
+    } else {
+      console.error('Ошибка смены пароля:', response.data.message)
+    }
   } catch (error) {
     console.error('Ошибка смены пароля:', error)
   } finally {
@@ -739,19 +950,18 @@ const handleClickOutside = (event) => {
   }
 }
 
-onMounted(() => {
+// Обработчики событий аватара
+const handleAvatarError = (event) => {
+  console.error('Ошибка загрузки аватара:', event.target.src)
+}
+
+const handleAvatarLoad = (event) => {
+  console.log('Аватар успешно загружен:', event.target.src)
+}
+
+onMounted(async () => {
   // Устанавливаем заголовок страницы
-  document.title = 'B2B Storage - Настройки аккаунта'
-  
-  // Загружаем текущий аватар пользователя
-  const userData = localStorage.getItem('user')
-  if (userData) {
-    const user = JSON.parse(userData)
-    if (user.avatar_url) {
-      avatarUrl.value = user.avatar_url
-      console.log('Загружен текущий аватар:', user.avatar_url)
-    }
-  }
+  document.title = 'B2B SKLAD - Настройки аккаунта'
   
   // Добавляем обработчик скролла
   window.addEventListener('scroll', handleScroll)
@@ -762,14 +972,41 @@ onMounted(() => {
   // Устанавливаем первую секцию как активную по умолчанию
   activeSection.value = 'personal'
   
+  // Загружаем данные пользователя
+  await loadUserSettings()
+  
   // Инициализируем маску телефона для выбранной страны
   if (!personalData.phone || personalData.phone.includes('_')) {
     const phoneMask = getPhoneMask(selectedCountry.value.phone_code)
     personalData.phone = phoneMask.placeholder
   }
   
-  // Автоматически определяем местоположение при загрузке
-  detectLocation()
+  // Устанавливаем часовой пояс по умолчанию, если не выбран
+  if (!personalData.timezone) {
+    const defaultTimezone = timezoneOptions.value.find(option => option.value === 'UTC+5')
+    if (defaultTimezone) {
+      personalData.timezone = defaultTimezone
+    }
+  }
+  
+  // Автоматически определяем местоположение только если данные пустые
+  const hasLocationData = (personalData.country && personalData.country.label) && personalData.city && (personalData.timezone && personalData.timezone.value)
+  console.log('Проверка данных местоположения:', {
+    country: personalData.country ? personalData.country.label : null,
+    city: personalData.city,
+    timezone: personalData.timezone ? personalData.timezone.value : null,
+    hasLocationData
+  })
+  
+  if (!hasLocationData) {
+    console.log('Запускаем автоопределение местоположения...')
+    // Добавляем небольшую задержку, чтобы данные успели загрузиться
+    setTimeout(() => {
+      detectLocation()
+    }, 1000)
+  } else {
+    console.log('Данные уже заполнены, автоопределение не требуется')
+  }
 })
 
 onUnmounted(() => {
@@ -779,4 +1016,16 @@ onUnmounted(() => {
   // Удаляем обработчик кликов
   document.removeEventListener('click', handleClickOutside)
 })
-</script> 
+</script>
+
+<style scoped>
+.multiselect-custom,
+.multiselect,
+.multiselect__input,
+.multiselect__option {
+  font-size: 0.95rem !important;
+}
+.multiselect__content-wrapper {
+  max-height: 400px !important;
+}
+</style> 

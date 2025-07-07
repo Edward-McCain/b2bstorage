@@ -31,6 +31,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/profile', [AuthController::class, 'updateProfile']);
     // Avatar upload
     Route::post('/user/avatar', [AuthController::class, 'uploadAvatar']);
+    // User settings routes
+    Route::get('/user/settings', [AuthController::class, 'getUserSettings']);
+    Route::put('/user/personal', [AuthController::class, 'updatePersonalData']);
+    Route::put('/user/company', [AuthController::class, 'updateCompanyData']);
+    Route::put('/user/password', [AuthController::class, 'changePassword']);
     // Product routes
     Route::get('/products', [\App\Http\Controllers\ProductController::class, 'index']);
     Route::get('/products/{id}', [\App\Http\Controllers\ProductController::class, 'show']);
