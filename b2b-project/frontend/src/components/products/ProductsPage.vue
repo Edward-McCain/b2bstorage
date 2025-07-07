@@ -149,13 +149,15 @@
                         </div>
                       </router-link>
                       <button 
-                        @click="deleteProduct(product.id)"
-                        class="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50 transition-colors relative group"
+                        @click="openDeleteModal(product.id)"
+                        :disabled="deletingProductId === product.id"
+                        class="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50 transition-colors relative group disabled:opacity-50 disabled:cursor-not-allowed"
                         title="Удалить"
                       >
-                        <Trash2 class="w-4 h-4" />
+                        <Loader2 v-if="deletingProductId === product.id" class="w-4 h-4 animate-spin" />
+                        <Trash2 v-else class="w-4 h-4" />
                         <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
-                          Удалить
+                          {{ deletingProductId === product.id ? 'Удаление...' : 'Удалить' }}
                           <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
                         </div>
                       </button>
@@ -474,6 +476,40 @@
         </div>
       </div>
     </div>
+
+    <!-- Модальное окно подтверждения удаления -->
+    <div v-if="showDeleteModal" class="fixed inset-0 z-[99999999] flex items-center justify-center bg-white/90 bg-opacity-50">
+      <div class="bg-white rounded-lg shadow-lg w-full max-w-md mx-4 p-6">
+        <div class="flex items-center mb-4">
+          <div class="flex-shrink-0">
+            <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+              <Trash2 class="w-6 h-6 text-red-600" />
+            </div>
+          </div>
+          <div class="ml-4">
+            <h3 class="text-lg font-semibold text-gray-900">Удалить товар?</h3>
+            <p class="text-sm text-gray-500">Это действие нельзя отменить. Товар будет удален навсегда.</p>
+          </div>
+        </div>
+        <div class="flex gap-3">
+          <button 
+            @click="closeDeleteModal" 
+            :disabled="deletingProductId !== null"
+            class="flex-1 bg-gray-100 hover:bg-gray-200 disabled:bg-gray-50 disabled:cursor-not-allowed text-gray-800 font-semibold px-4 py-2 rounded-lg transition-colors"
+          >
+            Отмена
+          </button>
+          <button 
+            @click="confirmDelete" 
+            :disabled="deletingProductId !== null"
+            class="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-red-400 disabled:cursor-not-allowed text-white font-semibold px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2"
+          >
+            <Loader2 v-if="deletingProductId !== null" class="w-4 h-4 animate-spin" />
+            {{ deletingProductId !== null ? 'Удаление...' : 'Удалить' }}
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -495,6 +531,12 @@ const pagination = ref(null)
 const searchTimeout = ref(null)
 const showFilterModal = ref(false)
 const filterLoading = ref(false)
+
+// Состояния для удаления товара
+const showDeleteModal = ref(false)
+const productIdToDelete = ref(null)
+const deletingProductId = ref(null)
+
 const filter = reactive({
   category: null,
   subcategory: null,
@@ -598,26 +640,47 @@ function changePage(page) {
   }
 }
 
-// Удаление товара
-async function deleteProduct(productId) {
-  if (!confirm('Вы уверены, что хотите удалить этот товар?')) {
-    return
-  }
+// Открытие модалки удаления
+function openDeleteModal(productId) {
+  productIdToDelete.value = productId
+  showDeleteModal.value = true
+}
+
+// Закрытие модалки удаления
+function closeDeleteModal() {
+  showDeleteModal.value = false
+  productIdToDelete.value = null
+  deletingProductId.value = null
+}
+
+// Подтверждение удаления товара
+async function confirmDelete() {
+  if (!productIdToDelete.value) return
+  
+  deletingProductId.value = productIdToDelete.value
   
   try {
-    const response = await apiRequest(`/products/${productId}`, {
+    const response = await apiRequest(`/products/${productIdToDelete.value}`, {
       method: 'DELETE'
     })
     
     if (response.ok) {
+      // Удаляем товар из списка без перезагрузки
+      const index = products.value.findIndex(p => p.id === productIdToDelete.value)
+      if (index !== -1) {
+        products.value.splice(index, 1)
+      }
+      
       toastr.success('Товар успешно удален')
-      loadProducts(pagination.value.current_page, createFilterParams())
+      closeDeleteModal()
     } else {
-      toastr.error('Ошибка при удалении товара')
+      toastr.error(response.data.message || 'Ошибка при удалении товара')
     }
   } catch (err) {
     console.error('Ошибка удаления товара:', err)
     toastr.error('Ошибка при удалении товара')
+  } finally {
+    deletingProductId.value = null
   }
 }
 
