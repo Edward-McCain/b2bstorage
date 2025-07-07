@@ -276,203 +276,203 @@
     </div>
 
     <!-- Модальное окно фильтра -->
-    <div v-if="showFilterModal" class="fixed inset-0 md:z-[9999999] sm:pt-20 flex items-center justify-center bg-white/60 backdrop-blur-sm md:z-auto">
-      <div class="bg-white rounded-lg shadow-lg w-full max-w-4xl mx-auto p-6 relative flex flex-col max-h-[90vh] overflow-y-auto md:w-[700px] md:rounded-xl md:p-8 sm:max-w-full sm:h-full sm:rounded-none sm:p-4 sm:pt-20 sm:max-h-[calc(100vh-68px)]">
-        <button @click="closeFilterModal" class="absolute top-2 right-2 text-gray-400 hover:text-gray-700 p-1 rounded hover:bg-gray-100 transition-colors relative group" title="Закрыть">
-          <X class="w-5 h-5" />
-          <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
-            Закрыть
-            <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
-          </div>
-        </button>
-        <h2 class="text-xl font-bold mb-4">Фильтр товаров</h2>
-        <form @submit.prevent="applyFilter" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs text-gray-700 mb-1">Категория</label>
-            <Multiselect
-              v-model="selectedCategory"
-              :options="categoryOptions"
-              label="label"
-              value="value"
-              :object="true"
-              placeholder="Выберите категорию"
-              searchable
-              :max-height="400"
-              class="w-full text-sm multiselect-custom"
-              :loading="loadingCategories"
-            />
-          </div>
-          <div>
-            <label class="block text-xs text-gray-700 mb-1">Подкатегория</label>
-            <Multiselect
-              v-model="selectedSubcategory"
-              :options="subcategoryOptions"
-              label="label"
-              value="value"
-              :object="true"
-              placeholder="Выберите подкатегорию"
-              searchable
-              :max-height="400"
-              class="w-full text-xs multiselect-custom"
-              :loading="loadingSubcategories"
-              :disabled="!selectedCategory"
-            />
-          </div>
-          <div>
-            <label class="block text-xs text-gray-700 mb-1">Страна</label>
-            <Multiselect
-              v-model="selectedCountry"
-              :options="countries"
-              label="label"
-              value="value"
-              :object="true"
-              placeholder="Выберите страну"
-              searchable
-              :search-placeholder="'Поиск страны'"
-              :max-height="400"
-              class="w-full text-sm multiselect-custom"
-            />
-          </div>
-          <div>
-            <label class="block text-xs text-gray-700 mb-1">Поставщик</label>
-            <input v-model="filter.supplier" type="text" placeholder="Поставщик" class="border rounded px-3 py-2 text-sm w-full" />
-          </div>
-          <div>
-            <label class="block text-xs text-gray-700 mb-1">Артикул</label>
-            <input v-model="filter.article" type="text" placeholder="Артикул" class="border rounded px-3 py-2 text-sm w-full" />
-          </div>
-          <div>
-            <label class="block text-xs text-gray-700 mb-1">Код</label>
-            <input v-model="filter.code" type="text" placeholder="Код" class="border rounded px-3 py-2 text-sm w-full" />
-          </div>
-          <div>
-            <label class="block text-xs text-gray-700 mb-1">Внешний код</label>
-            <input v-model="filter.external_code" type="text" placeholder="Внешний код" class="border rounded px-3 py-2 text-sm w-full" />
-          </div>
-          <div>
-            <label class="block text-xs text-gray-700 mb-1">Ед. измерения</label>
-            <Multiselect
-              v-model="selectedUnit"
-              :options="unitOptions"
-              label="label"
-              value="value"
-              :object="true"
-              placeholder="Выберите единицу измерения"
-              :max-height="400"
-              class="w-full text-sm multiselect-custom"
-            />
-          </div>
-          <div>
-            <label class="block text-xs text-gray-700 mb-1">Вес</label>
-            <input v-model="filter.weight" type="number" step="0.001" placeholder="Вес" class="border rounded px-3 py-2 text-sm w-full" />
-          </div>
-          <div>
-            <label class="block text-xs text-gray-700 mb-1">Объем</label>
-            <input v-model="filter.volume" type="number" step="0.001" placeholder="Объем" class="border rounded px-3 py-2 text-sm w-full" />
-          </div>
-          <div>
-            <label class="block text-xs text-gray-700 mb-1">Ставка НДС</label>
-            <input v-model="filter.vat" type="text" placeholder="Ставка НДС" class="border rounded px-3 py-2 text-sm w-full" />
-          </div>
-          <div>
-            <label class="block text-xs text-gray-700 mb-1">Фасовка</label>
-            <Multiselect
-              v-model="selectedPacking"
-              :options="packingOptions"
-              label="label"
-              value="value"
-              :object="true"
-              placeholder="Выберите фасовку"
-              :max-height="400"
-              class="w-full text-sm multiselect-custom"
-            />
-          </div>
-          <div>
-            <label class="block text-xs text-gray-700 mb-1">Тип учета</label>
-            <Multiselect
-              v-model="selectedAccountingType"
-              :options="accountingTypeOptions"
-              label="label"
-              value="value"
-              :object="true"
-              placeholder="Выберите тип учета"
-              :max-height="400"
-              class="w-full text-sm multiselect-custom"
-            />
-          </div>
-          <div>
-            <label class="block text-xs text-gray-700 mb-1">Маркировка</label>
-            <input v-model="filter.marking" type="text" placeholder="Маркировка" class="border rounded px-3 py-2 text-sm w-full" />
-          </div>
-          <div>
-            <label class="block text-xs text-gray-700 mb-1">Тип маркировки товара</label>
-            <Multiselect
-              v-model="selectedProductType"
-              :options="productTypeOptions"
-              label="label"
-              value="value"
-              :object="true"
-              placeholder="Выберите тип маркировки товара"
-              :max-height="400"
-              class="w-full text-sm multiselect-custom"
-            />
-          </div>
-          <div>
-            <label class="block text-xs text-gray-700 mb-1">Тип штрихкода</label>
-            <Multiselect
-              v-model="selectedBarcodeType"
-              :options="barcodeTypeOptions"
-              label="label"
-              value="value"
-              :object="true"
-              placeholder="Выберите тип штрихкода"
-              :max-height="400"
-              class="w-full text-sm multiselect-custom"
-            />
-          </div>
-          <div class="md:col-span-2">
-            <label class="block text-xs text-gray-700 mb-1">Штрихкод</label>
-            <input v-model="filter.barcode" type="text" placeholder="Штрихкод" class="border rounded px-3 py-2 text-sm w-full" />
-          </div>
-          <div>
-            <label class="block text-xs text-gray-700 mb-1">Дата создания</label>
-            <input v-model="filter.created_at" type="date" placeholder="Дата создания" class="border rounded px-3 py-2 text-sm w-full" />
-          </div>
-          <div>
-            <label class="block text-xs text-gray-700 mb-1">Дата изменения</label>
-            <input v-model="filter.updated_at" type="date" placeholder="Дата изменения" class="border rounded px-3 py-2 text-sm w-full" />
-          </div>
-        </form>
-        <div class="flex justify-center gap-4 mt-6">
-          <button @click="resetFilter" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold px-6 py-2 rounded-lg border text-sm flex items-center gap-2 relative group" title="Сбросить все фильтры">
-            <RotateCcw class="w-4 h-4" />
-            Сбросить
-            <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
-              Сбросить все фильтры
-              <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+    <div v-if="showFilterModal" class="fixed inset-0 z-[9999999] sm:pt-20 flex items-center justify-center bg-white/60 backdrop-blur-sm md:z-auto">
+      <div class="bg-white rounded-lg shadow-lg w-full max-w-4xl mx-auto p-6 relative max-h-[90vh] overflow-y-auto md:w-[700px] md:rounded-xl md:p-8 sm:max-w-full sm:h-full sm:rounded-none sm:p-4 sm:pt-20 sm:max-h-[calc(100vh-68px)]">
+        <div>
+          <h2 class="text-xl font-bold mb-4" style="display: inline-flex;align-items: center;justify-content: space-between;width: 100%;">
+            Фильтр товаров
+            <span class="text-sm text-gray-500 cursor-pointer" @click="closeFilterModal">
+              <X class="w-5 h-5" />
+            </span>
+          </h2>
+          <form @submit.prevent="applyFilter" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs text-gray-700 mb-1">Категория</label>
+              <Multiselect
+                v-model="selectedCategory"
+                :options="categoryOptions"
+                label="label"
+                value="value"
+                :object="true"
+                placeholder="Выберите категорию"
+                searchable
+                :max-height="400"
+                class="w-full text-sm multiselect-custom"
+                :loading="loadingCategories"
+              />
             </div>
-          </button>
-          <button @click="closeFilterModal" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold px-6 py-2 rounded-lg border text-sm relative group" title="Закрыть фильтр">
-            Отмена
-            <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
-              Закрыть фильтр
-              <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+            <div>
+              <label class="block text-xs text-gray-700 mb-1">Подкатегория</label>
+              <Multiselect
+                v-model="selectedSubcategory"
+                :options="subcategoryOptions"
+                label="label"
+                value="value"
+                :object="true"
+                placeholder="Выберите подкатегорию"
+                searchable
+                :max-height="400"
+                class="w-full text-xs multiselect-custom"
+                :loading="loadingSubcategories"
+                :disabled="!selectedCategory"
+              />
             </div>
-          </button>
-          <button 
-            @click="applyFilter" 
-            :disabled="filterLoading"
-            class="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold px-6 py-2 rounded-lg text-sm flex items-center gap-2 relative group"
-            :title="filterLoading ? 'Выполняется поиск...' : 'Применить фильтры'"
-          >
-            <Search v-if="filterLoading" class="animate-spin w-4 h-4" />
-            <Search v-else class="w-4 h-4" />
-            {{ filterLoading ? 'Поиск...' : 'Применить' }}
-            <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
-              {{ filterLoading ? 'Выполняется поиск...' : 'Применить фильтры' }}
-              <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+            <div>
+              <label class="block text-xs text-gray-700 mb-1">Страна</label>
+              <Multiselect
+                v-model="selectedCountry"
+                :options="countries"
+                label="label"
+                value="value"
+                :object="true"
+                placeholder="Выберите страну"
+                searchable
+                :search-placeholder="'Поиск страны'"
+                :max-height="400"
+                class="w-full text-sm multiselect-custom"
+              />
             </div>
-          </button>
+            <div>
+              <label class="block text-xs text-gray-700 mb-1">Поставщик</label>
+              <input v-model="filter.supplier" type="text" placeholder="Поставщик" class="border rounded px-3 py-2 text-sm w-full" />
+            </div>
+            <div>
+              <label class="block text-xs text-gray-700 mb-1">Артикул</label>
+              <input v-model="filter.article" type="text" placeholder="Артикул" class="border rounded px-3 py-2 text-sm w-full" />
+            </div>
+            <div>
+              <label class="block text-xs text-gray-700 mb-1">Код</label>
+              <input v-model="filter.code" type="text" placeholder="Код" class="border rounded px-3 py-2 text-sm w-full" />
+            </div>
+            <div>
+              <label class="block text-xs text-gray-700 mb-1">Внешний код</label>
+              <input v-model="filter.external_code" type="text" placeholder="Внешний код" class="border rounded px-3 py-2 text-sm w-full" />
+            </div>
+            <div>
+              <label class="block text-xs text-gray-700 mb-1">Ед. измерения</label>
+              <Multiselect
+                v-model="selectedUnit"
+                :options="unitOptions"
+                label="label"
+                value="value"
+                :object="true"
+                placeholder="Выберите единицу измерения"
+                :max-height="400"
+                class="w-full text-sm multiselect-custom"
+              />
+            </div>
+            <div>
+              <label class="block text-xs text-gray-700 mb-1">Вес</label>
+              <input v-model="filter.weight" type="number" step="0.001" placeholder="Вес" class="border rounded px-3 py-2 text-sm w-full" />
+            </div>
+            <div>
+              <label class="block text-xs text-gray-700 mb-1">Объем</label>
+              <input v-model="filter.volume" type="number" step="0.001" placeholder="Объем" class="border rounded px-3 py-2 text-sm w-full" />
+            </div>
+            <div>
+              <label class="block text-xs text-gray-700 mb-1">Ставка НДС</label>
+              <input v-model="filter.vat" type="text" placeholder="Ставка НДС" class="border rounded px-3 py-2 text-sm w-full" />
+            </div>
+            <div>
+              <label class="block text-xs text-gray-700 mb-1">Фасовка</label>
+              <Multiselect
+                v-model="selectedPacking"
+                :options="packingOptions"
+                label="label"
+                value="value"
+                :object="true"
+                placeholder="Выберите фасовку"
+                :max-height="400"
+                class="w-full text-sm multiselect-custom"
+              />
+            </div>
+            <div>
+              <label class="block text-xs text-gray-700 mb-1">Тип учета</label>
+              <Multiselect
+                v-model="selectedAccountingType"
+                :options="accountingTypeOptions"
+                label="label"
+                value="value"
+                :object="true"
+                placeholder="Выберите тип учета"
+                :max-height="400"
+                class="w-full text-sm multiselect-custom"
+              />
+            </div>
+            <div>
+              <label class="block text-xs text-gray-700 mb-1">Маркировка</label>
+              <input v-model="filter.marking" type="text" placeholder="Маркировка" class="border rounded px-3 py-2 text-sm w-full" />
+            </div>
+            <div>
+              <label class="block text-xs text-gray-700 mb-1">Тип маркировки товара</label>
+              <Multiselect
+                v-model="selectedProductType"
+                :options="productTypeOptions"
+                label="label"
+                value="value"
+                :object="true"
+                placeholder="Выберите тип маркировки товара"
+                :max-height="400"
+                class="w-full text-sm multiselect-custom"
+              />
+            </div>
+            <div>
+              <label class="block text-xs text-gray-700 mb-1">Тип штрихкода</label>
+              <Multiselect
+                v-model="selectedBarcodeType"
+                :options="barcodeTypeOptions"
+                label="label"
+                value="value"
+                :object="true"
+                placeholder="Выберите тип штрихкода"
+                :max-height="400"
+                class="w-full text-sm multiselect-custom"
+              />
+            </div>
+            <div class="md:col-span-2">
+              <label class="block text-xs text-gray-700 mb-1">Штрихкод</label>
+              <input v-model="filter.barcode" type="text" placeholder="Штрихкод" class="border rounded px-3 py-2 text-sm w-full" />
+            </div>
+            <div>
+              <label class="block text-xs text-gray-700 mb-1">Дата создания</label>
+              <input v-model="filter.created_at" type="date" placeholder="Дата создания" class="border rounded px-3 py-2 text-sm w-full" />
+            </div>
+            <div>
+              <label class="block text-xs text-gray-700 mb-1">Дата изменения</label>
+              <input v-model="filter.updated_at" type="date" placeholder="Дата изменения" class="border rounded px-3 py-2 text-sm w-full" />
+            </div>
+          </form>
+          <div class="flex justify-center gap-4 mt-6">
+            <button @click="resetFilter" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold px-6 py-2 rounded-lg border text-sm flex items-center gap-2 relative group" title="Сбросить все фильтры">
+              <RotateCcw class="w-4 h-4" />
+              Сбросить
+              <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                Сбросить все фильтры
+                <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+              </div>
+            </button>
+            <button @click="closeFilterModal" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold px-6 py-2 rounded-lg border text-sm relative group" title="Закрыть фильтр">
+              Отмена
+              <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                Закрыть фильтр
+                <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+              </div>
+            </button>
+            <button 
+              @click="applyFilter" 
+              :disabled="filterLoading"
+              class="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold px-6 py-2 rounded-lg text-sm flex items-center gap-2 relative group"
+              :title="filterLoading ? 'Выполняется поиск...' : 'Применить фильтры'"
+            >
+              <Search v-if="filterLoading" class="animate-spin w-4 h-4" />
+              <Search v-else class="w-4 h-4" />
+              {{ filterLoading ? 'Поиск...' : 'Применить' }}
+              <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                {{ filterLoading ? 'Выполняется поиск...' : 'Применить фильтры' }}
+                <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+              </div>
+            </button>
+          </div>
         </div>
       </div>
     </div>
