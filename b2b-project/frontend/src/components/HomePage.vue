@@ -91,11 +91,11 @@ import HeroSection from './HeroSection.vue'
             </div>
           </div>
           
-          <!-- B2B Storage -->
+          <!-- B2B SKLAD -->
           <div class="bg-primary rounded-xl shadow-lg p-6">
             <div class="text-center">
               <div class="text-4xl mb-4">📦</div>
-              <h3 class="text-xl font-semibold mb-4">B2B Storage</h3>
+              <h3 class="text-xl font-semibold mb-4">B2B SKLAD</h3>
               <p class="mb-4 opacity-90">Система складского учета для эффективного управления товарными запасами</p>
             </div>
           </div>
@@ -123,7 +123,7 @@ import HeroSection from './HeroSection.vue'
     <section class="py-20 bg-white">
       <div class="max-w-7xl mx-auto px-4">
         <div class="text-center mb-16">
-          <h2 class="text-4xl font-bold mb-4 text-gray-800">Почему выбирают B2B Storage?</h2>
+          <h2 class="text-4xl font-bold mb-4 text-gray-800">Почему выбирают B2B SKLAD?</h2>
           <p class="text-xl text-gray-600">Ключевые преимущества нашей системы</p>
         </div>
         
@@ -183,7 +183,7 @@ import HeroSection from './HeroSection.vue'
     </section>
 
     <!-- Футер сайта -->
-    <Footer />
+    <!-- <Footer /> -->
   </div>
 </template>
 

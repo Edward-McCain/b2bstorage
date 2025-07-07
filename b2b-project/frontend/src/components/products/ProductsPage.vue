@@ -1242,7 +1242,7 @@ async function saveImportedProducts() {
 }
 
 onMounted(() => {
-  document.title = 'B2B Storage - Товары'
+  document.title = 'B2B SKLAD - Товары'
   loadProducts()
 })
 </script> 

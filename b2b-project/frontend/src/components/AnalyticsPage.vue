@@ -266,5 +266,5 @@ function renderCharts() {
     }
   })
 }
-document.title = 'Аналитика - B2B Storage'
+document.title = 'Аналитика - B2B SKLAD'
 </script> 

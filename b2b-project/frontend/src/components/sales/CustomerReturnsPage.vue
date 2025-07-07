@@ -57,5 +57,5 @@
 
 <script setup>
 import SalesMenu from './SalesMenu.vue'
-document.title = 'Возвраты покупателей - B2B Storage'
+document.title = 'Возвраты покупателей - B2B SKLAD'
 </script> 

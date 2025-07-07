@@ -17,5 +17,5 @@
 </template>
 <script setup>
 import SalesMenu from './SalesMenu.vue'
-document.title = 'Воронка продаж - B2B Storage'
+document.title = 'Воронка продаж - B2B SKLAD'
 </script> 

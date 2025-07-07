@@ -17,5 +17,5 @@
 </template>
 <script setup>
 import SalesMenu from './SalesMenu.vue'
-document.title = 'Прибыльность - B2B Storage'
+document.title = 'Прибыльность - B2B SKLAD'
 </script> 

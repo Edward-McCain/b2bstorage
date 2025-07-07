@@ -167,5 +167,5 @@
 import PurchasesMenu from './PurchasesMenu.vue'
 
 // Устанавливаем заголовок страницы
-document.title = 'Заказы поставщикам - B2B Storage'
+document.title = 'Заказы поставщикам - B2B SKLAD'
 </script> 

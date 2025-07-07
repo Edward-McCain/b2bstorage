@@ -18,5 +18,5 @@
 </template>
 <script setup>
 import PurchasesMenu from './PurchasesMenu.vue'
-document.title = 'Управление закупками - B2B Storage'
+document.title = 'Управление закупками - B2B SKLAD'
 </script> 

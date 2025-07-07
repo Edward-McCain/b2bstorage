@@ -15,7 +15,7 @@
             <li><a>Контакты</a></li>
           </ul>
         </div>
-        <a class="btn btn-ghost text-xl">B2B Storage</a>
+        <a class="btn btn-ghost text-xl">B2B SKLAD</a>
       </div>
       <div class="navbar-center hidden lg:flex">
         <ul class="menu menu-horizontal px-1">
@@ -33,7 +33,7 @@
     <div class="hero min-h-screen bg-gradient-to-r from-primary to-secondary">
       <div class="hero-content text-center text-neutral-content">
         <div class="max-w-md">
-          <h1 class="mb-5 text-5xl font-bold">B2B Storage</h1>
+          <h1 class="mb-5 text-5xl font-bold">B2B SKLAD</h1>
           <p class="mb-5">Современная платформа для управления B2B данными с использованием Laravel и Vue.js</p>
           <button class="btn btn-primary">Начать</button>
         </div>

@@ -119,5 +119,5 @@
 
 <script setup>
 import SalesMenu from './SalesMenu.vue'
-document.title = 'Счета покупателям - B2B Storage'
+document.title = 'Счета покупателям - B2B SKLAD'
 </script> 

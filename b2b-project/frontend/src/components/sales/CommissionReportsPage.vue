@@ -29,5 +29,5 @@
 
 <script setup>
 import SalesMenu from './SalesMenu.vue'
-document.title = 'Отчеты комиссионера - B2B Storage'
+document.title = 'Отчеты комиссионера - B2B SKLAD'
 </script> 

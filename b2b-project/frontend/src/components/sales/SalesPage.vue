@@ -127,5 +127,5 @@
 import SalesMenu from './SalesMenu.vue'
 
 // Устанавливаем заголовок страницы
-document.title = 'Продажи - B2B Storage'
+document.title = 'Продажи - B2B SKLAD'
 </script> 

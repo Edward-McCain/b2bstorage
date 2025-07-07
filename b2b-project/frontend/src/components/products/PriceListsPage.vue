@@ -32,6 +32,6 @@ import ProductsMenu from './ProductsMenu.vue'
 
 onMounted(() => {
   // Устанавливаем заголовок страницы
-  document.title = 'B2B Storage - Прайс-листы'
+  document.title = 'B2B SKLAD - Прайс-листы'
 })
 </script> 

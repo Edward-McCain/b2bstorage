@@ -54,5 +54,5 @@
 
 <script setup>
 import SalesMenu from './SalesMenu.vue'
-document.title = 'Отгрузки - B2B Storage'
+document.title = 'Отгрузки - B2B SKLAD'
 </script> 

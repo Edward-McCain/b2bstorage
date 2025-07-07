@@ -46,5 +46,5 @@
 </template>
 <script setup>
 import PurchasesMenu from './PurchasesMenu.vue'
-document.title = 'Счета-фактуры полученные - B2B Storage'
+document.title = 'Счета-фактуры полученные - B2B SKLAD'
 </script> 

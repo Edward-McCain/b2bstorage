@@ -154,5 +154,5 @@
 </template>
 
 <script setup>
-document.title = 'Контрагенты - B2B Storage'
+    document.title = 'Контрагенты - B2B SKLAD'
 </script> 
