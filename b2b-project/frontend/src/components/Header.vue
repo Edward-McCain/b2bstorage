@@ -1,7 +1,8 @@
 <script setup>
 // Компонент шапки сайта
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { getFileUrl } from '../config/api.js'
 
 const router = useRouter()
 const isAuthenticated = ref(false)
@@ -12,6 +13,12 @@ const productsMenuOpen = ref(false)
 const purchasesMenuOpen = ref(false)
 const salesMenuOpen = ref(false)
 
+// Computed свойство для правильного URL аватара
+const avatarUrl = computed(() => {
+  if (!user.value?.avatar_url) return null
+  return getFileUrl(user.value.avatar_url)
+})
+
 onMounted(() => {
   const token = localStorage.getItem('auth_token')
   const userData = localStorage.getItem('user')
@@ -20,6 +27,11 @@ onMounted(() => {
     isAuthenticated.value = true
     user.value = JSON.parse(userData)
   }
+  
+  // Добавляем глобальный обработчик события обновления аватара
+  window.addEventListener('avatar-updated', (event) => {
+    handleAvatarUpdated(event.detail)
+  })
   
   // Закрытие меню при клике вне его
   document.addEventListener('click', (event) => {
@@ -134,6 +146,20 @@ const toggleSalesMenu = () => {
 
 const closeSalesMenu = () => {
   salesMenuOpen.value = false
+}
+
+// Обработчик обновления аватара
+const handleAvatarUpdated = (newAvatarUrl) => {
+  console.log('Header: получено событие avatar-updated:', newAvatarUrl)
+  if (user.value) {
+    console.log('Header: обновляем аватар пользователя с', user.value.avatar_url, 'на', newAvatarUrl)
+    user.value.avatar_url = newAvatarUrl
+    // Обновляем данные в localStorage
+    localStorage.setItem('user', JSON.stringify(user.value))
+    console.log('Header: localStorage обновлен')
+  } else {
+    console.log('Header: user.value не найден')
+  }
 }
 </script>
 
@@ -546,7 +572,16 @@ const closeSalesMenu = () => {
             >
               <span class="text-sm text-gray-700">{{ user?.user_name || 'Пользователь' }}</span>
               <!-- Аватар -->
-              <div class="h-8 w-8 rounded-full bg-blue-700 flex items-center justify-center text-white font-medium text-sm">
+              <div v-if="avatarUrl" class="h-8 w-8 rounded-full overflow-hidden">
+                <img 
+                  :src="avatarUrl" 
+                  :alt="user?.user_name || 'Аватар'"
+                  class="h-full w-full object-cover"
+                  @load="console.log('Header: аватар загружен:', avatarUrl)"
+                  @error="console.error('Header: ошибка загрузки аватара:', avatarUrl)"
+                />
+              </div>
+              <div v-else class="h-8 w-8 rounded-full bg-blue-700 flex items-center justify-center text-white font-medium text-sm">
                 {{ (user?.user_name || 'П').charAt(0).toUpperCase() }}
               </div>
             </button>

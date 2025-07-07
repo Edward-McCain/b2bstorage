@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест отображения аватара</title>
+    <style>
+        .avatar-test {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #3b82f6;
+        }
+        .avatar-container {
+            margin: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Тест отображения аватара</h1>
+    
+    <div class="avatar-container">
+        <h3>Тест 1: Прямой URL</h3>
+        <img 
+            src="http://localhost:8000/storage/uploads/avatars/avatar_39_1751881477.jpg" 
+            alt="Аватар тест 1" 
+            class="avatar-test"
+            onload="console.log('Изображение 1 загружено успешно')"
+            onerror="console.error('Ошибка загрузки изображения 1')"
+        />
+    </div>
+    
+    <div class="avatar-container">
+        <h3>Тест 2: Относительный URL</h3>
+        <img 
+            src="/storage/uploads/avatars/avatar_39_1751881477.jpg" 
+            alt="Аватар тест 2" 
+            class="avatar-test"
+            onload="console.log('Изображение 2 загружено успешно')"
+            onerror="console.error('Ошибка загрузки изображения 2')"
+        />
+    </div>
+    
+    <div class="avatar-container">
+        <h3>Тест 3: Проверка доступности</h3>
+        <div id="status"></div>
+        <button onclick="checkImage()">Проверить доступность</button>
+    </div>
+
+    <script>
+        function checkImage() {
+            const statusDiv = document.getElementById('status')
+            const img = new Image()
+            
+            img.onload = function() {
+                statusDiv.innerHTML = '<p style="color: green;">✅ Изображение доступно</p>'
+                console.log('Изображение доступно')
+            }
+            
+            img.onerror = function() {
+                statusDiv.innerHTML = '<p style="color: red;">❌ Изображение недоступно</p>'
+                console.error('Изображение недоступно')
+            }
+            
+            img.src = 'http://localhost:8000/storage/uploads/avatars/avatar_39_1751881477.jpg'
+        }
+        
+        // Автоматическая проверка при загрузке
+        window.onload = function() {
+            checkImage()
+        }
+    </script>
+</body>
+</html> 

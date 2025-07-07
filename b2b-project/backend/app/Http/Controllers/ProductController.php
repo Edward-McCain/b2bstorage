@@ -53,7 +53,7 @@ class ProductController extends Controller
         $product = ProductSklad::findOrFail($id);
         $file = $request->file('image');
         $filename = uniqid('product_', true) . '.webp';
-        $path = 'products_img/' . $filename;
+        $path = 'uploads/products/' . $filename;
         // Конвертация в webp
         $imageData = file_get_contents($file->getPathname());
         $image = imagecreatefromstring($imageData);

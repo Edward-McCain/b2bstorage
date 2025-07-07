@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест преобразования timezone</title>
+</head>
+<body>
+    <h1>Тест преобразования timezone</h1>
+    <div id="result"></div>
+
+    <script>
+        // Функция преобразования timezone в UTC формат
+        function convertTimezoneToUTC(timezone) {
+            if (!timezone) return 'UTC'
+            
+            // Словарь преобразований timezone в UTC
+            const timezoneMap = {
+                'Asia/Ho_Chi_Minh': 'UTC+7',
+                'Asia/Bangkok': 'UTC+7',
+                'Asia/Jakarta': 'UTC+7',
+                'Asia/Krasnoyarsk': 'UTC+7',
+                'Asia/Novosibirsk': 'UTC+7',
+                'Asia/Almaty': 'UTC+6',
+                'Asia/Tashkent': 'UTC+5',
+                'Asia/Yekaterinburg': 'UTC+5',
+                'Asia/Baku': 'UTC+4',
+                'Asia/Tbilisi': 'UTC+4',
+                'Asia/Yerevan': 'UTC+4',
+                'Europe/Moscow': 'UTC+3',
+                'Asia/Istanbul': 'UTC+3',
+                'Asia/Baghdad': 'UTC+3',
+                'Europe/Kiev': 'UTC+2',
+                'Europe/Sofia': 'UTC+2',
+                'Europe/Athens': 'UTC+2',
+                'Europe/Paris': 'UTC+1',
+                'Europe/Berlin': 'UTC+1',
+                'Europe/Rome': 'UTC+1',
+                'Europe/London': 'UTC',
+                'Europe/Lisbon': 'UTC',
+                'America/New_York': 'UTC-4',
+                'America/Toronto': 'UTC-4',
+                'America/Chicago': 'UTC-5',
+                'America/Mexico_City': 'UTC-5',
+                'America/Lima': 'UTC-5',
+                'America/Denver': 'UTC-6',
+                'America/Guatemala': 'UTC-6',
+                'America/Los_Angeles': 'UTC-7',
+                'America/Vancouver': 'UTC-7',
+                'America/San_Francisco': 'UTC-8',
+                'America/Seattle': 'UTC-8',
+                'America/Anchorage': 'UTC-9',
+                'Pacific/Honolulu': 'UTC-10',
+                'Pacific/Samoa': 'UTC-11',
+                'Pacific/Auckland': 'UTC+12',
+                'Pacific/Fiji': 'UTC+12',
+                'Asia/Kamchatka': 'UTC+12',
+                'Asia/Vladivostok': 'UTC+10',
+                'Australia/Sydney': 'UTC+10',
+                'Australia/Melbourne': 'UTC+10',
+                'Asia/Tokyo': 'UTC+9',
+                'Asia/Seoul': 'UTC+9',
+                'Asia/Pyongyang': 'UTC+9',
+                'Asia/Shanghai': 'UTC+8',
+                'Asia/Hong_Kong': 'UTC+8',
+                'Asia/Singapore': 'UTC+8'
+            }
+            
+            // Ищем точное совпадение
+            if (timezoneMap[timezone]) {
+                return timezoneMap[timezone]
+            }
+            
+            // Пробуем найти по частичному совпадению
+            for (const [tz, utc] of Object.entries(timezoneMap)) {
+                if (timezone.includes(tz.split('/')[1]) || tz.includes(timezone.split('/')[1])) {
+                    return utc
+                }
+            }
+            
+            // Если не найдено, пробуем определить по смещению
+            try {
+                const date = new Date()
+                const utcOffset = date.getTimezoneOffset()
+                const hours = Math.abs(Math.floor(utcOffset / 60))
+                const sign = utcOffset > 0 ? '-' : '+'
+                return `UTC${sign}${hours}`
+            } catch (error) {
+                console.warn('Не удалось определить UTC смещение для:', timezone)
+                return 'UTC'
+            }
+        }
+
+        // Тестируем преобразование
+        async function testTimezoneConversion() {
+            const resultDiv = document.getElementById('result')
+            
+            try {
+                // Получаем данные с ipinfo.io
+                const response = await fetch('https://ipinfo.io/json')
+                const data = await response.json()
+                
+                const originalTimezone = data.timezone
+                const convertedTimezone = convertTimezoneToUTC(originalTimezone)
+                
+                resultDiv.innerHTML = `
+                    <h2>Результаты теста:</h2>
+                    <p><strong>Исходный timezone:</strong> ${originalTimezone}</p>
+                    <p><strong>Преобразованный timezone:</strong> ${convertedTimezone}</p>
+                    <p><strong>Страна:</strong> ${data.country}</p>
+                    <p><strong>Город:</strong> ${data.city}</p>
+                    <p><strong>Координаты:</strong> ${data.loc}</p>
+                `
+                
+                console.log('Тест timezone:', {
+                    original: originalTimezone,
+                    converted: convertedTimezone,
+                    country: data.country,
+                    city: data.city
+                })
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<p style="color: red;">Ошибка: ${error.message}</p>`
+                console.error('Ошибка теста:', error)
+            }
+        }
+
+        // Запускаем тест при загрузке страницы
+        testTimezoneConversion()
+    </script>
+</body>
+</html> 

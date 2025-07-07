@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Отладка аватара</title>
+    <style>
+        .avatar-test {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #3b82f6;
+            margin: 10px;
+        }
+        .test-container {
+            margin: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <h1>Отладка аватара</h1>
+    
+    <div class="test-container">
+        <h3>Тест 1: Абсолютный URL (localhost:8000)</h3>
+        <img 
+            src="http://localhost:8000/storage/uploads/avatars/avatar_39_1751881776.jpg" 
+            alt="Тест 1" 
+            class="avatar-test"
+            onload="console.log('✅ Тест 1: Абсолютный URL работает')"
+            onerror="console.error('❌ Тест 1: Абсолютный URL не работает')"
+        />
+        <div id="test1-status"></div>
+    </div>
+    
+    <div class="test-container">
+        <h3>Тест 2: Относительный URL</h3>
+        <img 
+            src="/storage/uploads/avatars/avatar_39_1751881776.jpg" 
+            alt="Тест 2" 
+            class="avatar-test"
+            onload="console.log('✅ Тест 2: Относительный URL работает')"
+            onerror="console.error('❌ Тест 2: Относительный URL не работает')"
+        />
+        <div id="test2-status"></div>
+    </div>
+    
+    <div class="test-container">
+        <h3>Тест 3: URL с портом 5173</h3>
+        <img 
+            src="http://localhost:5173/storage/uploads/avatars/avatar_39_1751881776.jpg" 
+            alt="Тест 3" 
+            class="avatar-test"
+            onload="console.log('✅ Тест 3: URL с портом 5173 работает')"
+            onerror="console.error('❌ Тест 3: URL с портом 5173 не работает')"
+        />
+        <div id="test3-status"></div>
+    </div>
+    
+    <div class="test-container">
+        <h3>Тест 4: Проверка localStorage</h3>
+        <div id="localStorage-info"></div>
+        <button onclick="checkLocalStorage()">Проверить localStorage</button>
+    </div>
+    
+    <div class="test-container">
+        <h3>Тест 5: Проверка API</h3>
+        <button onclick="checkAPI()">Проверить API</button>
+        <div id="api-info"></div>
+    </div>
+
+    <script>
+        function checkLocalStorage() {
+            const info = document.getElementById('localStorage-info')
+            const userData = localStorage.getItem('user')
+            
+            if (userData) {
+                const user = JSON.parse(userData)
+                info.innerHTML = `
+                    <p><strong>Пользователь:</strong> ${user.user_name || 'Не указан'}</p>
+                    <p><strong>Аватар:</strong> ${user.avatar_url || 'Не указан'}</p>
+                    <p><strong>ID:</strong> ${user.id || 'Не указан'}</p>
+                `
+            } else {
+                info.innerHTML = '<p class="error">Данные пользователя не найдены в localStorage</p>'
+            }
+        }
+        
+        function checkAPI() {
+            const info = document.getElementById('api-info')
+            const token = localStorage.getItem('auth_token')
+            
+            if (!token) {
+                info.innerHTML = '<p class="error">Токен не найден</p>'
+                return
+            }
+            
+            fetch('http://localhost:8000/api/me', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                info.innerHTML = `
+                    <p><strong>API ответ:</strong></p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `
+            })
+            .catch(error => {
+                info.innerHTML = `<p class="error">Ошибка API: ${error.message}</p>`
+            })
+        }
+        
+        // Автоматическая проверка при загрузке
+        window.onload = function() {
+            checkLocalStorage()
+            
+            // Проверяем все изображения
+            const images = document.querySelectorAll('.avatar-test')
+            images.forEach((img, index) => {
+                img.onload = function() {
+                    document.getElementById(`test${index + 1}-status`).innerHTML = 
+                        '<p class="success">✅ Изображение загружено успешно</p>'
+                }
+                img.onerror = function() {
+                    document.getElementById(`test${index + 1}-status`).innerHTML = 
+                        '<p class="error">❌ Ошибка загрузки изображения</p>'
+                }
+            })
+        }
+    </script>
+</body>
+</html> 

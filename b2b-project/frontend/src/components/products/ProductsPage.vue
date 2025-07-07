@@ -29,7 +29,11 @@
               <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
             </div>
           </router-link>
-          <button class="flex-1 bg-white border border-gray-300 px-3 py-1.5 rounded font-medium text-sm relative group" title="Импорт товаров из файла">
+          <button 
+            @click="openImportModal"
+            class="flex-1 bg-white border border-gray-300 px-3 py-1.5 rounded font-medium text-sm relative group hover:bg-gray-50 transition-colors" 
+            title="Импорт товаров из файла"
+          >
             Импорт
             <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
               Импорт товаров из файла
@@ -510,6 +514,99 @@
         </div>
       </div>
     </div>
+
+    <!-- Модальное окно импорта товаров -->
+    <div v-if="showImportModal" class="fixed inset-0 z-[99999999] flex items-center justify-center bg-white/90 bg-opacity-50">
+      <div class="bg-white rounded-lg shadow-lg w-full max-w-6xl mx-4 p-6 max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-xl font-bold">Импорт товаров</h2>
+          <button @click="closeImportModal" class="text-gray-400 hover:text-gray-700 p-1 rounded hover:bg-gray-100 transition-colors">
+            <X class="w-5 h-5" />
+          </button>
+        </div>
+
+        <!-- Загрузка файла -->
+        <div v-if="!parsedProducts.length" class="mb-6">
+          <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+            <div class="mb-4">
+              <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </div>
+            <div class="mb-4">
+              <label for="file-upload" class="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors">
+                Выбрать Excel файл
+              </label>
+              <input 
+                id="file-upload" 
+                type="file" 
+                accept=".xlsx,.xls" 
+                @change="handleFileUpload" 
+                class="hidden"
+              />
+            </div>
+            <p class="text-sm text-gray-500">Поддерживаются файлы .xlsx и .xls</p>
+            <p class="text-xs text-gray-400 mt-2">Файл должен содержать колонки: Наименование, Описание, Категория, Подкатегория, Страна, Поставщик, Артикул, Код, Внешний код, Единица измерения, Вес (кг), Объем (л), НДС (%), Фасовка, Тип учета, Тип продукции, Тип штрихкода, Штрихкод, Система налогообложения, Признак предмета расчета</p>
+          </div>
+        </div>
+
+        <!-- Ошибка импорта -->
+        <div v-if="importError" class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <p class="text-red-700 text-sm">{{ importError }}</p>
+        </div>
+
+        <!-- Загрузка -->
+        <div v-if="importLoading" class="text-center py-8">
+          <Loader2 class="animate-spin h-8 w-8 text-blue-500 mx-auto mb-4" />
+          <p class="text-gray-600">Обработка файла...</p>
+        </div>
+
+        <!-- Таблица с товарами -->
+        <div v-if="parsedProducts.length && !importLoading" class="mb-6">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-sm font-semibold">Найдено товаров: {{ parsedProducts.length }}</h3>
+            <button 
+              @click="saveImportedProducts" 
+              :disabled="importSaving"
+              class="bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white font-semibold px-6 py-2 rounded-lg transition-colors flex items-center gap-2 text-sm"
+            >
+              <Loader2 v-if="importSaving" class="animate-spin h-4 w-4" />
+              {{ importSaving ? 'Сохранение...' : 'Сохранить товары в базу' }}
+            </button>
+          </div>
+          
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 text-sm">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Наименование</th>
+                  <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Категория</th>
+                  <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Поставщик</th>
+                  <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Артикул</th>
+                  <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ед. изм.</th>
+                  <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Вес</th>
+                  <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">НДС</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <tr v-for="(product, index) in parsedProducts" :key="index" class="hover:bg-gray-50">
+                  <td class="px-3 py-2 text-sm text-gray-900 max-w-[200px] truncate" :title="product.name">{{ product.name }}</td>
+                  <td class="px-3 py-2 text-sm text-gray-900">
+                    <div>{{ product.category }}</div>
+                    <div v-if="product.subcategory" class="text-xs text-gray-500">{{ product.subcategory }}</div>
+                  </td>
+                  <td class="px-3 py-2 text-sm text-gray-900 max-w-[150px] truncate" :title="product.supplier">{{ product.supplier }}</td>
+                  <td class="px-3 py-2 text-sm text-gray-900">{{ product.article }}</td>
+                  <td class="px-3 py-2 text-sm text-gray-900">{{ product.unit }}</td>
+                  <td class="px-3 py-2 text-sm text-gray-900">{{ product.weight }}</td>
+                  <td class="px-3 py-2 text-sm text-gray-900">{{ product.vat }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -521,6 +618,7 @@ import toastr from 'toastr'
 import Multiselect from '@vueform/multiselect'
 import countriesData from '@/data/countries.json'
 import { Edit, Trash2, RotateCcw, Search, X, Loader2, Image, ChevronLeft, ChevronRight, Plus } from 'lucide-vue-next'
+import * as XLSX from 'xlsx'
 
 // Состояние
 const products = ref([])
@@ -536,6 +634,14 @@ const filterLoading = ref(false)
 const showDeleteModal = ref(false)
 const productIdToDelete = ref(null)
 const deletingProductId = ref(null)
+
+// Состояния для импорта товаров
+const showImportModal = ref(false)
+const importFile = ref(null)
+const parsedProducts = ref([])
+const importLoading = ref(false)
+const importSaving = ref(false)
+const importError = ref('')
 
 const filter = reactive({
   category: null,
@@ -929,6 +1035,210 @@ function resetFilter() {
   filter.barcode = ''
   filter.created_at = ''
   filter.updated_at = ''
+}
+
+// Открытие модалки импорта
+function openImportModal() {
+  showImportModal.value = true
+  parsedProducts.value = []
+  importError.value = ''
+  importFile.value = null
+}
+
+// Закрытие модалки импорта
+function closeImportModal() {
+  showImportModal.value = false
+  parsedProducts.value = []
+  importError.value = ''
+  importFile.value = null
+  importLoading.value = false
+  importSaving.value = false
+}
+
+// Обработка загрузки файла
+async function handleFileUpload(event) {
+  const file = event.target.files[0]
+  if (!file) return
+
+  importError.value = ''
+  importLoading.value = true
+  importFile.value = file
+
+  try {
+    // Проверяем расширение файла
+    const fileName = file.name.toLowerCase()
+    if (!fileName.endsWith('.xlsx') && !fileName.endsWith('.xls')) {
+      throw new Error('Поддерживаются только файлы .xlsx и .xls')
+    }
+
+    // Читаем файл
+    const arrayBuffer = await file.arrayBuffer()
+    const workbook = XLSX.read(arrayBuffer, { type: 'array' })
+    
+    // Получаем первый лист
+    const sheetName = workbook.SheetNames[0]
+    const worksheet = workbook.Sheets[sheetName]
+    
+    // Конвертируем в JSON
+    const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 })
+    
+    if (jsonData.length < 2) {
+      throw new Error('Файл не содержит данных')
+    }
+
+    // Получаем заголовки (первая строка)
+    const headers = jsonData[0]
+    
+    // Проверяем обязательные колонки
+    const requiredColumns = ['Наименование', 'Категория', 'Поставщик', 'Артикул']
+    const missingColumns = requiredColumns.filter(col => !headers.includes(col))
+    
+    if (missingColumns.length > 0) {
+      throw new Error(`Отсутствуют обязательные колонки: ${missingColumns.join(', ')}`)
+    }
+
+    // Парсим данные
+    const products = []
+    for (let i = 1; i < jsonData.length; i++) {
+      const row = jsonData[i]
+      if (row.length === 0) continue // Пропускаем пустые строки
+      
+      const product = {}
+      headers.forEach((header, index) => {
+        product[header] = row[index] || ''
+      })
+      
+      // Проверяем обязательные поля
+      if (!product['Наименование'] || !product['Категория']) {
+        continue // Пропускаем строки без обязательных полей
+      }
+      
+      // Преобразуем данные в нужный формат
+      const parsedProduct = {
+        name: product['Наименование']?.toString() || '',
+        description: product['Описание']?.toString() || '',
+        category: product['Категория']?.toString() || '',
+        subcategory: product['Подкатегория']?.toString() || '',
+        country: product['Страна']?.toString() || '',
+        supplier: product['Поставщик']?.toString() || '',
+        article: product['Артикул']?.toString() || '',
+        code: product['Код']?.toString() || '',
+        external_code: product['Внешний код']?.toString() || '',
+        unit: product['Единица измерения']?.toString() || '',
+        weight: product['Вес (кг)'] ? parseFloat(product['Вес (кг)']) : null,
+        volume: product['Объем (л)'] ? parseFloat(product['Объем (л)']) : null,
+        vat: product['НДС (%)']?.toString() || '',
+        packing: product['Фасовка']?.toString() || '',
+        accounting_type: product['Тип учета']?.toString() || '',
+        product_type: product['Тип продукции']?.toString() || '',
+        barcode_type: product['Тип штрихкода']?.toString() || '',
+        barcode: product['Штрихкод']?.toString() || '',
+        cash_register_tax: product['Система налогообложения']?.toString() || '',
+        cash_register_type: product['Признак предмета расчета']?.toString() || 'Товар'
+      }
+      
+      products.push(parsedProduct)
+    }
+    
+    if (products.length === 0) {
+      throw new Error('Не найдено товаров для импорта')
+    }
+    
+    parsedProducts.value = products
+    
+  } catch (error) {
+    console.error('Ошибка парсинга файла:', error)
+    importError.value = error.message || 'Ошибка обработки файла'
+  } finally {
+    importLoading.value = false
+  }
+}
+
+// Сохранение импортированных товаров
+async function saveImportedProducts() {
+  if (parsedProducts.value.length === 0) return
+  
+  importSaving.value = true
+  importError.value = ''
+  
+  try {
+    let successCount = 0
+    let errorCount = 0
+    
+    for (const product of parsedProducts.value) {
+      try {
+        // Создаем черновик товара
+        const draftResponse = await apiRequest('/products/draft', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: product.name })
+        })
+        
+        if (!draftResponse.ok) {
+          errorCount++
+          continue
+        }
+        
+        const productId = draftResponse.data.id
+        
+        // Сохраняем полные данные товара
+        const saveResponse = await apiRequest(`/products/${productId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: product.name,
+            description: product.description,
+            category: product.category,
+            subcategory: product.subcategory,
+            country: product.country,
+            supplier: product.supplier,
+            article: product.article,
+            code: product.code,
+            external_code: product.external_code,
+            unit: product.unit,
+            weight: product.weight,
+            volume: product.volume,
+            vat: product.vat,
+            packing: product.packing,
+            accounting_type: product.accounting_type,
+            product_type: product.product_type,
+            barcode_type: product.barcode_type,
+            barcode: product.barcode,
+            cash_register_tax: product.cash_register_tax,
+            cash_register_type: product.cash_register_type
+          })
+        })
+        
+        if (saveResponse.ok) {
+          successCount++
+        } else {
+          errorCount++
+        }
+        
+      } catch (error) {
+        console.error('Ошибка сохранения товара:', error)
+        errorCount++
+      }
+    }
+    
+    // Показываем результат
+    if (successCount > 0) {
+      toastr.success(`Успешно импортировано ${successCount} товаров`)
+      if (errorCount > 0) {
+        toastr.warning(`${errorCount} товаров не удалось импортировать`)
+      }
+      closeImportModal()
+      loadProducts() // Обновляем список товаров
+    } else {
+      importError.value = 'Не удалось импортировать ни одного товара'
+    }
+    
+  } catch (error) {
+    console.error('Ошибка импорта:', error)
+    importError.value = 'Ошибка импорта товаров'
+  } finally {
+    importSaving.value = false
+  }
 }
 
 onMounted(() => {

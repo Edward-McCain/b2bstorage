@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
@@ -259,5 +260,73 @@ class AuthController extends Controller
                 'user' => $user
             ]
         ]);
+    }
+
+    /**
+     * Upload user avatar
+     */
+    public function uploadAvatar(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'avatar' => 'required|string', // base64 image
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $user = $request->user();
+            
+            // Decode base64 image
+            $imageData = $request->avatar;
+            $imageData = str_replace('data:image/jpeg;base64,', '', $imageData);
+            $imageData = str_replace('data:image/png;base64,', '', $imageData);
+            $imageData = str_replace('data:image/gif;base64,', '', $imageData);
+            $imageData = str_replace(' ', '+', $imageData);
+            
+            $imageData = base64_decode($imageData);
+            
+            if ($imageData === false) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid image data'
+                ], 400);
+            }
+
+            // Generate unique filename
+            $filename = 'avatar_' . $user->id . '_' . time() . '.jpg';
+            $path = 'uploads/avatars/' . $filename;
+            
+            // Save to storage
+            \Storage::disk('public')->put($path, $imageData);
+            
+            // Get public URL - используем относительный путь для универсальности
+            $avatarUrl = '/storage/uploads/avatars/' . $filename;
+            
+            // Update user avatar in database
+            $user->update([
+                'avatar_url' => $avatarUrl
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Avatar uploaded successfully',
+                'data' => [
+                    'avatar_url' => $avatarUrl
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Avatar upload failed',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }

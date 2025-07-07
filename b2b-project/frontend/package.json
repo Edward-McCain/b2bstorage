@@ -16,8 +16,10 @@
     "lucide-vue-next": "^0.525.0",
     "toastr": "^2.1.4",
     "vue": "^3.5.17",
+    "vue-cropper": "^0.6.5",
     "vue-multiselect": "^3.2.0",
-    "vue-router": "^4.5.1"
+    "vue-router": "^4.5.1",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.11",

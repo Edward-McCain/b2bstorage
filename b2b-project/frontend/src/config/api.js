@@ -3,11 +3,13 @@ const API_CONFIG = {
   // Локальная разработка
   development: {
     baseURL: 'http://127.0.0.1:8000/api',
+    storageURL: 'http://127.0.0.1:8000',
     timeout: 10000
   },
   // Продакшн
   production: {
     baseURL: 'https://api.b2bstorage.ru/api',
+    storageURL: 'https://api.b2bstorage.ru',
     timeout: 10000
   }
 }
@@ -21,6 +23,24 @@ export const apiConfig = isDevelopment ? API_CONFIG.development : API_CONFIG.pro
 // Функция для получения полного URL
 export const getApiUrl = (endpoint) => {
   return `${apiConfig.baseURL}${endpoint}`
+}
+
+// Функция для получения URL файла (аватара, изображений и т.д.)
+export const getFileUrl = (filePath) => {
+  if (!filePath) return null
+  
+  // Если уже полный URL, возвращаем как есть
+  if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
+    return filePath
+  }
+  
+  // Если относительный путь, добавляем базовый URL
+  if (filePath.startsWith('/')) {
+    return `${apiConfig.storageURL}${filePath}`
+  }
+  
+  // Если путь без слеша, добавляем /storage/
+  return `${apiConfig.storageURL}/storage/${filePath}`
 }
 
 // Функция для выполнения API запросов
