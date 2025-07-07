@@ -20,4 +20,36 @@ class ProductSklad extends Model
     {
         return $this->hasMany(ProductImage::class, 'product_id');
     }
+
+    /**
+     * Связь с категорией
+     */
+    public function categoryRelation()
+    {
+        return $this->belongsTo(Category::class, 'category', 'category_id');
+    }
+
+    /**
+     * Связь с подкатегорией
+     */
+    public function subcategoryRelation()
+    {
+        return $this->belongsTo(Subcategory::class, 'subcategory', 'subcategory_id');
+    }
+
+    /**
+     * Получить название категории
+     */
+    public function getCategoryNameAttribute()
+    {
+        return $this->categoryRelation ? $this->categoryRelation->name_ru : $this->category;
+    }
+
+    /**
+     * Получить название подкатегории
+     */
+    public function getSubcategoryNameAttribute()
+    {
+        return $this->subcategoryRelation ? $this->subcategoryRelation->name_ru : $this->subcategory;
+    }
 } 

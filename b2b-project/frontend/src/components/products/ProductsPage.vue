@@ -6,24 +6,27 @@
     <!-- Верхнее меню и фильтры -->
     <div class="bg-white border-b border-gray-200">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-wrap items-center gap-2 py-4">
-        <router-link to="/products/create" class="flex items-center gap-1 bg-blue-50 border border-blue-200 text-blue-700 font-medium px-3 py-1.5 rounded text-sm">
-          <span class="text-lg">＋</span>Товар
-        </router-link>
-        <button class="bg-gray-100 border border-gray-200 text-gray-700 font-medium px-3 py-1.5 rounded text-sm">Фильтр</button>
         <input 
           v-model="searchQuery" 
           @input="handleSearch"
           type="text" 
           placeholder="Наименование, код или артикул" 
-          class="border border-gray-300 rounded px-3 py-1.5 text-sm w-64" 
+          class="border border-gray-300 rounded px-3 py-1.5 text-sm w-full md:w-64" 
         />
-        <button class="bg-white border border-gray-300 px-3 py-1.5 rounded font-medium text-sm">Импорт <svg class="h-4 w-4 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg></button>
-        <button class="bg-white border border-gray-300 px-3 py-1.5 rounded font-medium text-sm">Экспорт</button>
+
+        <div class="flex w-full md:w-auto gap-2">
+          <button class="flex-1 bg-gray-100 border border-gray-200 text-gray-700 font-medium px-3 py-1.5 rounded text-sm" @click="openFilterModal">Фильтр</button>
+          <router-link to="/products/create" class="flex-1 flex items-center justify-center gap-1 bg-blue-50 border border-blue-200 text-blue-700 font-medium px-3 py-1.5 rounded text-sm">
+            <span class="text-sm">＋</span>Товар
+          </router-link>
+          <button class="flex-1 bg-white border border-gray-300 px-3 py-1.5 rounded font-medium text-sm">Импорт</button>
+          <button class="flex-1 bg-white border border-gray-300 px-3 py-1.5 rounded font-medium text-sm">Экспорт</button>
+        </div>
       </div>
     </div>
 
     <!-- Центральный контент -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center min-h-[60vh]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col py-3 min-h-[60vh]">
       <!-- Загрузка -->
       <div v-if="loading" class="flex items-center justify-center py-20">
         <div class="text-center">
@@ -102,8 +105,8 @@
                   <td class="px-4 py-3 text-gray-900">{{ product.code || '-' }}</td>
                   <td class="px-4 py-3 text-gray-900">{{ product.article || '-' }}</td>
                   <td class="px-4 py-3">
-                    <div class="text-gray-900">{{ product.category || '-' }}</div>
-                    <div v-if="product.subcategory" class="text-gray-500 text-xs">{{ product.subcategory }}</div>
+                    <div class="text-gray-900">{{ product.category_name || product.category || '-' }}</div>
+                    <div v-if="product.subcategory_name || product.subcategory" class="text-gray-500 text-xs">{{ product.subcategory_name || product.subcategory }}</div>
                   </td>
                   <td class="px-4 py-3 text-gray-900">{{ product.supplier || '-' }}</td>
                   <td class="px-4 py-3">
@@ -210,14 +213,201 @@
         </div>
       </template>
     </div>
+
+    <!-- Модальное окно фильтра -->
+    <div v-if="showFilterModal" class="fixed inset-0 md:z-[9999999] sm:pt-20 flex items-center justify-center bg-white/60 backdrop-blur-sm md:z-auto">
+      <div class="bg-white rounded-lg shadow-lg w-full max-w-4xl mx-auto p-6 relative flex flex-col max-h-[90vh] overflow-y-auto md:w-[700px] md:rounded-xl md:p-8 sm:max-w-full sm:h-full sm:rounded-none sm:p-4 sm:pt-20 sm:max-h-[calc(100vh-68px)]">
+        <button @click="closeFilterModal" class="absolute top-2 right-2 text-gray-400 hover:text-gray-700 text-2xl">&times;</button>
+        <h2 class="text-xl font-bold mb-4">Фильтр товаров</h2>
+        <form @submit.prevent="applyFilter" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs text-gray-700 mb-1">Категория</label>
+            <Multiselect
+              v-model="selectedCategory"
+              :options="categoryOptions"
+              label="label"
+              value="value"
+              :object="true"
+              placeholder="Выберите категорию"
+              searchable
+              :max-height="400"
+              class="w-full text-sm multiselect-custom"
+              :loading="loadingCategories"
+            />
+          </div>
+          <div>
+            <label class="block text-xs text-gray-700 mb-1">Подкатегория</label>
+            <Multiselect
+              v-model="selectedSubcategory"
+              :options="subcategoryOptions"
+              label="label"
+              value="value"
+              :object="true"
+              placeholder="Выберите подкатегорию"
+              searchable
+              :max-height="400"
+              class="w-full text-xs multiselect-custom"
+              :loading="loadingSubcategories"
+              :disabled="!selectedCategory"
+            />
+          </div>
+          <div>
+            <label class="block text-xs text-gray-700 mb-1">Страна</label>
+            <Multiselect
+              v-model="selectedCountry"
+              :options="countries"
+              label="label"
+              value="value"
+              :object="true"
+              placeholder="Выберите страну"
+              searchable
+              :search-placeholder="'Поиск страны'"
+              :max-height="400"
+              class="w-full text-sm multiselect-custom"
+            />
+          </div>
+          <div>
+            <label class="block text-xs text-gray-700 mb-1">Поставщик</label>
+            <input v-model="filter.supplier" type="text" placeholder="Поставщик" class="border rounded px-3 py-2 text-sm w-full" />
+          </div>
+          <div>
+            <label class="block text-xs text-gray-700 mb-1">Артикул</label>
+            <input v-model="filter.article" type="text" placeholder="Артикул" class="border rounded px-3 py-2 text-sm w-full" />
+          </div>
+          <div>
+            <label class="block text-xs text-gray-700 mb-1">Код</label>
+            <input v-model="filter.code" type="text" placeholder="Код" class="border rounded px-3 py-2 text-sm w-full" />
+          </div>
+          <div>
+            <label class="block text-xs text-gray-700 mb-1">Внешний код</label>
+            <input v-model="filter.external_code" type="text" placeholder="Внешний код" class="border rounded px-3 py-2 text-sm w-full" />
+          </div>
+          <div>
+            <label class="block text-xs text-gray-700 mb-1">Ед. измерения</label>
+            <Multiselect
+              v-model="selectedUnit"
+              :options="unitOptions"
+              label="label"
+              value="value"
+              :object="true"
+              placeholder="Выберите единицу измерения"
+              :max-height="400"
+              class="w-full text-sm multiselect-custom"
+            />
+          </div>
+          <div>
+            <label class="block text-xs text-gray-700 mb-1">Вес</label>
+            <input v-model="filter.weight" type="number" step="0.001" placeholder="Вес" class="border rounded px-3 py-2 text-sm w-full" />
+          </div>
+          <div>
+            <label class="block text-xs text-gray-700 mb-1">Объем</label>
+            <input v-model="filter.volume" type="number" step="0.001" placeholder="Объем" class="border rounded px-3 py-2 text-sm w-full" />
+          </div>
+          <div>
+            <label class="block text-xs text-gray-700 mb-1">Ставка НДС</label>
+            <input v-model="filter.vat" type="text" placeholder="Ставка НДС" class="border rounded px-3 py-2 text-sm w-full" />
+          </div>
+          <div>
+            <label class="block text-xs text-gray-700 mb-1">Фасовка</label>
+            <Multiselect
+              v-model="selectedPacking"
+              :options="packingOptions"
+              label="label"
+              value="value"
+              :object="true"
+              placeholder="Выберите фасовку"
+              :max-height="400"
+              class="w-full text-sm multiselect-custom"
+            />
+          </div>
+          <div>
+            <label class="block text-xs text-gray-700 mb-1">Тип учета</label>
+            <Multiselect
+              v-model="selectedAccountingType"
+              :options="accountingTypeOptions"
+              label="label"
+              value="value"
+              :object="true"
+              placeholder="Выберите тип учета"
+              :max-height="400"
+              class="w-full text-sm multiselect-custom"
+            />
+          </div>
+          <div>
+            <label class="block text-xs text-gray-700 mb-1">Маркировка</label>
+            <input v-model="filter.marking" type="text" placeholder="Маркировка" class="border rounded px-3 py-2 text-sm w-full" />
+          </div>
+          <div>
+            <label class="block text-xs text-gray-700 mb-1">Тип маркировки товара</label>
+            <Multiselect
+              v-model="selectedProductType"
+              :options="productTypeOptions"
+              label="label"
+              value="value"
+              :object="true"
+              placeholder="Выберите тип маркировки товара"
+              :max-height="400"
+              class="w-full text-sm multiselect-custom"
+            />
+          </div>
+          <div>
+            <label class="block text-xs text-gray-700 mb-1">Тип штрихкода</label>
+            <Multiselect
+              v-model="selectedBarcodeType"
+              :options="barcodeTypeOptions"
+              label="label"
+              value="value"
+              :object="true"
+              placeholder="Выберите тип штрихкода"
+              :max-height="400"
+              class="w-full text-sm multiselect-custom"
+            />
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-xs text-gray-700 mb-1">Штрихкод</label>
+            <input v-model="filter.barcode" type="text" placeholder="Штрихкод" class="border rounded px-3 py-2 text-sm w-full" />
+          </div>
+          <div>
+            <label class="block text-xs text-gray-700 mb-1">Дата создания</label>
+            <input v-model="filter.created_at" type="date" placeholder="Дата создания" class="border rounded px-3 py-2 text-sm w-full" />
+          </div>
+          <div>
+            <label class="block text-xs text-gray-700 mb-1">Дата изменения</label>
+            <input v-model="filter.updated_at" type="date" placeholder="Дата изменения" class="border rounded px-3 py-2 text-sm w-full" />
+          </div>
+        </form>
+        <div class="flex justify-center gap-4 mt-6">
+          <button @click="resetFilter" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold px-6 py-2 rounded-lg border text-sm flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Сбросить
+          </button>
+          <button @click="closeFilterModal" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold px-6 py-2 rounded-lg border text-sm">Отмена</button>
+          <button 
+            @click="applyFilter" 
+            :disabled="filterLoading"
+            class="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold px-6 py-2 rounded-lg text-sm flex items-center gap-2"
+          >
+            <svg v-if="filterLoading" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+            </svg>
+            {{ filterLoading ? 'Поиск...' : 'Применить' }}
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, reactive, watch } from 'vue'
 import { apiRequest } from '@/config/api'
 import ProductsMenu from './ProductsMenu.vue'
 import toastr from 'toastr'
+import Multiselect from '@vueform/multiselect'
+import countriesData from '@/data/countries.json'
 
 // Состояние
 const products = ref([])
@@ -226,9 +416,45 @@ const error = ref('')
 const searchQuery = ref('')
 const pagination = ref(null)
 const searchTimeout = ref(null)
+const showFilterModal = ref(false)
+const filterLoading = ref(false)
+const filter = reactive({
+  category: null,
+  subcategory: null,
+  country: null,
+  supplier: '',
+  article: '',
+  code: '',
+  external_code: '',
+  unit: null,
+  weight: '',
+  volume: '',
+  vat: '',
+  packing: null,
+  accounting_type: null,
+  marking: '',
+  product_type: null,
+  barcode_type: null,
+  barcode: '',
+  created_at: '',
+  updated_at: ''
+})
+
+const categoryOptions = ref([])
+const subcategoryOptions = ref([])
+const loadingCategories = ref(false)
+const loadingSubcategories = ref(false)
+const selectedCategory = ref(null)
+const selectedSubcategory = ref(null)
+const selectedCountry = ref(null)
+const selectedUnit = ref(null)
+const selectedPacking = ref(null)
+const selectedAccountingType = ref(null)
+const selectedProductType = ref(null)
+const selectedBarcodeType = ref(null)
 
 // Загрузка товаров
-async function loadProducts(page = 1) {
+async function loadProducts(page = 1, filterParams = null) {
   loading.value = true
   error.value = ''
   
@@ -238,8 +464,19 @@ async function loadProducts(page = 1) {
       per_page: '15'
     })
     
+    // Добавляем поисковый запрос
     if (searchQuery.value.trim()) {
       params.append('search', searchQuery.value.trim())
+    }
+    
+    // Добавляем параметры фильтра
+    if (filterParams) {
+      Object.keys(filterParams).forEach(key => {
+        const value = filterParams[key]
+        if (value !== null && value !== undefined && value !== '') {
+          params.append(key, value.toString())
+        }
+      })
     }
     
     const response = await apiRequest(`/products?${params.toString()}`)
@@ -272,14 +509,15 @@ function handleSearch() {
   }
   
   searchTimeout.value = setTimeout(() => {
-    loadProducts(1)
+    // При поиске сбрасываем фильтры
+    loadProducts(1, null)
   }, 500)
 }
 
 // Смена страницы
 function changePage(page) {
   if (page >= 1 && page <= pagination.value.last_page) {
-    loadProducts(page)
+    loadProducts(page, createFilterParams())
   }
 }
 
@@ -296,7 +534,7 @@ async function deleteProduct(productId) {
     
     if (response.ok) {
       toastr.success('Товар успешно удален')
-      loadProducts(pagination.value.current_page)
+      loadProducts(pagination.value.current_page, createFilterParams())
     } else {
       toastr.error('Ошибка при удалении товара')
     }
@@ -344,6 +582,222 @@ const visiblePages = computed(() => {
   
   return pages
 })
+
+function openFilterModal() {
+  showFilterModal.value = true
+  loadCategories()
+}
+function closeFilterModal() {
+  showFilterModal.value = false
+}
+
+async function loadCategories() {
+  loadingCategories.value = true
+  try {
+    const res = await apiRequest('/categories')
+    if (res.data && Array.isArray(res.data)) {
+      categoryOptions.value = res.data.map(cat => ({ 
+        label: cat.name_ru, 
+        value: cat.id,
+        category_id: cat.category_id 
+      }))
+    } else {
+      categoryOptions.value = []
+    }
+  } catch (error) {
+    console.error('Ошибка загрузки категорий:', error)
+    categoryOptions.value = []
+  } finally {
+    loadingCategories.value = false
+  }
+}
+
+async function loadSubcategories(categoryId) {
+  if (!categoryId) {
+    subcategoryOptions.value = []
+    return
+  }
+  loadingSubcategories.value = true
+  try {
+    const res = await apiRequest(`/subcategories?category_id=${categoryId}`)
+    if (res.data && Array.isArray(res.data)) {
+      subcategoryOptions.value = res.data.map(subcat => ({ 
+        label: subcat.name_ru, 
+        value: subcat.id,
+        subcategory_id: subcat.subcategory_id 
+      }))
+    } else {
+      subcategoryOptions.value = []
+    }
+  } catch (error) {
+    console.error('Ошибка загрузки подкатегорий:', error)
+    subcategoryOptions.value = []
+  } finally {
+    loadingSubcategories.value = false
+  }
+}
+
+watch(selectedCategory, (val) => {
+  filter.category = val ? val.category_id : null
+  selectedSubcategory.value = null
+  filter.subcategory = null
+  loadSubcategories(val ? val.category_id : null)
+})
+watch(selectedSubcategory, (val) => {
+  filter.subcategory = val ? val.subcategory_id : null
+})
+
+watch(selectedCountry, (val) => {
+  filter.country = val ? val.value : null
+})
+
+watch(selectedUnit, (val) => {
+  filter.unit = val ? val.value : null
+})
+
+watch(selectedPacking, (val) => {
+  filter.packing = val ? val.value : null
+})
+
+watch(selectedAccountingType, (val) => {
+  filter.accounting_type = val ? val.value : null
+})
+
+watch(selectedProductType, (val) => {
+  filter.product_type = val ? val.value : null
+})
+
+watch(selectedBarcodeType, (val) => {
+  filter.barcode_type = val ? val.value : null
+})
+
+// Вспомогательная функция для создания параметров фильтра
+function createFilterParams() {
+  const filterParams = {}
+  Object.keys(filter).forEach(key => {
+    const value = filter[key]
+    if (value !== null && value !== undefined && value !== '') {
+      filterParams[key] = value
+    }
+  })
+  return filterParams
+}
+
+// Computed свойства для селектов
+const countries = computed(() =>
+  countriesData.map(country => ({
+    label: country.name,
+    value: country.id,
+    code: country.code,
+    raw: country
+  }))
+)
+
+const unitOptions = [
+  { label: 'Штука', value: 'Штука' },
+  { label: 'Килограмм', value: 'Килограмм' },
+  { label: 'Грамм', value: 'Грамм' },
+  { label: 'Тонна', value: 'Тонна' },
+  { label: 'Литр', value: 'Литр' },
+  { label: 'Миллилитр', value: 'Миллилитр' },
+  { label: 'Метр', value: 'Метр' },
+  { label: 'Сантиметр', value: 'Сантиметр' },
+  { label: 'Квадратный метр', value: 'Квадратный метр' },
+  { label: 'Кубический метр', value: 'Кубический метр' },
+  { label: 'Упаковка', value: 'Упаковка' },
+  { label: 'Пара', value: 'Пара' },
+  { label: 'Рулон', value: 'Рулон' },
+  { label: 'Блок', value: 'Блок' },
+  { label: 'Бочка', value: 'Бочка' },
+  { label: 'Пачка', value: 'Пачка' },
+  { label: 'Комплект', value: 'Комплект' },
+  { label: 'Лист', value: 'Лист' },
+  { label: 'Погонный метр', value: 'Погонный метр' }
+]
+
+const packingOptions = [
+  { label: 'Штучная', value: 'Штучная' },
+  { label: 'Весовая', value: 'Весовая' },
+  { label: 'Разливная', value: 'Разливная' }
+]
+
+const accountingTypeOptions = [
+  { label: 'Без специализированного учета', value: 'Без специализированного учета' },
+  { label: 'Алкогольный товар', value: 'Алкогольный товар' },
+  { label: 'Учет по серийным номерам', value: 'Учет по серийным номерам' },
+  { label: 'СИЗ', value: 'Средство индивидуальной защиты' }
+]
+
+const productTypeOptions = [
+  { label: 'Не маркируется', value: 'Не маркируется' },
+  { label: 'Табачная продукция', value: 'Табачная продукция' },
+  { label: 'Обувь', value: 'Обувь' },
+  { label: 'Одежда', value: 'Одежда' },
+  { label: 'Постельное белье', value: 'Постельное белье' },
+  { label: 'Духи и туалетная вода', value: 'Духи и туалетная вода' },
+  { label: 'Фотокамеры и лампы-вспышки', value: 'Фотокамеры и лампы-вспышки' },
+  { label: 'Шины и покрышки', value: 'Шины и покрышки' },
+  { label: 'Молочная продукция', value: 'Молочная продукция' },
+  { label: 'Упакованная вода', value: 'Упакованная вода' },
+  { label: 'Альтернативная табачная продукция', value: 'Альтернативная табачная продукция' },
+  { label: 'Никотиносодержащая продукция', value: 'Никотиносодержащая продукция' },
+  { label: 'Биологически активные добавки к пище', value: 'Биологически активные добавки к пище' },
+  { label: 'Антисептики', value: 'Антисептики' },
+  { label: 'Медизделия и кресла-коляски', value: 'Медизделия и кресла-коляски' },
+  { label: 'Безалкогольные напитки', value: 'Безалкогольные напитки' },
+  { label: 'Ветеринарные препараты', value: 'Ветеринарные препараты' },
+  { label: 'Икра и морепродукты', value: 'Икра и морепродукты' },
+  { label: 'Велосипеды', value: 'Велосипеды' },
+  { label: 'Безалкогольное пиво', value: 'Безалкогольное пиво' }
+]
+
+const barcodeTypeOptions = [
+  { label: 'EAN8', value: 'EAN8' },
+  { label: 'EAN13', value: 'EAN13' },
+  { label: 'Code128', value: 'Code128' },
+  { label: 'GTIN', value: 'GTIN' },
+  { label: 'UPC', value: 'UPC' }
+]
+
+async function applyFilter() {
+  filterLoading.value = true
+  try {
+    await loadProducts(1, createFilterParams())
+    closeFilterModal()
+  } finally {
+    filterLoading.value = false
+  }
+}
+
+function resetFilter() {
+  // Сбрасываем все поля фильтра
+  Object.keys(filter).forEach(key => {
+    filter[key] = null
+  })
+  
+  // Сбрасываем выбранные значения в селектах
+  selectedCategory.value = null
+  selectedSubcategory.value = null
+  selectedCountry.value = null
+  selectedUnit.value = null
+  selectedPacking.value = null
+  selectedAccountingType.value = null
+  selectedProductType.value = null
+  selectedBarcodeType.value = null
+  
+  // Очищаем текстовые поля
+  filter.supplier = ''
+  filter.article = ''
+  filter.code = ''
+  filter.external_code = ''
+  filter.weight = ''
+  filter.volume = ''
+  filter.vat = ''
+  filter.marking = ''
+  filter.barcode = ''
+  filter.created_at = ''
+  filter.updated_at = ''
+}
 
 onMounted(() => {
   document.title = 'B2B Storage - Товары'

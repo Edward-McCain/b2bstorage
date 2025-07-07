@@ -209,9 +209,13 @@ class ProductController extends Controller
         $search = $request->get('search', '');
         
         $query = ProductSklad::where('user_id', $user->id)
-            ->with(['images' => function($query) {
-                $query->orderBy('created_at', 'asc')->limit(1);
-            }]);
+            ->with([
+                'images' => function($query) {
+                    $query->orderBy('created_at', 'asc')->limit(1);
+                },
+                'categoryRelation',
+                'subcategoryRelation'
+            ]);
 
         // Поиск по названию, коду, артикулу
         if ($search) {
@@ -222,14 +226,94 @@ class ProductController extends Controller
             });
         }
 
+        // Фильтрация по категории
+        if ($request->has('category') && $request->category) {
+            $query->where('category', $request->category);
+        }
+
+        // Фильтрация по подкатегории
+        if ($request->has('subcategory') && $request->subcategory) {
+            $query->where('subcategory', $request->subcategory);
+        }
+
+        // Фильтрация по стране
+        if ($request->has('country') && $request->country) {
+            $query->where('country', $request->country);
+        }
+
+        // Фильтрация по поставщику
+        if ($request->has('supplier') && $request->supplier) {
+            $query->where('supplier', 'ilike', "%{$request->supplier}%");
+        }
+
+        // Фильтрация по артикулу
+        if ($request->has('article') && $request->article) {
+            $query->where('article', 'ilike', "%{$request->article}%");
+        }
+
+        // Фильтрация по коду
+        if ($request->has('code') && $request->code) {
+            $query->where('code', 'ilike', "%{$request->code}%");
+        }
+
+        // Фильтрация по внешнему коду
+        if ($request->has('external_code') && $request->external_code) {
+            $query->where('external_code', 'ilike', "%{$request->external_code}%");
+        }
+
+        // Фильтрация по единице измерения
+        if ($request->has('unit') && $request->unit) {
+            $query->where('unit', 'ilike', "%{$request->unit}%");
+        }
+
+        // Фильтрация по упаковке
+        if ($request->has('packing') && $request->packing) {
+            $query->where('packing', 'ilike', "%{$request->packing}%");
+        }
+
+        // Фильтрация по типу учета
+        if ($request->has('accounting_type') && $request->accounting_type) {
+            $query->where('accounting_type', 'ilike', "%{$request->accounting_type}%");
+        }
+
+        // Фильтрация по типу товара
+        if ($request->has('product_type') && $request->product_type) {
+            $query->where('product_type', 'ilike', "%{$request->product_type}%");
+        }
+
+        // Фильтрация по типу штрихкода
+        if ($request->has('barcode_type') && $request->barcode_type) {
+            $query->where('barcode_type', 'ilike', "%{$request->barcode_type}%");
+        }
+
+        // Фильтрация по штрихкоду
+        if ($request->has('barcode') && $request->barcode) {
+            $query->where('barcode', 'ilike', "%{$request->barcode}%");
+        }
+
+        // Фильтрация по налогу кассы
+        if ($request->has('cash_register_tax') && $request->cash_register_tax) {
+            $query->where('cash_register_tax', 'ilike', "%{$request->cash_register_tax}%");
+        }
+
+        // Фильтрация по типу кассы
+        if ($request->has('cash_register_type') && $request->cash_register_type) {
+            $query->where('cash_register_type', 'ilike', "%{$request->cash_register_type}%");
+        }
+
         $products = $query->orderBy('created_at', 'desc')
                          ->paginate($perPage);
 
-        // Преобразуем URL изображений
+        // Преобразуем URL изображений и добавляем названия категорий
         $products->getCollection()->transform(function($product) {
             if ($product->images) {
                 $product->images = $this->transformImageUrls($product->images);
             }
+            
+            // Добавляем названия категорий
+            $product->category_name = $product->category_name;
+            $product->subcategory_name = $product->subcategory_name;
+            
             return $product;
         });
 
@@ -254,17 +338,21 @@ class ProductController extends Controller
 
         $product = ProductSklad::where('id', $id)
             ->where('user_id', $user->id)
-            ->with('images')
+            ->with(['images', 'categoryRelation', 'subcategoryRelation'])
             ->first();
 
         if (!$product) {
             return response()->json(['error' => 'Товар не найден'], 404);
         }
 
-        // Преобразуем URL изображений
+        // Преобразуем URL изображений и добавляем названия категорий
         if ($product->images) {
             $product->images = $this->transformImageUrls($product->images);
         }
+        
+        // Добавляем названия категорий
+        $product->category_name = $product->category_name;
+        $product->subcategory_name = $product->subcategory_name;
 
         return response()->json([
             'success' => true,
