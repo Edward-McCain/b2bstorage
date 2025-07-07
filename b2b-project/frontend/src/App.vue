@@ -43,4 +43,32 @@ import Footer from './components/Footer.vue'
   display: block !important;
   width: 100%;
 }
+
+.notification-toast {
+  z-index: 2147483647 !important;
+  top: 70px !important;
+}
+
+#toast-container > div {
+  background: #fff !important;
+  color: #222 !important;
+  font-family: inherit !important;
+  font-size: 0.95rem !important;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 4px 16px 0 rgba(0,0,0,0.08) !important;
+  border: 1px solid #e5e7eb !important;
+  padding: 0.75rem 1.25rem !important;
+}
+#toast-container > div.toast-success {
+  border-left: 4px solid #22c55e !important;
+}
+#toast-container > div.toast-error {
+  border-left: 4px solid #ef4444 !important;
+}
+#toast-container > div.toast-info {
+  border-left: 4px solid #3b82f6 !important;
+}
+#toast-container > div.toast-warning {
+  border-left: 4px solid #f59e42 !important;
+}
 </style>

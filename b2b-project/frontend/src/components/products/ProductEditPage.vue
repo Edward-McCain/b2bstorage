@@ -2,7 +2,7 @@
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-sm">
     <!-- Tailwind Notification -->
     <transition name="fade">
-      <div v-if="notification.show" :class="['fixed top-6 right-6 z-50 px-4 py-3 rounded-lg shadow-lg text-sm font-medium', notification.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white']">
+      <div v-if="notification.show" :class="['fixed z-index-[99999999] right-6 px-4 py-3 rounded-lg shadow-lg text-sm font-medium', notification.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white']">
         {{ notification.message }}
       </div>
     </transition>
@@ -522,15 +522,6 @@ const deletingImageIds = ref([])
 // Tailwind Notification state
 const notification = reactive({ show: false, message: '', type: 'success' })
 let notificationTimeout = null
-function showNotification(message, type = 'success') {
-  notification.message = message
-  notification.type = type
-  notification.show = true
-  if (notificationTimeout) clearTimeout(notificationTimeout)
-  notificationTimeout = setTimeout(() => {
-    notification.show = false
-  }, 2500)
-}
 
 // Загрузка данных товара
 async function loadProduct() {
@@ -689,9 +680,9 @@ async function handleSave() {
     })
 
     if (response.ok) {
-      showNotification('Данные товара успешно изменены', 'success')
+      toastr.success('Данные товара успешно изменены')
     } else {
-      showNotification(response.data.message || 'Ошибка сохранения товара', 'error')
+      toastr.error(response.data.message || 'Ошибка сохранения товара')
     }
   } catch (error) {
     console.error('Ошибка сохранения товара:', error)
@@ -724,13 +715,13 @@ async function deleteExistingImage(imageId) {
     
     if (response.ok) {
       existingImages.value = existingImages.value.filter(img => img.id !== imageId)
-      showNotification('Изображение удалено', 'success')
+      toastr.success('Изображение удалено')
     } else {
-      showNotification(response.data.message || 'Ошибка удаления изображения', 'error')
+      toastr.error(response.data.message || 'Ошибка удаления изображения')
     }
   } catch (error) {
     console.error('Ошибка удаления изображения:', error)
-    showNotification('Ошибка удаления изображения', 'error')
+    toastr.error('Ошибка удаления изображения')
   } finally {
     deletingImageIds.value = deletingImageIds.value.filter(id => id !== imageId)
   }
