@@ -37,4 +37,10 @@ import Footer from './components/Footer.vue'
 .multiselect-custom .multiselect-option {
   font-size: 0.875rem;
 }
+
+.multiselect,
+.multiselect.multiselect-custom {
+  display: block !important;
+  width: 100%;
+}
 </style>

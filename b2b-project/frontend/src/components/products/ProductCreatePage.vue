@@ -353,7 +353,7 @@ import { ref, reactive, computed, onMounted, watch, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import Multiselect from '@vueform/multiselect'
 import '@vueform/multiselect/themes/default.css'
-import { apiRequest } from '@/config/api'
+import { apiRequest, getCategoriesWithCache } from '@/config/api'
 import ImageDropzone from './ImageDropzone.vue'
 import countriesData from '@/data/countries.json'
 
@@ -522,8 +522,7 @@ async function handleDeleteImage(imgId) {
 onMounted(async () => {
   loadingCategories.value = true
   try {
-    const response = await apiRequest('/categories')
-    categories.value = response.data
+    categories.value = await getCategoriesWithCache()
   } catch (e) {
     categoryError.value = 'Ошибка загрузки категорий'
   } finally {

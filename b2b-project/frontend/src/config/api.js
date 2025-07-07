@@ -61,4 +61,31 @@ export const apiRequest = async (endpoint, options = {}) => {
     console.error('API request error:', error)
     throw error
   }
+}
+
+const CATEGORIES_KEY = 'categories_cache';
+const CATEGORIES_TTL = 24 * 60 * 60 * 1000; // сутки
+
+export async function getCategoriesWithCache() {
+  const cached = localStorage.getItem(CATEGORIES_KEY);
+  if (cached) {
+    try {
+      const { data, timestamp } = JSON.parse(cached);
+      if (Date.now() - timestamp < CATEGORIES_TTL) {
+        return data;
+      }
+    } catch (e) {
+      // ignore parse error
+    }
+  }
+  // Если нет кеша или он устарел — делаем запрос
+  const response = await apiRequest('/categories');
+  if (response.ok) {
+    localStorage.setItem(CATEGORIES_KEY, JSON.stringify({
+      data: response.data.data,
+      timestamp: Date.now()
+    }));
+    return response.data.data;
+  }
+  return [];
 } 

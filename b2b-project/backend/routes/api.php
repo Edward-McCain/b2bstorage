@@ -44,4 +44,5 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 Route::get('/categories', [CategoryController::class, 'index']);
+Route::get('/categories/{id}/subcategories', [CategoryController::class, 'subcategories']);
 Route::get('/subcategories', [CategoryController::class, 'subcategories']); 

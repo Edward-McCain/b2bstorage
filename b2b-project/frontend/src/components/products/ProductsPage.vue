@@ -2,7 +2,6 @@
   <div class="min-h-screen bg-gray-50" style="padding-top: 66px;">
     <!-- Внутреннее меню навигации -->
     <ProductsMenu />
-
     <!-- Верхнее меню и фильтры -->
     <div class="bg-white border-b border-gray-200">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-wrap items-center gap-2 py-4">
@@ -15,12 +14,35 @@
         />
 
         <div class="flex w-full md:w-auto gap-2">
-          <button class="flex-1 bg-gray-100 border border-gray-200 text-gray-700 font-medium px-3 py-1.5 rounded text-sm" @click="openFilterModal">Фильтр</button>
-          <router-link to="/products/create" class="flex-1 flex items-center justify-center gap-1 bg-blue-50 border border-blue-200 text-blue-700 font-medium px-3 py-1.5 rounded text-sm">
-            <span class="text-sm">＋</span>Товар
+          <button class="flex-1 bg-gray-100 border border-gray-200 text-gray-700 font-medium px-3 py-1.5 rounded text-sm relative group" @click="openFilterModal" title="Открыть фильтр товаров">
+            Фильтр
+            <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+              Открыть фильтр товаров
+              <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+            </div>
+          </button>
+          <router-link to="/products/create" class="flex-1 flex items-center justify-center gap-1 bg-blue-50 border border-blue-200 text-blue-700 font-medium px-3 py-1.5 rounded text-sm relative group" title="Создать новый товар">
+            <Plus class="w-4 h-4" />
+            Товар
+            <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+              Создать новый товар
+              <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+            </div>
           </router-link>
-          <button class="flex-1 bg-white border border-gray-300 px-3 py-1.5 rounded font-medium text-sm">Импорт</button>
-          <button class="flex-1 bg-white border border-gray-300 px-3 py-1.5 rounded font-medium text-sm">Экспорт</button>
+          <button class="flex-1 bg-white border border-gray-300 px-3 py-1.5 rounded font-medium text-sm relative group" title="Импорт товаров из файла">
+            Импорт
+            <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+              Импорт товаров из файла
+              <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+            </div>
+          </button>
+          <button class="flex-1 bg-white border border-gray-300 px-3 py-1.5 rounded font-medium text-sm relative group" title="Экспорт товаров в файл">
+            Экспорт
+            <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+              Экспорт товаров в файл
+              <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+            </div>
+          </button>
         </div>
       </div>
     </div>
@@ -30,10 +52,7 @@
       <!-- Загрузка -->
       <div v-if="loading" class="flex items-center justify-center py-20">
         <div class="text-center">
-          <svg class="animate-spin h-8 w-8 text-blue-500 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
-          </svg>
+          <Loader2 class="animate-spin h-8 w-8 text-blue-500 mx-auto mb-4" />
           <p class="text-gray-600">Загрузка товаров...</p>
         </div>
       </div>
@@ -41,8 +60,12 @@
       <!-- Ошибка -->
       <div v-else-if="error" class="text-center py-20">
         <p class="text-red-500 mb-4">{{ error }}</p>
-        <button @click="loadProducts" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
+        <button @click="loadProducts" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg relative group" title="Повторить загрузку товаров">
           Попробовать снова
+          <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+            Повторить загрузку товаров
+            <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+          </div>
         </button>
       </div>
 
@@ -52,8 +75,13 @@
           <div class="flex flex-col items-center md:items-start">
             <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 mb-6 text-center md:text-left">Здесь будут все ваши товары</h1>
             <div class="flex gap-4 mb-6 w-full justify-center md:justify-center">
-              <router-link to="/products/create" class="flex items-center gap-2 bg-blue-100 hover:bg-blue-200 text-blue-900 font-semibold px-6 py-3 rounded-lg text-lg transition">
-                <span>Добавить товар</span><span class="text-2xl">＋</span>
+              <router-link to="/products/create" class="flex items-center gap-2 bg-blue-100 hover:bg-blue-200 text-blue-900 font-semibold px-6 py-3 rounded-lg text-lg transition relative group" title="Создать новый товар">
+                <span>Добавить товар</span>
+                <Plus class="w-6 h-6" />
+                <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                  Создать новый товар
+                  <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                </div>
               </router-link>
             </div>
             <div class="text-gray-600 mb-4 text-center md:text-left">
@@ -70,7 +98,7 @@
             <table class="min-w-full divide-y divide-gray-200 text-sm">
               <thead class="bg-gray-50">
                 <tr>
-                  <th class="px-4 py-3 font-semibold text-left text-gray-900">Изображение</th>
+                  <th class="px-4 py-3 font-semibold text-left text-gray-900"></th>
                   <th class="px-4 py-3 font-semibold text-left text-gray-900">Наименование</th>
                   <th class="px-4 py-3 font-semibold text-left text-gray-900">Код</th>
                   <th class="px-4 py-3 font-semibold text-left text-gray-900">Артикул</th>
@@ -90,15 +118,13 @@
                         class="w-12 h-12 object-cover rounded-lg border border-gray-200"
                       />
                       <div v-else class="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
-                        <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
+                        <Image class="w-6 h-6 text-gray-400" />
                       </div>
                     </div>
                   </td>
-                  <td class="px-4 py-3">
-                    <div class="font-medium text-gray-900">{{ product.name }}</div>
-                    <div v-if="product.description" class="text-gray-500 text-xs mt-1 truncate max-w-xs">
+                  <td class="px-4 py-3 max-w-[200px]">
+                    <div class="font-medium text-gray-900 truncate">{{ product.name }}</div>
+                    <div v-if="product.description" class="text-gray-500 text-xs mt-1 truncate">
                       {{ product.description }}
                     </div>
                   </td>
@@ -111,18 +137,28 @@
                   <td class="px-4 py-3 text-gray-900">{{ product.supplier || '-' }}</td>
                   <td class="px-4 py-3">
                     <div class="flex items-center space-x-2">
-                      <!-- <router-link 
+                      <router-link 
                         :to="`/products/edit/${product.id}`"
-                        class="text-blue-600 hover:text-blue-800 hover:underline text-sm font-medium"
+                        class="text-blue-600 hover:text-blue-800 p-1 rounded hover:bg-blue-50 transition-colors relative group"
+                        title="Редактировать"
                       >
-                        Редактировать
+                        <Edit class="w-4 h-4" />
+                        <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                          Редактировать
+                          <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                        </div>
                       </router-link>
                       <button 
                         @click="deleteProduct(product.id)"
-                        class="text-red-600 hover:text-red-800 hover:underline text-sm font-medium"
+                        class="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50 transition-colors relative group"
+                        title="Удалить"
                       >
-                        Удалить
-                      </button> -->
+                        <Trash2 class="w-4 h-4" />
+                        <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                          Удалить
+                          <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                        </div>
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -137,16 +173,28 @@
                 <button 
                   @click="changePage(pagination.current_page - 1)"
                   :disabled="pagination.current_page === 1"
-                  class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed relative group"
+                  title="Предыдущая страница"
                 >
+                  <ChevronLeft class="w-4 h-4 mr-1" />
                   Назад
+                  <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                    Предыдущая страница
+                    <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                  </div>
                 </button>
                 <button 
                   @click="changePage(pagination.current_page + 1)"
                   :disabled="pagination.current_page === pagination.last_page"
-                  class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed relative group"
+                  title="Следующая страница"
                 >
                   Вперед
+                  <ChevronRight class="w-4 h-4 ml-1" />
+                  <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                    Следующая страница
+                    <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                  </div>
                 </button>
               </div>
               <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
@@ -166,12 +214,15 @@
                     <button 
                       @click="changePage(pagination.current_page - 1)"
                       :disabled="pagination.current_page === 1"
-                      class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed relative group"
+                      title="Предыдущая страница"
                     >
                       <span class="sr-only">Предыдущая</span>
-                      <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                        <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
-                      </svg>
+                      <ChevronLeft class="h-5 w-5" />
+                      <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                        Предыдущая страница
+                        <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                      </div>
                     </button>
                     
                     <template v-for="page in visiblePages" :key="page">
@@ -182,10 +233,15 @@
                           page === pagination.current_page
                             ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
                             : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50',
-                          'relative inline-flex items-center px-4 py-2 border text-sm font-medium'
+                          'relative inline-flex items-center px-4 py-2 border text-sm font-medium relative group'
                         ]"
+                        :title="`Перейти на страницу ${page}`"
                       >
                         {{ page }}
+                        <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                          Перейти на страницу {{ page }}
+                          <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                        </div>
                       </button>
                       <span 
                         v-else
@@ -198,12 +254,15 @@
                     <button 
                       @click="changePage(pagination.current_page + 1)"
                       :disabled="pagination.current_page === pagination.last_page"
-                      class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed relative group"
+                      title="Следующая страница"
                     >
                       <span class="sr-only">Следующая</span>
-                      <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-                      </svg>
+                      <ChevronRight class="h-5 w-5" />
+                      <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                        Следующая страница
+                        <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                      </div>
                     </button>
                   </nav>
                 </div>
@@ -217,7 +276,13 @@
     <!-- Модальное окно фильтра -->
     <div v-if="showFilterModal" class="fixed inset-0 md:z-[9999999] sm:pt-20 flex items-center justify-center bg-white/60 backdrop-blur-sm md:z-auto">
       <div class="bg-white rounded-lg shadow-lg w-full max-w-4xl mx-auto p-6 relative flex flex-col max-h-[90vh] overflow-y-auto md:w-[700px] md:rounded-xl md:p-8 sm:max-w-full sm:h-full sm:rounded-none sm:p-4 sm:pt-20 sm:max-h-[calc(100vh-68px)]">
-        <button @click="closeFilterModal" class="absolute top-2 right-2 text-gray-400 hover:text-gray-700 text-2xl">&times;</button>
+        <button @click="closeFilterModal" class="absolute top-2 right-2 text-gray-400 hover:text-gray-700 p-1 rounded hover:bg-gray-100 transition-colors relative group" title="Закрыть">
+          <X class="w-5 h-5" />
+          <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+            Закрыть
+            <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+          </div>
+        </button>
         <h2 class="text-xl font-bold mb-4">Фильтр товаров</h2>
         <form @submit.prevent="applyFilter" class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -377,23 +442,34 @@
           </div>
         </form>
         <div class="flex justify-center gap-4 mt-6">
-          <button @click="resetFilter" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold px-6 py-2 rounded-lg border text-sm flex items-center gap-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
+          <button @click="resetFilter" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold px-6 py-2 rounded-lg border text-sm flex items-center gap-2 relative group" title="Сбросить все фильтры">
+            <RotateCcw class="w-4 h-4" />
             Сбросить
+            <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+              Сбросить все фильтры
+              <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+            </div>
           </button>
-          <button @click="closeFilterModal" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold px-6 py-2 rounded-lg border text-sm">Отмена</button>
+          <button @click="closeFilterModal" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold px-6 py-2 rounded-lg border text-sm relative group" title="Закрыть фильтр">
+            Отмена
+            <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+              Закрыть фильтр
+              <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+            </div>
+          </button>
           <button 
             @click="applyFilter" 
             :disabled="filterLoading"
-            class="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold px-6 py-2 rounded-lg text-sm flex items-center gap-2"
+            class="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold px-6 py-2 rounded-lg text-sm flex items-center gap-2 relative group"
+            :title="filterLoading ? 'Выполняется поиск...' : 'Применить фильтры'"
           >
-            <svg v-if="filterLoading" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
-            </svg>
+            <Search v-if="filterLoading" class="animate-spin w-4 h-4" />
+            <Search v-else class="w-4 h-4" />
             {{ filterLoading ? 'Поиск...' : 'Применить' }}
+            <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+              {{ filterLoading ? 'Выполняется поиск...' : 'Применить фильтры' }}
+              <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+            </div>
           </button>
         </div>
       </div>
@@ -403,11 +479,12 @@
 
 <script setup>
 import { ref, computed, onMounted, reactive, watch } from 'vue'
-import { apiRequest } from '@/config/api'
+import { apiRequest, getCategoriesWithCache } from '@/config/api'
 import ProductsMenu from './ProductsMenu.vue'
 import toastr from 'toastr'
 import Multiselect from '@vueform/multiselect'
 import countriesData from '@/data/countries.json'
+import { Edit, Trash2, RotateCcw, Search, X, Loader2, Image, ChevronLeft, ChevronRight, Plus } from 'lucide-vue-next'
 
 // Состояние
 const products = ref([])
@@ -591,22 +668,14 @@ function closeFilterModal() {
   showFilterModal.value = false
 }
 
+// Загрузка категорий для фильтра
 async function loadCategories() {
   loadingCategories.value = true
   try {
-    const res = await apiRequest('/categories')
-    if (res.data && Array.isArray(res.data)) {
-      categoryOptions.value = res.data.map(cat => ({ 
-        label: cat.name_ru, 
-        value: cat.id,
-        category_id: cat.category_id 
-      }))
-    } else {
-      categoryOptions.value = []
-    }
+    categories.value = await getCategoriesWithCache()
   } catch (error) {
     console.error('Ошибка загрузки категорий:', error)
-    categoryOptions.value = []
+    categoryError.value = 'Ошибка загрузки категорий'
   } finally {
     loadingCategories.value = false
   }

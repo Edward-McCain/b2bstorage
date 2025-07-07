@@ -103,15 +103,27 @@ class ProductController extends Controller
     {
         Log::info('Product update request', ['id' => $id, 'data' => $request->all()]);
         
-        $product = ProductSklad::findOrFail($id);
+        $user = Auth::user();
+        
+        if (!$user) {
+            return response()->json(['error' => 'Пользователь не авторизован'], 401);
+        }
+        
+        $product = ProductSklad::where('id', $id)
+            ->where('user_id', $user->id)
+            ->first();
+            
+        if (!$product) {
+            return response()->json(['error' => 'Товар не найден'], 404);
+        }
         
         // Валидация данных
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'category' => 'nullable',
-            'subcategory' => 'nullable',
-            'country' => 'nullable',
+            'category_id' => 'nullable|string',
+            'subcategory_id' => 'nullable|string',
+            'country' => 'nullable|string',
             'supplier' => 'nullable|string|max:255',
             'article' => 'nullable|string|max:255',
             'code' => 'nullable|string|max:255',
@@ -122,6 +134,7 @@ class ProductController extends Controller
             'vat' => 'nullable|string|max:255',
             'packing' => 'nullable|string|max:255',
             'accounting_type' => 'nullable|string|max:255',
+            'marking' => 'nullable|string|max:255',
             'product_type' => 'nullable|string|max:255',
             'barcode_type' => 'nullable|string|max:255',
             'barcode' => 'nullable|string|max:255',
@@ -133,9 +146,9 @@ class ProductController extends Controller
         $product->update([
             'name' => $request->name,
             'description' => $request->description,
-            'category' => $request->category ? (string) $request->category : null,
-            'subcategory' => $request->subcategory ? (string) $request->subcategory : null,
-            'country' => $request->country ? (string) $request->country : null,
+            'category' => $request->category_id,
+            'subcategory' => $request->subcategory_id,
+            'country' => $request->country,
             'supplier' => $request->supplier,
             'article' => $request->article,
             'code' => $request->code,
@@ -146,6 +159,7 @@ class ProductController extends Controller
             'vat' => $request->vat,
             'packing' => $request->packing,
             'accounting_type' => $request->accounting_type,
+            'marking' => $request->marking,
             'product_type' => $request->product_type,
             'barcode_type' => $request->barcode_type,
             'barcode' => $request->barcode,
@@ -155,7 +169,7 @@ class ProductController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Товар успешно сохранен',
+            'message' => 'Товар успешно обновлен',
             'product' => $product
         ]);
     }
