@@ -56,7 +56,7 @@
                 v-if="!loadingSettings"
                 @click="detectLocation"
                 :disabled="isDetectingLocation"
-                class="ml-auto bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white font-medium px-4 py-2 rounded-lg transition-colors flex items-center gap-2 text-sm"
+                class="ml-auto bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white font-medium px-4 py-2 rounded-lg transition-colors flex items-center gap-2 text-sm" style="display: none" 
               >
                 <Loader2 v-if="isDetectingLocation" class="animate-spin h-4 w-4" />
                 {{ isDetectingLocation ? 'Определение...' : (locationDetected ? 'Обновить' : 'Автоопределение') }}
