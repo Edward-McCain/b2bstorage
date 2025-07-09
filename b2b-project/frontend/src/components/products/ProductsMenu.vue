@@ -97,14 +97,9 @@ import { useRoute } from 'vue-router'
 
 const route = useRoute()
 
-// Отладочная информация
-console.log('Current route path:', route.path)
-
 // Проверяем активные состояния
 const isActive = (path) => {
-  const isActivePath = route.path === path
-  console.log(`Path ${path} is active:`, isActivePath)
-  return isActivePath
+  return route.path === path
 }
 </script>
 

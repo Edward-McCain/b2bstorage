@@ -577,7 +577,6 @@ const handleAvatarUpdated = (newAvatarUrl) => {
                   :src="avatarUrl" 
                   :alt="user?.user_name || 'Аватар'"
                   class="h-full w-full object-cover"
-                  @load="console.log('Header: аватар загружен:', avatarUrl)"
                   @error="console.error('Header: ошибка загрузки аватара:', avatarUrl)"
                 />
               </div>

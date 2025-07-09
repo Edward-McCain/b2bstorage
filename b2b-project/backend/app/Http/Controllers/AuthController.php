@@ -366,7 +366,7 @@ class AuthController extends Controller
         
         if ($request->has('firstName')) {
             $updateData['first_name'] = $request->firstName;
-            $updateData['user_name'] = trim($request->firstName . ' ' . $user->last_name);
+            // $updateData['user_name'] = trim($request->firstName . ' ' . $user->last_name);
         }
         
         if ($request->has('position')) {

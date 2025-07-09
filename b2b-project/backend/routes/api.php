@@ -4,6 +4,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ReceiptController;
+use App\Http\Controllers\ReceiptFileController;
+use App\Http\Controllers\WarehouseController;
 
 /*
 |--------------------------------------------------------------------------
@@ -28,6 +31,7 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
+    Route::get('/user', [AuthController::class, 'me']); // Добавляем альтернативный маршрут
     Route::put('/profile', [AuthController::class, 'updateProfile']);
     // Avatar upload
     Route::post('/user/avatar', [AuthController::class, 'uploadAvatar']);
@@ -48,6 +52,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/products/draft', [\App\Http\Controllers\ProductController::class, 'storeDraft']);
     // Product update route
     Route::put('/products/{id}', [\App\Http\Controllers\ProductController::class, 'update']);
+    // Receipt routes
+    Route::get('/receipts', [ReceiptController::class, 'index']);
+    Route::get('/receipts/{id}', [ReceiptController::class, 'show']);
+    Route::post('/receipts', [ReceiptController::class, 'store']);
+    Route::put('/receipts/{id}', [ReceiptController::class, 'update']);
+    Route::delete('/receipts/{id}', [ReceiptController::class, 'destroy']);
+    Route::post('/receipt-files/draft', [ReceiptFileController::class, 'storeDraft']);
+    // Warehouse routes
+    Route::get('/warehouses', [WarehouseController::class, 'index']);
+    Route::post('/warehouses', [WarehouseController::class, 'store']);
+    Route::put('/warehouses/{id}', [WarehouseController::class, 'update']);
+    Route::delete('/warehouses/{id}', [WarehouseController::class, 'destroy']);
 });
 
 Route::get('/categories', [CategoryController::class, 'index']);

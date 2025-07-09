@@ -1,3 +1,14 @@
+# запуск на локалке фронт и бэк:
+
+cd b2b-project/backend
+php artisan serve --host=127.0.0.1 --port=8000
+
+
+cd b2b-project/frontend
+npm run dev
+
+
+
 # 🚀 Быстрый старт - Настройка сервера B2B Storage
 
 ## 📋 Что нужно сделать
