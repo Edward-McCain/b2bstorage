@@ -58,6 +58,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/receipts', [ReceiptController::class, 'store']);
     Route::put('/receipts/{id}', [ReceiptController::class, 'update']);
     Route::delete('/receipts/{id}', [ReceiptController::class, 'destroy']);
+    Route::post('/receipt-files', [ReceiptFileController::class, 'store']);
+    Route::get('/receipt-files/{receiptId}', [ReceiptFileController::class, 'getFiles']);
+    Route::delete('/receipt-files/{id}', [ReceiptFileController::class, 'destroy']);
     Route::post('/receipt-files/draft', [ReceiptFileController::class, 'storeDraft']);
     // Warehouse routes
     Route::get('/warehouses', [WarehouseController::class, 'index']);

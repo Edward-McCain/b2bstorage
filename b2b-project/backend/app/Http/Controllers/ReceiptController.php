@@ -19,7 +19,16 @@ class ReceiptController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            $receipts = DB::table('receipts as r')
+            $user = $request->user();
+            
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Пользователь не авторизован'
+                ], 401);
+            }
+
+            $query = DB::table('receipts as r')
                 ->leftJoin('warehouses as w', 'r.warehouse', '=', 'w.id')
                 ->leftJoin('users as u', 'r.user_id', '=', 'u.id')
                 ->select(
@@ -31,8 +40,30 @@ class ReceiptController extends Controller
                     'r.comment', 'r.overhead_costs', 'r.project', 'r.created_at', 'r.updated_at',
                     DB::raw("CONCAT(u.first_name, ' ', u.last_name) as user_full_name")
                 )
-                ->orderBy('r.created_at', 'desc')
-                ->paginate(20);
+                ->where('r.user_id', $user->id);
+
+            // Применяем фильтры
+            if ($request->has('number') && !empty($request->number)) {
+                $query->where('r.number', 'like', '%' . $request->number . '%');
+            }
+
+            if ($request->has('date_from') && !empty($request->date_from)) {
+                $query->where('r.date', '>=', $request->date_from);
+            }
+
+            if ($request->has('date_to') && !empty($request->date_to)) {
+                $query->where('r.date', '<=', $request->date_to . ' 23:59:59');
+            }
+
+            if ($request->has('warehouse') && !empty($request->warehouse)) {
+                $query->where('r.warehouse', $request->warehouse);
+            }
+
+            if ($request->has('status') && !empty($request->status)) {
+                $query->where('r.status', $request->status);
+            }
+
+            $receipts = $query->orderBy('r.created_at', 'desc')->paginate(20);
 
             $data = collect($receipts->items())->map(function($receipt) {
                 return [
@@ -77,10 +108,34 @@ class ReceiptController extends Controller
     /**
      * Получить оприходование по ID
      */
-    public function show($id): JsonResponse
+    public function show(Request $request, $id): JsonResponse
     {
         try {
-            $receipt = Receipt::with('positions')->find($id);
+            $user = $request->user();
+            
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Пользователь не авторизован'
+                ], 401);
+            }
+
+            // Получаем основную информацию об оприходовании с JOIN'ами
+            $receipt = DB::table('receipts as r')
+                ->leftJoin('warehouses as w', 'r.warehouse', '=', 'w.id')
+                ->leftJoin('users as u', 'r.user_id', '=', 'u.id')
+                ->select(
+                    'r.id', 'r.number', 'r.date', 'r.organization',
+                    'r.warehouse as warehouse_id',
+                    'w.name as warehouse_name',
+                    'w.address as warehouse_address',
+                    'r.status', 'r.total', 'r.created_by', 'r.user_id', 'r.is_posted',
+                    'r.comment', 'r.overhead_costs', 'r.project', 'r.created_at', 'r.updated_at',
+                    DB::raw("CONCAT(u.first_name, ' ', u.last_name) as user_full_name")
+                )
+                ->where('r.user_id', $user->id)
+                ->where('r.id', $id)
+                ->first();
 
             if (!$receipt) {
                 return response()->json([
@@ -89,9 +144,42 @@ class ReceiptController extends Controller
                 ], 404);
             }
 
+            // Получаем позиции
+            $positions = DB::table('receipt_positions')
+                ->where('receipt_id', $id)
+                ->get();
+
+            // Получаем файлы
+            $files = DB::table('receipt_files')
+                ->where('receipt_id', $id)
+                ->get();
+
+            // Формируем данные с информацией о пользователе и складе
+            $data = [
+                'id' => $receipt->id,
+                'number' => $receipt->number,
+                'date' => $receipt->date,
+                'organization' => $receipt->organization,
+                'project' => $receipt->project,
+                'warehouse' => $receipt->warehouse_id,
+                'warehouse_name' => $receipt->warehouse_name ?? '',
+                'warehouse_address' => $receipt->warehouse_address ?? '',
+                'status' => $receipt->status,
+                'is_posted' => $receipt->is_posted,
+                'comment' => $receipt->comment,
+                'total' => $receipt->total,
+                'overhead_costs' => $receipt->overhead_costs,
+                'created_by' => $receipt->user_full_name ?? $receipt->created_by,
+                'user_id' => $receipt->user_id,
+                'created_at' => $receipt->created_at,
+                'updated_at' => $receipt->updated_at,
+                'positions' => $positions,
+                'files' => $files
+            ];
+
             return response()->json([
                 'success' => true,
-                'data' => $receipt
+                'data' => $data
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -134,6 +222,7 @@ class ReceiptController extends Controller
                 'receipt_files' => 'nullable|array',
                 'receipt_files.*.filename' => 'nullable|string|max:255',
                 'receipt_files.*.size_mb' => 'nullable|numeric|min:0',
+                'receipt_files.*.file_url' => 'nullable|string|max:500',
                 'receipt_files.*.employee' => 'nullable|string|max:255',
             ]);
 
@@ -202,6 +291,7 @@ class ReceiptController extends Controller
                         'receipt_id' => $receipt->id,
                         'filename' => $fileData['filename'] ?? '',
                         'size_mb' => $fileData['size_mb'] ?? 0,
+                        'file_url' => $fileData['file_url'] ?? '',
                         'employee' => $fileData['employee'] ?? '',
                         'uploaded_at' => now()
                     ]);
@@ -231,7 +321,16 @@ class ReceiptController extends Controller
     public function update(Request $request, $id): JsonResponse
     {
         try {
-            $receipt = Receipt::find($id);
+            $user = $request->user();
+            
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Пользователь не авторизован'
+                ], 401);
+            }
+
+            $receipt = Receipt::where('user_id', $user->id)->find($id);
 
             if (!$receipt) {
                 return response()->json([
@@ -348,10 +447,19 @@ class ReceiptController extends Controller
     /**
      * Удалить оприходование
      */
-    public function destroy($id): JsonResponse
+    public function destroy(Request $request, $id): JsonResponse
     {
         try {
-            $receipt = Receipt::find($id);
+            $user = $request->user();
+            
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Пользователь не авторизован'
+                ], 401);
+            }
+
+            $receipt = Receipt::where('user_id', $user->id)->find($id);
 
             if (!$receipt) {
                 return response()->json([

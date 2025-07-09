@@ -125,10 +125,17 @@
         <!-- Загрузка файлов -->
         <div>
           <label class="block text-sm text-gray-700 mb-1">Файлы</label>
-          <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
-            <input ref="fileInput" type="file" multiple @change="handleFileUpload" class="hidden" />
-            <button type="button" @click="$refs.fileInput.click()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg transition text-sm">
-              Выбрать файлы
+          <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center relative" :class="{ 'border-blue-400 bg-blue-50': uploading }">
+            <div v-if="uploading" class="absolute inset-0 bg-blue-50 bg-opacity-75 flex items-center justify-center rounded-lg z-10">
+              <div class="text-center">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-2"></div>
+                <p class="text-sm text-blue-700">Загрузка файлов...</p>
+              </div>
+            </div>
+            <input ref="fileInput" type="file" multiple @change="handleFileUpload" class="hidden" :disabled="uploading" />
+            <button type="button" @click="$refs.fileInput.click()" class="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold px-4 py-2 rounded-lg transition text-sm" :disabled="uploading">
+              <span v-if="uploading">Загрузка...</span>
+              <span v-else>Выбрать файлы</span>
             </button>
             <p class="text-xs text-gray-500 mt-2">Перетащите файлы сюда или нажмите кнопку</p>
           </div>
@@ -137,11 +144,18 @@
             <div class="space-y-2">
               <div v-for="(file, index) in uploadedFiles" :key="`file-${index}-${file.id}`" class="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
                 <div class="flex items-center gap-3">
-                  <span class="text-sm text-gray-700">{{ file.filename }}</span>
-                  <span class="text-xs text-gray-500">{{ file.size_mb }} МБ</span>
-                  <span class="text-xs text-gray-500">{{ file.employee }}</span>
+                  <div v-if="file.uploading" class="flex items-center gap-2">
+                    <div class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                    <span class="text-sm text-gray-500">Загрузка...</span>
+                  </div>
+                  <template v-else>
+                    <a v-if="file.file_url" :href="file.file_url" target="_blank" class="text-blue-600 hover:underline text-sm">{{ file.filename }}</a>
+                    <span v-else class="text-sm text-gray-700">{{ file.filename }}</span>
+                    <span class="text-xs text-gray-500">{{ file.size_mb }} МБ</span>
+                    <span class="text-xs text-gray-500">{{ file.employee }}</span>
+                  </template>
                 </div>
-                <button type="button" @click="removeFile(file.id)" class="text-red-500 hover:text-red-700">
+                <button type="button" @click="removeFile(file.id)" class="text-red-500 hover:text-red-700" :disabled="file.uploading">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                   </svg>
@@ -498,7 +512,12 @@ async function handleSubmit() {
     const receiptData = {
       ...form.value,
       positions: positions.value,
-      receipt_files: uploadedFiles.value
+      receipt_files: uploadedFiles.value.map(file => ({
+        filename: file.filename,
+        size_mb: file.size_mb,
+        file_url: file.file_url,
+        employee: file.employee
+      }))
     }
     const response = await apiRequest('/receipts', {
       method: 'POST',
@@ -557,25 +576,89 @@ function calculatePositionTotal(position) {
   return (quantity * price).toFixed(2)
 }
 
-function handleFileUpload(event) {
+async function handleFileUpload(event) {
   const files = event.target.files
   if (!files.length) return
   uploading.value = true
+  
+  // Загружаем каждый файл на сервер
   for (const file of files) {
+    // Добавляем файл в список с флагом загрузки
+    const fileId = Date.now() + Math.random()
     uploadedFiles.value.push({
-      id: Date.now() + Math.random(),
+      id: fileId,
       filename: file.name,
       size_mb: (file.size / 1048576).toFixed(2),
+      uploading: true,
       employee: userData.value?.username || 'Неизвестный'
     })
+    
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      
+      const response = await apiRequest('/receipt-files/draft', {
+        method: 'POST',
+        body: formData,
+        headers: {}
+      })
+      
+      if (response.ok && response.data) {
+        // Обновляем файл с полученными данными
+        const fileIndex = uploadedFiles.value.findIndex(f => f.id === fileId)
+        if (fileIndex !== -1) {
+          uploadedFiles.value[fileIndex] = {
+            id: response.data.id || fileId,
+            filename: response.data.filename || file.name,
+            size_mb: response.data.size_mb || (file.size / 1048576).toFixed(2),
+            file_url: response.data.file_url || '',
+            employee: response.data.employee || (userData.value?.username || 'Неизвестный'),
+            uploading: false
+          }
+        }
+      } else {
+        console.error('Ошибка загрузки файла:', response.data)
+        // Удаляем файл из списка при ошибке
+        const fileIndex = uploadedFiles.value.findIndex(f => f.id === fileId)
+        if (fileIndex !== -1) {
+          uploadedFiles.value.splice(fileIndex, 1)
+        }
+      }
+    } catch (error) {
+      console.error('Ошибка при загрузке файла:', error)
+      // Удаляем файл из списка при ошибке
+      const fileIndex = uploadedFiles.value.findIndex(f => f.id === fileId)
+      if (fileIndex !== -1) {
+        uploadedFiles.value.splice(fileIndex, 1)
+      }
+    }
   }
+  
   uploading.value = false
   event.target.value = ''
 }
 
-function removeFile(id) {
+async function removeFile(id) {
   const index = uploadedFiles.value.findIndex(file => file.id === id)
   if (index !== -1) {
+    const file = uploadedFiles.value[index]
+    
+    // Не удаляем файл, если он в процессе загрузки
+    if (file.uploading) {
+      return
+    }
+    
+    // Если у файла есть числовой id (загружен на сервер), удаляем его
+    if (typeof file.id === 'number') {
+      try {
+        await apiRequest(`/receipt-files/${file.id}`, {
+          method: 'DELETE'
+        })
+      } catch (error) {
+        console.error('Ошибка при удалении файла с сервера:', error)
+      }
+    }
+    
     uploadedFiles.value.splice(index, 1)
   }
 }

@@ -19,6 +19,8 @@ import MarkingPage from '../components/products/MarkingPage.vue'
 import ProductCreatePage from '../components/products/ProductCreatePage.vue'
 import ProductEditPage from '../components/products/ProductEditPage.vue'
 import ReceiptCreatePage from '../components/products/ReceiptCreatePage.vue'
+import ReceiptViewPage from '../components/products/ReceiptViewPage.vue'
+import ReceiptEditPage from '../components/products/ReceiptEditPage.vue'
 
 // Purchase pages
 import SupplierOrdersPage from '../components/purchases/SupplierOrdersPage.vue'
@@ -151,6 +153,16 @@ const routes = [
     path: '/products/receipts/create',
     name: 'ReceiptCreate',
     component: ReceiptCreatePage
+  },
+  {
+    path: '/products/receipts/:id',
+    name: 'ReceiptView',
+    component: ReceiptViewPage
+  },
+  {
+    path: '/products/receipts/edit/:id',
+    name: 'ReceiptEdit',
+    component: ReceiptEditPage
   },
   // Purchase routes
   {

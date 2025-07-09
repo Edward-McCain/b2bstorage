@@ -9,10 +9,13 @@ class ReceiptFile extends Model
 {
     use HasFactory;
 
+    public $timestamps = false;
+
     protected $fillable = [
         'receipt_id',
         'filename',
         'size_mb',
+        'file_url',
         'uploaded_at',
         'employee'
     ];
