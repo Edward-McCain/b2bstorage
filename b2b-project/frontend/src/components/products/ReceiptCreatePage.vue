@@ -28,11 +28,8 @@
           <div class="flex-1">
             <label class="block text-sm text-gray-700 mb-1">Организация *</label>
             <div v-if="loadingUserData" class="w-full h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-              <svg class="animate-spin h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
-              </svg>
-              <span class="ml-2 text-xs text-gray-500">Загрузка...</span>
+              <Loader2 class="animate-spin h-4 w-4 text-gray-400 mr-2" />
+              <span class="text-xs text-gray-500">Загрузка данных пользователя...</span>
             </div>
             <input v-else v-model="form.organization" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" :class="{'border-red-400': errors.organization}" />
             <div v-if="errors.organization" class="text-sm text-red-500 mt-1">{{ errors.organization }}</div>
@@ -80,7 +77,8 @@
                   <button type="button" @click="closeWarehouseForm" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium px-3 py-1.5 rounded text-sm transition">
                     Отмена
                   </button>
-                  <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-3 py-1.5 rounded text-sm transition" :disabled="warehouseSaving">
+                  <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-3 py-1.5 rounded text-sm transition flex items-center gap-2" :disabled="warehouseSaving">
+                    <Loader2 v-if="warehouseSaving" class="animate-spin h-4 w-4" />
                     <span v-if="warehouseSaving">Создание...</span>
                     <span v-else>Создать склад</span>
                   </button>
@@ -127,8 +125,8 @@
           <label class="block text-sm text-gray-700 mb-1">Файлы</label>
           <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center relative" :class="{ 'border-blue-400 bg-blue-50': uploading }">
             <div v-if="uploading" class="absolute inset-0 bg-blue-50 bg-opacity-75 flex items-center justify-center rounded-lg z-10">
-              <div class="text-center">
-                <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-2"></div>
+              <div class="text-center flex flex-col items-center">
+                <Loader2 class="animate-spin h-8 w-8 text-blue-600 mb-2" />
                 <p class="text-sm text-blue-700">Загрузка файлов...</p>
               </div>
             </div>
@@ -145,7 +143,7 @@
               <div v-for="(file, index) in uploadedFiles" :key="`file-${index}-${file.id}`" class="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
                 <div class="flex items-center gap-3">
                   <div v-if="file.uploading" class="flex items-center gap-2">
-                    <div class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                    <Loader2 class="animate-spin h-4 w-4 text-blue-600" />
                     <span class="text-sm text-gray-500">Загрузка...</span>
                   </div>
                   <template v-else>
@@ -245,7 +243,8 @@
 
         <!-- Кнопки -->
         <div class="flex justify-end gap-2 mt-6">
-          <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg shadow transition text-sm" :disabled="saving || uploading">
+          <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg shadow transition text-sm flex items-center gap-2" :disabled="saving || uploading">
+            <Loader2 v-if="saving" class="animate-spin h-4 w-4" />
             <span v-if="saving">Сохранение...</span>
             <span v-else>Сохранить</span>
           </button>
@@ -263,6 +262,7 @@ import { apiRequest } from '@/config/api'
 import Multiselect from '@vueform/multiselect'
 import '@vueform/multiselect/themes/default.css'
 import toastr from 'toastr'
+import { Loader2 } from 'lucide-vue-next'
 
 const router = useRouter()
 function goBack() {
