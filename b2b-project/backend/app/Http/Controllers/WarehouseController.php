@@ -30,6 +30,31 @@ class WarehouseController extends Controller
     }
 
     /**
+     * Получить один склад
+     */
+    public function show($id)
+    {
+        $user = Auth::user();
+        
+        if (!$user) {
+            return response()->json(['error' => 'Пользователь не авторизован'], 401);
+        }
+
+        $warehouse = Warehouse::where('id', $id)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (!$warehouse) {
+            return response()->json(['error' => 'Склад не найден'], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $warehouse
+        ]);
+    }
+
+    /**
      * Создать новый склад
      */
     public function store(Request $request)

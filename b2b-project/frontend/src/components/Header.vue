@@ -294,6 +294,15 @@ const handleAvatarUpdated = (newAvatarUrl) => {
               >
                 Остатки
               </router-link>
+              <router-link
+                to="/warehouses"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                role="menuitem"
+                tabindex="-1"
+                @click="closeProductsMenu"
+              >
+                Склады
+              </router-link>
               <!-- <router-link
                 to="/products/turnovers"
                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -726,6 +735,13 @@ const handleAvatarUpdated = (newAvatarUrl) => {
                 @click="toggleMobileMenu"
               >
                 Остатки
+              </router-link>
+              <router-link
+                to="/warehouses"
+                class="block text-sm text-gray-700 hover:text-blue-600 py-2 pl-4"
+                @click="toggleMobileMenu"
+              >
+                Склады
               </router-link>
             </div>
           </div>

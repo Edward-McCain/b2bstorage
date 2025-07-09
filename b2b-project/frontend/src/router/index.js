@@ -22,6 +22,11 @@ import ReceiptCreatePage from '../components/products/ReceiptCreatePage.vue'
 import ReceiptViewPage from '../components/products/ReceiptViewPage.vue'
 import ReceiptEditPage from '../components/products/ReceiptEditPage.vue'
 
+// Warehouse pages
+import WarehousesPage from '../components/warehouses/WarehousesPage.vue'
+import WarehouseCreatePage from '../components/warehouses/WarehouseCreatePage.vue'
+import WarehouseEditPage from '../components/warehouses/WarehouseEditPage.vue'
+
 // Purchase pages
 import SupplierOrdersPage from '../components/purchases/SupplierOrdersPage.vue'
 import SupplierInvoicesPage from '../components/purchases/SupplierInvoicesPage.vue'
@@ -164,6 +169,22 @@ const routes = [
     name: 'ReceiptEdit',
     component: ReceiptEditPage
   },
+  // Warehouse routes
+  {
+    path: '/warehouses',
+    name: 'Warehouses',
+    component: WarehousesPage
+  },
+  {
+    path: '/warehouses/create',
+    name: 'WarehouseCreate',
+    component: WarehouseCreatePage
+  },
+  {
+    path: '/warehouses/edit/:id',
+    name: 'WarehouseEdit',
+    component: WarehouseEditPage
+  },
   // Purchase routes
   {
     path: '/purchases/supplier-orders',
@@ -304,7 +325,7 @@ router.beforeEach((to, from, next) => {
   
   // Список роутов, требующих авторизации
   const protectedRoutes = [
-    '/products', '/purchases', '/sales', '/analytics', '/counterparties', '/account-settings'
+    '/products', '/purchases', '/sales', '/analytics', '/counterparties', '/account-settings', '/warehouses'
   ]
   
   // Проверяем, требует ли роут авторизации

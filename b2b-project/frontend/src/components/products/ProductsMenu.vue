@@ -58,6 +58,13 @@
         >
           Остатки
         </router-link>
+        <router-link 
+          to="/warehouses" 
+          class="border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap"
+          :class="{ 'border-blue-700 text-blue-700': isWarehouseActive }"
+        >
+          Склады
+        </router-link>
         <!-- <router-link 
           to="/products/turnovers" 
           class="border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap"
@@ -101,6 +108,13 @@ const route = useRoute()
 const isActive = (path) => {
   return route.path === path
 }
+
+// Проверяем активное состояние для складов
+const isWarehouseActive = computed(() => {
+  return route.path === '/warehouses' || 
+         route.path === '/warehouses/create' || 
+         route.path.startsWith('/warehouses/edit/')
+})
 </script>
 
 <style scoped>
