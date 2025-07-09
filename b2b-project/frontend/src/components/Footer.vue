@@ -9,7 +9,8 @@
         <!-- Логотип и описание -->
         <div class="mb-8">
           <div class="flex items-center justify-center gap-3 mb-4">
-            <span class="text-2xl font-bold text-gray-800">B2B SKLAD</span>
+            <!-- <span class="text-2xl font-bold text-gray-800">B2B SKLAD</span> -->
+            <img src="../assets/skladlogo.png" alt="B2B SKLAD" class="h-8">
           </div>
           <p class="text-gray-600 text-sm max-w-md mx-auto">
             Профессиональная система складского учета<br>

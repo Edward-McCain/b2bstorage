@@ -579,7 +579,7 @@ const handleAvatarUpdated = (newAvatarUrl) => {
               aria-expanded="false"
               aria-haspopup="true"
             >
-              <span class="text-sm text-gray-700">{{ user?.user_name || 'Пользователь' }}</span>
+              <span class="text-sm text-gray-700">{{ user?.first_name || (user?.first_name === '' ? 'Пользователь' : user?.first_name) }}</span>
               <!-- Аватар -->
               <div v-if="avatarUrl" class="h-8 w-8 rounded-full overflow-hidden">
                 <img 
