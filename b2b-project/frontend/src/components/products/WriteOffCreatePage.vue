@@ -3,7 +3,7 @@
     <ProductsMenu />
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div class="flex items-center justify-between mb-8">
-        <h1 class="text-2xl font-bold text-gray-900">Новое оприходование</h1>
+        <h1 class="text-2xl font-bold text-gray-900">Новое списание</h1>
         <button @click="goBack" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold px-6 py-2 rounded-lg border shadow transition text-sm">
           Назад
         </button>
@@ -199,36 +199,59 @@
                 <th class="px-3 py-2 text-center font-semibold text-gray-700">Количество</th>
                 <th class="px-3 py-2 text-center font-semibold text-gray-700">Цена</th>
                 <th class="px-3 py-2 text-center font-semibold text-gray-700">Сумма</th>
+                <th class="px-3 py-2 text-center font-semibold text-gray-700">Причина списания</th>
                 <th class="px-3 py-2 text-center font-semibold text-gray-700">Действия</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(position, index) in positions" :key="`position-${index}-${position.product_id}`" class="hover:bg-gray-50">
-                <td class="px-3 py-2 text-left">{{ position.name }}</td>
-                <td class="px-3 py-2 text-center">
-                  <input :value="position.quantity" @input="updatePositionQuantity(index, $event.target.value)" type="number" step="0.001" class="w-20 border border-gray-300 rounded px-2 py-1 text-sm text-center bg-white" />
+              <tr v-for="(position, index) in positions" :key="index" class="hover:bg-gray-50">
+                <td class="px-3 py-2">
+                  <div class="text-sm font-medium text-gray-900">{{ position.name }}</div>
+                  <div class="text-xs text-gray-500">{{ position.code }}</div>
                 </td>
                 <td class="px-3 py-2 text-center">
-                  <input :value="position.price" @input="updatePositionPrice(index, $event.target.value)" type="number" step="0.01" class="w-24 border border-gray-300 rounded px-2 py-1 text-sm text-center bg-white" />
+                  <input 
+                    v-model="position.quantity" 
+                    type="number" 
+                    step="0.001"
+                    class="w-20 text-center border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                    @input="updatePositionQuantity(index, $event.target.value)"
+                  />
                 </td>
-                <td class="px-3 py-2 text-center">{{ calculatePositionTotal(position) }}</td>
                 <td class="px-3 py-2 text-center">
-                  <button type="button" @click="removePosition(index)" class="text-red-500 hover:text-red-700">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                    </svg>
+                  <input 
+                    v-model="position.price" 
+                    type="number" 
+                    step="0.01"
+                    class="w-24 text-center border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                    @input="updatePositionPrice(index, $event.target.value)"
+                  />
+                </td>
+                <td class="px-3 py-2 text-center text-sm font-medium">
+                  {{ calculatePositionTotal(position) }}
+                </td>
+                <td class="px-3 py-2 text-center">
+                  <input 
+                    v-model="position.reason" 
+                    type="text" 
+                    class="w-full text-center border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                    placeholder="Причина списания"
+                  />
+                </td>
+                <td class="px-3 py-2 text-center">
+                  <button 
+                    type="button"
+                    @click="removePosition(index)"
+                    :disabled="position.deleting"
+                    class="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50 transition-colors"
+                  >
+                    <X v-if="!position.deleting" class="w-4 h-4" />
+                    <Loader2 v-else class="animate-spin w-4 h-4" />
                   </button>
                 </td>
               </tr>
             </tbody>
           </table>
-        </div>
-
-        <!-- Итого -->
-        <div v-if="positions.length > 0" class="text-right">
-          <div class="text-lg font-semibold text-gray-900">
-            Итого: {{ total.toFixed(2) }} ₽
-          </div>
         </div>
 
         <!-- Сообщения об ошибках -->
@@ -243,10 +266,11 @@
 
         <!-- Кнопки -->
         <div class="flex justify-end gap-2 mt-6">
-          <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg shadow transition text-sm flex items-center gap-2" :disabled="saving || uploading">
+          <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg shadow transition text-sm flex items-center gap-2" :disabled="saving || uploading || loadingUserData">
             <Loader2 v-if="saving" class="animate-spin h-4 w-4" />
-            <span v-if="saving">Сохранение...</span>
-            <span v-else>Сохранить</span>
+            <span v-if="saving">Создание...</span>
+            <span v-else-if="loadingUserData">Загрузка...</span>
+            <span v-else>Создать списание</span>
           </button>
         </div>
       </form>
@@ -262,19 +286,19 @@ import { apiRequest } from '@/config/api'
 import Multiselect from '@vueform/multiselect'
 import '@vueform/multiselect/themes/default.css'
 import toastr from 'toastr'
-import { Loader2 } from 'lucide-vue-next'
+import { Loader2, X } from 'lucide-vue-next'
 
 // Устанавливаем заголовок страницы
-document.title = 'B2B SKLAD - Оприходования'
+document.title = 'B2B SKLAD - Списания'
 
 const router = useRouter()
 function goBack() {
-  router.push('/products/receipts')
+  router.push('/products/write-offs')
 }
 
 const form = ref({
   number: '',
-  date: '',
+  date: new Date().toISOString().slice(0, 16), // Текущая дата и время
   organization: '',
   project: '',
   warehouse: null,
@@ -450,95 +474,16 @@ async function createWarehouse() {
       // Устанавливаем новый склад как выбранный
       form.value.warehouse = response.data.data.id
       
-      // Скрываем блок добавления склада
-      closeWarehouseForm()
-      
-      // Показываем уведомление
       toastr.success('Склад успешно создан')
+      closeWarehouseForm()
     } else {
-      warehouseServerError.value = response.data.message || 'Ошибка при создании склада'
+      warehouseServerError.value = response.data.message || 'Произошла ошибка при создании склада'
     }
   } catch (error) {
     console.error('Ошибка при создании склада:', error)
     warehouseServerError.value = 'Произошла ошибка при создании склада'
   } finally {
     warehouseSaving.value = false
-  }
-}
-
-onMounted(() => {
-  const today = new Date()
-  const year = today.getFullYear()
-  const month = String(today.getMonth() + 1).padStart(2, '0')
-  const day = String(today.getDate()).padStart(2, '0')
-  const hours = String(today.getHours()).padStart(2, '0')
-  const minutes = String(today.getMinutes()).padStart(2, '0')
-  form.value.date = `${year}-${month}-${day}T${hours}:${minutes}`
-  loadUserData().then(() => {
-    loadProducts()
-    loadWarehouses()
-  })
-})
-
-function validate() {
-  let isValid = true
-  errors.value = {}
-  if (!form.value.number) {
-    errors.value.number = 'Номер обязателен'
-    isValid = false
-  }
-  if (!form.value.date) {
-    errors.value.date = 'Дата обязательна'
-    isValid = false
-  }
-  if (!form.value.organization) {
-    errors.value.organization = 'Организация обязательна'
-    isValid = false
-  }
-  if (!form.value.warehouse) {
-    errors.value.warehouse = 'Склад обязателен'
-    isValid = false
-  }
-  if (positions.value.length === 0) {
-    errors.value.positions = 'Добавьте хотя бы одну позицию'
-    isValid = false
-  }
-  return isValid
-}
-
-async function handleSubmit() {
-  if (!validate()) return
-  saving.value = true
-  serverError.value = ''
-  successMessage.value = ''
-  try {
-    const receiptData = {
-      ...form.value,
-      positions: positions.value,
-      receipt_files: uploadedFiles.value.map(file => ({
-        filename: file.filename,
-        size_mb: file.size_mb,
-        file_url: file.file_url,
-        employee: file.employee
-      }))
-    }
-    const response = await apiRequest('/receipts', {
-      method: 'POST',
-      body: JSON.stringify(receiptData)
-    })
-    if (response.ok && response.data.success) {
-      successMessage.value = 'Оприходование успешно создано!'
-      setTimeout(() => {
-        router.push('/products/receipts')
-      }, 1000)
-    } else {
-      serverError.value = response.data.message || 'Произошла ошибка при создании оприходования.'
-    }
-  } catch (error) {
-    console.error('Ошибка при создании оприходования:', error)
-    serverError.value = 'Произошла ошибка при создании оприходования.'
-  } finally {
-    saving.value = false
   }
 }
 
@@ -565,12 +510,31 @@ function addProduct() {
 function updatePositionQuantity(index, value) {
   positions.value[index].quantity = value
 }
+
 function updatePositionPrice(index, value) {
   positions.value[index].price = value
 }
 
-function removePosition(index) {
-  positions.value.splice(index, 1)
+async function removePosition(index) {
+  const position = positions.value[index]
+  
+  // Устанавливаем флаг удаления для конкретного товара
+  position.deleting = true
+
+  try {
+    // Имитируем задержку для UX
+    await new Promise(resolve => setTimeout(resolve, 300))
+    
+    // Удаляем товар из списка
+    positions.value.splice(index, 1)
+  } catch (error) {
+    console.error('Ошибка при удалении товара:', error)
+  } finally {
+    // Убираем флаг удаления (хотя товар уже удален)
+    if (position) {
+      position.deleting = false
+    }
+  }
 }
 
 function calculatePositionTotal(position) {
@@ -600,7 +564,7 @@ async function handleFileUpload(event) {
       const formData = new FormData()
       formData.append('file', file)
       
-      const response = await apiRequest('/receipt-files/draft', {
+      const response = await apiRequest('/write-off-files/draft', {
         method: 'POST',
         body: formData,
         headers: {}
@@ -651,18 +615,87 @@ async function removeFile(id) {
       return
     }
     
-    // Если у файла есть числовой id (загружен на сервер), удаляем его
-    if (typeof file.id === 'number') {
-      try {
-        await apiRequest(`/receipt-files/${file.id}`, {
-          method: 'DELETE'
-        })
-      } catch (error) {
-        console.error('Ошибка при удалении файла с сервера:', error)
-      }
-    }
-    
+    // При создании списания файлы еще не сохранены в БД, 
+    // поэтому просто удаляем из списка загруженных файлов
     uploadedFiles.value.splice(index, 1)
   }
 }
+
+function validate() {
+  let isValid = true
+  errors.value = {}
+  
+  if (!form.value.number.trim()) {
+    errors.value.number = 'Номер списания обязателен'
+    isValid = false
+  }
+  
+  if (!form.value.date) {
+    errors.value.date = 'Дата обязательна'
+    isValid = false
+  }
+  
+  if (!form.value.organization.trim()) {
+    errors.value.organization = 'Организация обязательна'
+    isValid = false
+  }
+  
+  if (!form.value.warehouse) {
+    errors.value.warehouse = 'Склад обязателен'
+    isValid = false
+  }
+  
+  if (positions.value.length === 0) {
+    errors.value.positions = 'Добавьте хотя бы один товар'
+    isValid = false
+  }
+  
+  return isValid
+}
+
+async function handleSubmit() {
+  if (!validate()) return
+  
+  saving.value = true
+  serverError.value = ''
+  successMessage.value = ''
+  
+  try {
+    // Подготавливаем данные для отправки
+    const submitData = {
+      ...form.value,
+      positions: positions.value,
+      write_off_files: uploadedFiles.value.map(file => ({
+        filename: file.filename,
+        size_mb: file.size_mb,
+        file_url: file.file_url,
+        employee: file.employee
+      }))
+    }
+    
+    const response = await apiRequest('/write-offs', {
+      method: 'POST',
+      body: JSON.stringify(submitData)
+    })
+    
+    if (response.ok && response.data.success) {
+      successMessage.value = 'Списание успешно создано!'
+      toastr.success('Списание успешно создано')
+      setTimeout(() => {
+        router.push('/products/write-offs')
+      }, 1000)
+    } else {
+      serverError.value = response.data.message || 'Произошла ошибка при создании списания'
+    }
+  } catch (error) {
+    console.error('Ошибка при создании списания:', error)
+    serverError.value = 'Произошла ошибка при создании списания'
+  } finally {
+    saving.value = false
+  }
+}
+
+onMounted(async () => {
+  await Promise.all([loadUserData(), loadProducts(), loadWarehouses()])
+})
 </script> 

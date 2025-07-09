@@ -268,6 +268,9 @@ import '@vueform/multiselect/themes/default.css'
 import toastr from 'toastr'
 import { Loader2 } from 'lucide-vue-next'
 
+// Устанавливаем заголовок страницы
+document.title = 'B2B SKLAD - Оприходования'
+
 const router = useRouter()
 const route = useRoute()
 function goBack() {

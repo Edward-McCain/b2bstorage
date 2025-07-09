@@ -112,6 +112,9 @@ import ProductsMenu from './ProductsMenu.vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Pencil, Loader2 } from 'lucide-vue-next'
 import { apiRequest } from '@/config/api'
+
+// Устанавливаем заголовок страницы
+document.title = 'B2B SKLAD - Оприходования'
 const route = useRoute()
 const router = useRouter()
 

@@ -67,6 +67,9 @@ import { apiRequest } from '@/config/api'
 import { Loader2 } from 'lucide-vue-next'
 import toastr from 'toastr'
 
+// Устанавливаем заголовок страницы
+document.title = 'B2B SKLAD - Склады'
+
 const router = useRouter()
 
 const form = ref({

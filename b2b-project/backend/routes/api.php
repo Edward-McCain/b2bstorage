@@ -7,6 +7,8 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\ReceiptFileController;
 use App\Http\Controllers\WarehouseController;
+use App\Http\Controllers\WriteOffController;
+use App\Http\Controllers\WriteOffFileController;
 
 /*
 |--------------------------------------------------------------------------
@@ -62,6 +64,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/receipt-files/{receiptId}', [ReceiptFileController::class, 'getFiles']);
     Route::delete('/receipt-files/{id}', [ReceiptFileController::class, 'destroy']);
     Route::post('/receipt-files/draft', [ReceiptFileController::class, 'storeDraft']);
+    // Write-off routes
+    Route::get('/write-offs', [WriteOffController::class, 'index']);
+    Route::get('/write-offs/{id}', [WriteOffController::class, 'show']);
+    Route::post('/write-offs', [WriteOffController::class, 'store']);
+    Route::put('/write-offs/{id}', [WriteOffController::class, 'update']);
+    Route::delete('/write-offs/{id}', [WriteOffController::class, 'destroy']);
+    Route::post('/write-off-files', [WriteOffFileController::class, 'store']);
+    Route::get('/write-off-files/{writeOffId}', [WriteOffFileController::class, 'getFiles']);
+    Route::delete('/write-off-files/{id}', [WriteOffFileController::class, 'destroy']);
+    Route::post('/write-off-files/draft', [WriteOffFileController::class, 'storeDraft']);
     // Warehouse routes
     Route::get('/warehouses', [WarehouseController::class, 'index']);
     Route::get('/warehouses/{id}', [WarehouseController::class, 'show']);

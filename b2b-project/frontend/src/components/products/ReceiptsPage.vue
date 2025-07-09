@@ -193,6 +193,9 @@ import toastr from 'toastr'
 import Multiselect from '@vueform/multiselect'
 import '@vueform/multiselect/themes/default.css'
 
+// Устанавливаем заголовок страницы
+document.title = 'B2B SKLAD - Оприходования'
+
 const router = useRouter()
 
 const receipts = ref([])
