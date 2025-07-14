@@ -36,14 +36,23 @@
               </div>
               <div class="flex items-center space-x-2">
                 <router-link 
+                  :to="`/warehouses/${warehouse.id}`"
+                  class="text-green-600 hover:text-green-800 p-2 rounded hover:bg-green-50 transition-colors cursor-pointer"
+                  title="Просмотр склада"
+                >
+                  <Eye class="w-4 h-4" />
+                </router-link>
+                <router-link 
                   :to="`/warehouses/edit/${warehouse.id}`"
                   class="text-blue-600 hover:text-blue-800 p-2 rounded hover:bg-blue-50 transition-colors cursor-pointer"
+                  title="Редактировать склад"
                 >
                   <Edit class="w-4 h-4" />
                 </router-link>
                 <button 
                   @click="openDeleteModal(warehouse.id, warehouse.name)" 
                   class="text-red-600 hover:text-red-800 p-2 rounded hover:bg-red-50 transition-colors cursor-pointer"
+                  title="Удалить склад"
                 >
                   <Trash2 class="w-4 h-4" />
                 </button>
@@ -78,7 +87,7 @@ import { ref, onMounted } from 'vue'
 import ProductsMenu from '../products/ProductsMenu.vue'
 import { apiRequest } from '@/config/api'
 import { useRouter } from 'vue-router'
-import { Edit, Trash2, Loader2 } from 'lucide-vue-next'
+import { Edit, Trash2, Loader2, Eye } from 'lucide-vue-next'
 import toastr from 'toastr'
 
 // Устанавливаем заголовок страницы

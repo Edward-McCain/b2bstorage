@@ -93,6 +93,52 @@ export const apiRequest = async (endpoint, options = {}) => {
   }
 }
 
+// Создаем объект API с методами для удобства
+const api = {
+  async get(endpoint, options = {}) {
+    const response = await apiRequest(endpoint, { ...options, method: 'GET' })
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.data.message || 'Request failed'}`)
+    }
+    return response
+  },
+
+  async post(endpoint, data = {}, options = {}) {
+    const response = await apiRequest(endpoint, {
+      ...options,
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.data.message || 'Request failed'}`)
+    }
+    return response
+  },
+
+  async put(endpoint, data = {}, options = {}) {
+    const response = await apiRequest(endpoint, {
+      ...options,
+      method: 'PUT',
+      body: JSON.stringify(data)
+    })
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.data.message || 'Request failed'}`)
+    }
+    return response
+  },
+
+  async delete(endpoint, options = {}) {
+    const response = await apiRequest(endpoint, { ...options, method: 'DELETE' })
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.data.message || 'Request failed'}`)
+    }
+    return response
+  }
+}
+
+// Экспортируем по умолчанию
+export default api
+
 const CATEGORIES_KEY = 'categories_cache';
 const CATEGORIES_TTL = 24 * 60 * 60 * 1000; // сутки
 

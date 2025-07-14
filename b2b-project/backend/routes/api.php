@@ -11,6 +11,9 @@ use App\Http\Controllers\WriteOffController;
 use App\Http\Controllers\WriteOffFileController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\InventoryFileController;
+use App\Http\Controllers\ProductTransferController;
+use App\Http\Controllers\ProductBalanceController;
+use App\Http\Controllers\CurrencyController;
 
 /*
 |--------------------------------------------------------------------------
@@ -94,6 +97,37 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/warehouses', [WarehouseController::class, 'store']);
     Route::put('/warehouses/{id}', [WarehouseController::class, 'update']);
     Route::delete('/warehouses/{id}', [WarehouseController::class, 'destroy']);
+    // Product transfer routes
+    Route::get('/transfers', [ProductTransferController::class, 'index']);
+    Route::post('/transfers/filter', [ProductTransferController::class, 'filter']);
+    Route::post('/transfers/available-products', [ProductTransferController::class, 'getAvailableProducts']);
+    Route::get('/transfers/all-products', [ProductTransferController::class, 'getAllProducts']);
+    Route::post('/transfers', [ProductTransferController::class, 'store']);
+    Route::get('/transfers/{id}', [ProductTransferController::class, 'show']);
+    Route::put('/transfers/{id}', [ProductTransferController::class, 'update']);
+    Route::delete('/transfers/{id}', [ProductTransferController::class, 'destroy']);
+    Route::post('/transfers/{id}/confirm', [ProductTransferController::class, 'confirm']);
+    Route::post('/transfers/{id}/complete', [ProductTransferController::class, 'complete']);
+    Route::post('/transfers/{id}/cancel', [ProductTransferController::class, 'cancel']);
+    // Product balance routes
+    Route::get('/balances', [ProductBalanceController::class, 'index']);
+    Route::post('/balances', [ProductBalanceController::class, 'filter']);
+    Route::get('/balances/summary', [ProductBalanceController::class, 'summary']);
+    Route::post('/balances/summary', [ProductBalanceController::class, 'summary']);
+    Route::get('/balances/by-warehouse', [ProductBalanceController::class, 'byWarehouse']);
+    Route::get('/balances/by-product', [ProductBalanceController::class, 'byProduct']);
+    Route::get('/balances/low-stock', [ProductBalanceController::class, 'lowStock']);
+    Route::get('/balances/out-of-stock', [ProductBalanceController::class, 'outOfStock']);
+    Route::get('/balances/movements', [ProductBalanceController::class, 'movements']);
+    Route::post('/balances/movements', [ProductBalanceController::class, 'movements']);
+    
+    // Currency routes
+    Route::get('/currencies', [CurrencyController::class, 'getRates']);
+    Route::get('/currencies/fetch', [CurrencyController::class, 'fetchAndSaveRates']);
+    Route::get('/currencies/type/{currency_type}', [CurrencyController::class, 'getRateByType']);
+    Route::post('/currencies/convert', [CurrencyController::class, 'convert']);
+    Route::get('/user/currency', [CurrencyController::class, 'getUserCurrency']);
+    Route::put('/user/currency', [CurrencyController::class, 'updateUserCurrency']);
 });
 
 Route::get('/categories', [CategoryController::class, 'index']);

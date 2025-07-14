@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\WriteOff;
 use App\Models\WriteOffPosition;
 use App\Models\WriteOffFile;
+use App\Models\ProductBalance;
+use App\Models\ProductOperation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -206,6 +208,11 @@ class WriteOffController extends Controller
             
             $writeOff->update(['total' => $total]);
 
+            // Если списание проведено, обновляем остатки
+            if ($writeOff->status === 'posted') {
+                $this->updateProductBalances($writeOff);
+            }
+
             DB::commit();
 
             return response()->json([
@@ -320,6 +327,11 @@ class WriteOffController extends Controller
             
             $writeOff->update(['total' => $total]);
 
+            // Если статус изменился на "проведено", обновляем остатки
+            if (($request->status === 'posted') && ($writeOff->getOriginal('status') !== 'posted')) {
+                $this->updateProductBalances($writeOff);
+            }
+
             DB::commit();
 
             return response()->json([
@@ -362,5 +374,45 @@ class WriteOffController extends Controller
             'success' => true,
             'message' => 'Списание успешно удалено'
         ]);
+    }
+
+    /**
+     * Обновить остатки товаров при проведении списания
+     */
+    private function updateProductBalances(WriteOff $writeOff)
+    {
+        $positions = $writeOff->positions;
+        
+        foreach ($positions as $position) {
+            // Используем product_id из позиции, если он есть, иначе ищем по артикулу или названию
+            $product = null;
+            if ($position->product_id) {
+                $product = \App\Models\ProductSklad::find($position->product_id);
+            } else {
+                $product = \App\Models\ProductSklad::where('article', $position->article)
+                    ->orWhere('name', $position->name)
+                    ->first();
+            }
+            
+            if ($product) {
+                // Уменьшаем остаток на складе
+                ProductBalance::decrementBalance(
+                    $product->id,
+                    $writeOff->warehouse,
+                    $position->quantity
+                );
+                
+                // Создаем запись операции
+                ProductOperation::createOperation([
+                    'product_id' => $product->id,
+                    'warehouse_id' => $writeOff->warehouse,
+                    'operation_type' => ProductOperation::TYPE_WRITE_OFF,
+                    'quantity' => -(int)$position->quantity, // Отрицательное количество для списания
+                    'reference_type' => 'write_off',
+                    'reference_id' => $writeOff->id,
+                    'notes' => "Списание №{$writeOff->number}"
+                ]);
+            }
+        }
     }
 } 

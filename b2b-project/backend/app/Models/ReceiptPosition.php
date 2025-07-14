@@ -11,6 +11,7 @@ class ReceiptPosition extends Model
 
     protected $fillable = [
         'receipt_id',
+        'product_id',
         'name',
         'code',
         'barcode',
@@ -37,5 +38,10 @@ class ReceiptPosition extends Model
     public function receipt()
     {
         return $this->belongsTo(Receipt::class);
+    }
+
+    public function product()
+    {
+        return $this->belongsTo(ProductSklad::class, 'product_id');
     }
 } 

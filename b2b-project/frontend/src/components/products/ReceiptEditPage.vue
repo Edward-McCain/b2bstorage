@@ -47,12 +47,19 @@
                 <Loader2 class="animate-spin h-4 w-4 text-blue-600 mr-2" />
                 <span class="text-sm text-gray-500">Загрузка складов...</span>
               </div>
-              <select v-else v-model="form.warehouse" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" required>
-                <option value="">Выберите склад</option>
-                <option v-for="warehouse in warehouses" :key="warehouse.id" :value="warehouse.id">
-                  {{ warehouse.name }}
-                </option>
-              </select>
+              <Multiselect
+                v-else
+                v-model="form.warehouse"
+                :options="warehouseOptions"
+                label="label"
+                value="value"
+                :object="false"
+                placeholder="Выберите склад"
+                :max-height="400"
+                class="w-full text-sm multiselect-custom"
+                :loading="loadingWarehouses"
+                :disabled="loadingWarehouses || loading"
+              />
             </div>
           </div>
 
@@ -314,6 +321,14 @@ const statusOptions = [
   { label: 'Черновик', value: 'draft' },
   { label: 'Проведено', value: 'posted' }
 ]
+
+const warehouseOptions = computed(() => {
+  if (!Array.isArray(warehouses.value)) return []
+  return warehouses.value.map(w => ({
+    label: w.name,
+    value: w.id
+  }))
+})
 
 const productOptions = computed(() => {
   if (!Array.isArray(products.value)) return []

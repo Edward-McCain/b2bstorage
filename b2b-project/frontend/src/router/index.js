@@ -10,6 +10,7 @@ import WriteOffsPage from '../components/products/WriteOffsPage.vue'
 import InventoryPage from '../components/products/InventoryPage.vue'
 import InternalOrdersPage from '../components/products/InternalOrdersPage.vue'
 import TransfersPage from '../components/products/TransfersPage.vue'
+import TransferCreatePage from '../components/products/TransferCreatePage.vue'
 import PriceListsPage from '../components/products/PriceListsPage.vue'
 import BalancesPage from '../components/products/BalancesPage.vue'
 import TurnoversPage from '../components/products/TurnoversPage.vue'
@@ -32,6 +33,7 @@ import InventoryEditPage from '../components/products/InventoryEditPage.vue'
 import WarehousesPage from '../components/warehouses/WarehousesPage.vue'
 import WarehouseCreatePage from '../components/warehouses/WarehouseCreatePage.vue'
 import WarehouseEditPage from '../components/warehouses/WarehouseEditPage.vue'
+import WarehouseViewPage from '../components/warehouses/WarehouseViewPage.vue'
 
 // Purchase pages
 import SupplierOrdersPage from '../components/purchases/SupplierOrdersPage.vue'
@@ -119,6 +121,11 @@ const routes = [
     path: '/products/transfers',
     name: 'Transfers',
     component: TransfersPage
+  },
+  {
+    path: '/products/transfers/create',
+    name: 'TransferCreate',
+    component: TransferCreatePage
   },
   {
     path: '/products/price-lists',
@@ -212,6 +219,11 @@ const routes = [
     path: '/warehouses',
     name: 'Warehouses',
     component: WarehousesPage
+  },
+  {
+    path: '/warehouses/:id',
+    name: 'WarehouseView',
+    component: WarehouseViewPage
   },
   {
     path: '/warehouses/create',

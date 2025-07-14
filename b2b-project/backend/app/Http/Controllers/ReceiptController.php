@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Receipt;
 use App\Models\ReceiptPosition;
+use App\Models\ProductBalance;
+use App\Models\ProductOperation;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -261,8 +263,37 @@ class ReceiptController extends Controller
                     $amount = $quantity * $price;
                     $totalAmount += $amount;
                     
+                    // Находим товар по артикулу или названию
+                    $product = null;
+                    $article = $positionData['article'] ?? '';
+                    $name = $positionData['name'] ?? '';
+                    
+                    if (!empty($article)) {
+                        $product = \App\Models\ProductSklad::where('article', $article)->first();
+                        Log::info('Поиск товара по артикулу', [
+                            'article' => $article,
+                            'found' => $product ? $product->id : null
+                        ]);
+                    }
+                    
+                    if (!$product && !empty($name)) {
+                        $product = \App\Models\ProductSklad::where('name', $name)->first();
+                        Log::info('Поиск товара по названию', [
+                            'name' => $name,
+                            'found' => $product ? $product->id : null
+                        ]);
+                    }
+                    
+                    Log::info('Создание позиции', [
+                        'position_data' => $positionData,
+                        'product_id' => $product ? $product->id : null,
+                        'article' => $article,
+                        'name' => $name
+                    ]);
+                    
                     ReceiptPosition::create([
                         'receipt_id' => $receipt->id,
+                        'product_id' => $product ? $product->id : null,
                         'name' => $positionData['name'] ?? '',
                         'code' => $positionData['code'] ?? '',
                         'barcode' => $positionData['barcode'] ?? '',
@@ -296,6 +327,11 @@ class ReceiptController extends Controller
                         'uploaded_at' => now()
                     ]);
                 }
+            }
+
+            // Если оприходование проведено, обновляем остатки
+            if ($receipt->is_posted || $receipt->status === 'posted') {
+                $this->updateProductBalances($receipt);
             }
 
             DB::commit();
@@ -403,8 +439,14 @@ class ReceiptController extends Controller
                         $amount = $quantity * $price;
                         $totalAmount += $amount;
                         
+                        // Находим товар по артикулу или названию
+                        $product = \App\Models\ProductSklad::where('article', $positionData['article'] ?? '')
+                            ->orWhere('name', $positionData['name'] ?? '')
+                            ->first();
+                        
                         ReceiptPosition::create([
                             'receipt_id' => $receipt->id,
+                            'product_id' => $product ? $product->id : null,
                             'name' => $positionData['name'] ?? '',
                             'code' => $positionData['code'] ?? '',
                             'barcode' => $positionData['barcode'] ?? '',
@@ -425,6 +467,12 @@ class ReceiptController extends Controller
                 $receipt->update([
                     'total' => $totalAmount + ($request->overhead_costs ?? 0)
                 ]);
+            }
+
+            // Если статус изменился на "проведено", обновляем остатки
+            if (($request->status === 'posted' || $request->is_posted) && 
+                ($receipt->status !== 'posted' || !$receipt->is_posted)) {
+                $this->updateProductBalances($receipt);
             }
 
             DB::commit();
@@ -480,6 +528,46 @@ class ReceiptController extends Controller
                 'success' => false,
                 'message' => 'Ошибка при удалении оприходования: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * Обновить остатки товаров при проведении оприходования
+     */
+    private function updateProductBalances(Receipt $receipt)
+    {
+        $positions = $receipt->positions;
+        
+        foreach ($positions as $position) {
+            // Используем product_id из позиции, если он есть, иначе ищем по артикулу или названию
+            $product = null;
+            if ($position->product_id) {
+                $product = \App\Models\ProductSklad::find($position->product_id);
+            } else {
+                $product = \App\Models\ProductSklad::where('article', $position->article)
+                    ->orWhere('name', $position->name)
+                    ->first();
+            }
+            
+            if ($product) {
+                // Увеличиваем остаток на складе
+                ProductBalance::incrementBalance(
+                    $product->id,
+                    $receipt->warehouse,
+                    $position->quantity
+                );
+                
+                // Создаем запись операции
+                ProductOperation::createOperation([
+                    'product_id' => $product->id,
+                    'warehouse_id' => $receipt->warehouse,
+                    'operation_type' => ProductOperation::TYPE_RECEIPT,
+                    'quantity' => (int)$position->quantity,
+                    'reference_type' => 'receipt',
+                    'reference_id' => $receipt->id,
+                    'notes' => "Оприходование №{$receipt->number}"
+                ]);
+            }
         }
     }
 } 

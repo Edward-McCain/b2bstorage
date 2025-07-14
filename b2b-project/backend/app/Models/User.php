@@ -128,6 +128,8 @@ class User extends Authenticatable
         ];
     }
 
+    protected $appends = ['name'];
+
     /**
      * Boot the model and generate user_id if not set
      */
@@ -154,6 +156,15 @@ class User extends Authenticatable
     public function getFullNameAttribute()
     {
         return trim($this->first_name . ' ' . $this->last_name);
+    }
+
+    /**
+     * Get user's name for display
+     */
+    public function getNameAttribute()
+    {
+        $fullName = trim($this->first_name . ' ' . $this->last_name);
+        return $fullName ?: $this->user_name ?: $this->email;
     }
 
     /**

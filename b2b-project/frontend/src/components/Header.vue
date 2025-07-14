@@ -3,6 +3,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { getFileUrl } from '../config/api.js'
+import CurrencySelector from './CurrencySelector.vue'
 
 const router = useRouter()
 const isAuthenticated = ref(false)
@@ -110,6 +111,14 @@ const openSupport = () => {
   // Здесь можно добавить логику для открытия поддержки
   window.open('mailto:support@b2bstorage.ru', '_blank')
   userMenuOpen.value = false
+}
+
+const handleCurrencyChanged = (newCurrency) => {
+  console.log('Currency changed to:', newCurrency)
+  // Обновляем данные пользователя в компоненте
+  if (user.value) {
+    user.value.currency = newCurrency
+  }
 }
 
 const toggleProductsMenu = () => {
@@ -276,7 +285,7 @@ const handleAvatarUpdated = (newAvatarUrl) => {
               >
                 Перемещения
               </router-link>
-              <router-link
+              <!-- <router-link
                 to="/products/price-lists"
                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 role="menuitem"
@@ -284,7 +293,7 @@ const handleAvatarUpdated = (newAvatarUrl) => {
                 @click="closeProductsMenu"
               >
                 Прайс-листы
-              </router-link>
+              </router-link> -->
               <router-link
                 to="/products/balances"
                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -604,6 +613,14 @@ const handleAvatarUpdated = (newAvatarUrl) => {
               tabindex="-1"
             >
               <div class="py-1" role="none">
+                <!-- Выбор валюты -->
+                <div class="px-4 py-2 border-b border-gray-100 hidden">
+                  <CurrencySelector 
+                    :current-currency="user?.currency || 'USD'"
+                    @currency-changed="handleCurrencyChanged"
+                  />
+                </div>
+                
                 <!-- Настройки аккаунта -->
                 <button
                   @click="goToAccountSettings"
@@ -611,9 +628,9 @@ const handleAvatarUpdated = (newAvatarUrl) => {
                   role="menuitem"
                   tabindex="-1"
                 >
-                  <svg class="h-5 w-5 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <svg class="h-5 w-5 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+                    <circle cx="12" cy="12" r="3"/>
                   </svg>
                   Настройки аккаунта
                 </button>
@@ -625,8 +642,12 @@ const handleAvatarUpdated = (newAvatarUrl) => {
                   role="menuitem"
                   tabindex="-1"
                 >
-                  <svg class="h-5 w-5 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M12 2.25a9.75 9.75 0 100 19.5 9.75 9.75 0 000-19.5z" />
+                  <svg class="h-5 w-5 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path d="M22 10.5V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v10c0 1.1.9 2 2 2h6l5 4v-4H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4.5"/>
+                    <path d="M10 9.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z"/>
+                    <path d="M14.5 8a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z"/>
+                    <path d="M10 12.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z"/>
+                    <path d="M14.5 11a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z"/>
                   </svg>
                   Техническая поддержка
                 </button>
@@ -641,8 +662,10 @@ const handleAvatarUpdated = (newAvatarUrl) => {
                   role="menuitem"
                   tabindex="-1"
                 >
-                  <svg class="h-5 w-5 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  <svg class="h-5 w-5 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16,17 21,12 16,7"/>
+                    <line x1="21" x2="9" y1="12" y2="12"/>
                   </svg>
                   Выйти
                 </button>
@@ -722,13 +745,13 @@ const handleAvatarUpdated = (newAvatarUrl) => {
               >
                 Перемещения
               </router-link>
-              <router-link
+              <!-- <router-link
                 to="/products/price-lists"
                 class="block text-sm text-gray-700 hover:text-blue-600 py-2 pl-4"
                 @click="toggleMobileMenu"
               >
                 Прайс-листы
-              </router-link>
+              </router-link> -->
               <router-link
                 to="/products/balances"
                 class="block text-sm text-gray-700 hover:text-blue-600 py-2 pl-4"
@@ -855,6 +878,16 @@ const handleAvatarUpdated = (newAvatarUrl) => {
             </router-link>
           </div>
 
+          <!-- Выбор валюты -->
+          <div class="border-t border-gray-200 pt-4 hidden">
+            <div class="px-4 py-2">
+              <CurrencySelector 
+                :current-currency="user?.currency || 'USD'"
+                @currency-changed="handleCurrencyChanged"
+              />
+            </div>
+          </div>
+          
           <!-- Настройки аккаунта -->
           <div class="border-t border-gray-200 pt-4">
             <router-link
@@ -862,9 +895,9 @@ const handleAvatarUpdated = (newAvatarUrl) => {
               class="flex items-center gap-3 text-gray-700 py-2"
               @click="toggleMobileMenu"
             >
-              <svg class="h-5 w-5 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <svg class="h-5 w-5 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+                <circle cx="12" cy="12" r="3"/>
               </svg>
               Настройки аккаунта
             </router-link>
@@ -873,8 +906,12 @@ const handleAvatarUpdated = (newAvatarUrl) => {
               @click="openSupport"
               class="flex items-center gap-3 text-gray-700 py-2 w-full text-left"
             >
-              <svg class="h-5 w-5 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M12 2.25a9.75 9.75 0 100 19.5 9.75 9.75 0 000-19.5z" />
+              <svg class="h-5 w-5 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path d="M22 10.5V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v10c0 1.1.9 2 2 2h6l5 4v-4H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4.5"/>
+                <path d="M10 9.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z"/>
+                <path d="M14.5 8a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z"/>
+                <path d="M10 12.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z"/>
+                <path d="M14.5 11a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z"/>
               </svg>
               Техническая поддержка
             </button>
@@ -883,8 +920,10 @@ const handleAvatarUpdated = (newAvatarUrl) => {
               @click="handleLogout"
               class="flex items-center gap-3 text-gray-700 py-2 w-full text-left"
             >
-              <svg class="h-5 w-5 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              <svg class="h-5 w-5 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                <polyline points="16,17 21,12 16,7"/>
+                <line x1="21" x2="9" y1="12" y2="12"/>
               </svg>
               Выйти
             </button>
