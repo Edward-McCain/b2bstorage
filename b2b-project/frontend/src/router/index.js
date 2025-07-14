@@ -24,6 +24,9 @@ import ReceiptEditPage from '../components/products/ReceiptEditPage.vue'
 import WriteOffCreatePage from '../components/products/WriteOffCreatePage.vue'
 import WriteOffViewPage from '../components/products/WriteOffViewPage.vue'
 import WriteOffEditPage from '../components/products/WriteOffEditPage.vue'
+import InventoryCreatePage from '../components/products/InventoryCreatePage.vue'
+import InventoryViewPage from '../components/products/InventoryViewPage.vue'
+import InventoryEditPage from '../components/products/InventoryEditPage.vue'
 
 // Warehouse pages
 import WarehousesPage from '../components/warehouses/WarehousesPage.vue'
@@ -187,6 +190,22 @@ const routes = [
     path: '/products/write-offs/edit/:id',
     name: 'WriteOffEdit',
     component: WriteOffEditPage
+  },
+  // Inventory routes
+  {
+    path: '/products/inventory/create',
+    name: 'InventoryCreate',
+    component: InventoryCreatePage
+  },
+  {
+    path: '/products/inventory/:id',
+    name: 'InventoryView',
+    component: InventoryViewPage
+  },
+  {
+    path: '/products/inventory/edit/:id',
+    name: 'InventoryEdit',
+    component: InventoryEditPage
   },
   // Warehouse routes
   {

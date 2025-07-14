@@ -9,6 +9,8 @@ use App\Http\Controllers\ReceiptFileController;
 use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\WriteOffController;
 use App\Http\Controllers\WriteOffFileController;
+use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\InventoryFileController;
 
 /*
 |--------------------------------------------------------------------------
@@ -74,6 +76,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/write-off-files/{writeOffId}', [WriteOffFileController::class, 'getFiles']);
     Route::delete('/write-off-files/{id}', [WriteOffFileController::class, 'destroy']);
     Route::post('/write-off-files/draft', [WriteOffFileController::class, 'storeDraft']);
+    // Inventory routes
+    Route::get('/inventories', [InventoryController::class, 'index']);
+    Route::get('/inventories/{id}', [InventoryController::class, 'show']);
+    Route::post('/inventories', [InventoryController::class, 'store']);
+    Route::put('/inventories/{id}', [InventoryController::class, 'update']);
+    Route::delete('/inventories/{id}', [InventoryController::class, 'destroy']);
+    Route::get('/inventories/{id}/export', [InventoryController::class, 'export']);
+    // Inventory file routes
+    Route::post('/inventory-files/upload', [InventoryFileController::class, 'upload']);
+    Route::post('/inventory-files/upload-draft', [InventoryFileController::class, 'uploadDraft']);
+    Route::get('/inventory-files/{id}', [InventoryFileController::class, 'show']);
+    Route::delete('/inventory-files/{id}', [InventoryFileController::class, 'destroy']);
     // Warehouse routes
     Route::get('/warehouses', [WarehouseController::class, 'index']);
     Route::get('/warehouses/{id}', [WarehouseController::class, 'show']);

@@ -25,8 +25,8 @@
         </router-link>
         <router-link 
           to="/products/inventory" 
-          class="border-b-2 border-transparent py-4 px-1 text-sm font-medium text-red-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap"
-          :class="{ 'border-blue-700 text-blue-700': route.path === '/products/inventory' }"
+          class="border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap"
+          :class="{ 'border-blue-700 text-blue-700 font-semibold router-link-active': isInventoryActive }"
         >
           Инвентаризации
         </router-link>
@@ -122,6 +122,13 @@ const isWriteOffActive = computed(() => {
          route.path === '/products/write-offs/create' || 
          route.path.startsWith('/products/write-offs/') && 
          !route.path.startsWith('/products/write-offs/edit/')
+})
+
+// Проверяем активное состояние для инвентаризаций
+const isInventoryActive = computed(() => {
+  return route.path === '/products/inventory' || 
+         route.path === '/products/inventory/create' || 
+         route.path.startsWith('/products/inventory/')
 })
 </script>
 
