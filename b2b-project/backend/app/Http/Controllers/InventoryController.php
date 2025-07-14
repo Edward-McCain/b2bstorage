@@ -24,6 +24,9 @@ class InventoryController extends Controller
         try {
             $query = Inventory::with(['warehouse', 'createdBy', 'items.product', 'files']);
 
+            // Фильтруем по текущему пользователю
+            $query->where('created_by', Auth::id());
+
             // Фильтры
             if ($request->filled('name')) {
                 $query->where('name', 'like', '%' . $request->name . '%');
@@ -207,7 +210,7 @@ class InventoryController extends Controller
                 'createdBy', 
                 'items.product', 
                 'files'
-            ])->find($id);
+            ])->where('created_by', Auth::id())->find($id);
 
             if (!$inventory) {
                 return response()->json([
@@ -270,7 +273,7 @@ class InventoryController extends Controller
     public function update(Request $request, $id): JsonResponse
     {
         try {
-            $inventory = Inventory::find($id);
+            $inventory = Inventory::where('created_by', Auth::id())->find($id);
 
             if (!$inventory) {
                 return response()->json([
@@ -418,7 +421,7 @@ class InventoryController extends Controller
     public function destroy($id): JsonResponse
     {
         try {
-            $inventory = Inventory::find($id);
+            $inventory = Inventory::where('created_by', Auth::id())->find($id);
 
             if (!$inventory) {
                 return response()->json([
