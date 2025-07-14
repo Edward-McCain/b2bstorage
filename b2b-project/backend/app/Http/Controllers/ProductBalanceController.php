@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class ProductBalanceController extends Controller
 {
@@ -19,6 +20,11 @@ class ProductBalanceController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = ProductBalance::with(['product', 'warehouse']);
+
+        // Фильтруем по складам текущего пользователя
+        $query->whereHas('warehouse', function ($q) {
+            $q->where('user_id', Auth::id());
+        });
 
         // Логируем входящие параметры для отладки
         Log::info('Balances filter params:', $request->all());
@@ -72,6 +78,11 @@ class ProductBalanceController extends Controller
     public function filter(Request $request): JsonResponse
     {
         $query = ProductBalance::with(['product', 'warehouse']);
+
+        // Фильтруем по складам текущего пользователя
+        $query->whereHas('warehouse', function ($q) {
+            $q->where('user_id', Auth::id());
+        });
 
         // Логируем входящие параметры для отладки
         Log::info('Balances filter POST params:', $request->all());
@@ -134,6 +145,9 @@ class ProductBalanceController extends Controller
         $balances = ProductBalance::with(['product'])
             ->where('warehouse_id', $request->warehouse_id)
             ->where('quantity', '>', 0)
+            ->whereHas('warehouse', function ($q) {
+                $q->where('user_id', Auth::id());
+            })
             ->orderBy('quantity', 'desc')
             ->get();
 
@@ -196,6 +210,11 @@ class ProductBalanceController extends Controller
     public function summary(Request $request): JsonResponse
     {
         $query = ProductBalance::with(['product', 'warehouse']);
+
+        // Фильтруем по складам текущего пользователя
+        $query->whereHas('warehouse', function ($q) {
+            $q->where('user_id', Auth::id());
+        });
 
         if ($request->has('warehouse_id') && !empty($request->warehouse_id)) {
             $query->where('warehouse_id', $request->warehouse_id);
@@ -279,6 +298,9 @@ class ProductBalanceController extends Controller
         $lowStockItems = ProductBalance::with(['product', 'warehouse'])
             ->where('quantity', '<=', $threshold)
             ->where('quantity', '>', 0)
+            ->whereHas('warehouse', function ($q) {
+                $q->where('user_id', Auth::id());
+            })
             ->orderBy('quantity', 'asc')
             ->get();
 
@@ -314,6 +336,9 @@ class ProductBalanceController extends Controller
     {
         $outOfStockItems = ProductBalance::with(['product', 'warehouse'])
             ->where('quantity', 0)
+            ->whereHas('warehouse', function ($q) {
+                $q->where('user_id', Auth::id());
+            })
             ->orderBy('product_id')
             ->get();
 
@@ -365,7 +390,8 @@ class ProductBalanceController extends Controller
                 'p.article as product_article',
                 'w.name as warehouse_name'
             ])
-            ->where('po.product_id', $request->product_id);
+            ->where('po.product_id', $request->product_id)
+            ->where('w.user_id', Auth::id());
 
         if ($request->has('warehouse_id') && !empty($request->warehouse_id)) {
             $query->where('po.warehouse_id', $request->warehouse_id);

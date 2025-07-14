@@ -31,6 +31,9 @@ class ProductTransferController extends Controller
             'positions.product'
         ])->select('*');
 
+        // Фильтруем по текущему пользователю
+        $query->where('created_by', Auth::id());
+
         $transfers = $query->orderBy('created_at', 'desc')->paginate(20);
 
         // Добавляем отладочную информацию
@@ -89,6 +92,9 @@ class ProductTransferController extends Controller
             'completedByUser',
             'positions.product'
         ])->select('*');
+
+        // Фильтруем по текущему пользователю
+        $query->where('created_by', Auth::id());
 
         // Применяем фильтр по складу только если warehouse_id не пустой
         if (!empty($request->warehouse_id)) {
@@ -155,7 +161,7 @@ class ProductTransferController extends Controller
             'createdByUser',
             'completedByUser',
             'positions.product'
-        ])->findOrFail($id);
+        ])->where('created_by', Auth::id())->findOrFail($id);
 
         return response()->json($transfer);
     }
@@ -281,7 +287,7 @@ class ProductTransferController extends Controller
      */
     public function update(Request $request, int $id): JsonResponse
     {
-        $transfer = ProductTransfer::findOrFail($id);
+        $transfer = ProductTransfer::where('created_by', Auth::id())->findOrFail($id);
 
         if ($transfer->status !== ProductTransfer::STATUS_DRAFT) {
             throw ValidationException::withMessages([
@@ -340,7 +346,7 @@ class ProductTransferController extends Controller
      */
     public function confirm(int $id): JsonResponse
     {
-        $transfer = ProductTransfer::with(['positions.product'])->findOrFail($id);
+        $transfer = ProductTransfer::with(['positions.product'])->where('created_by', Auth::id())->findOrFail($id);
 
         if (!$transfer->canBeConfirmed()) {
             throw ValidationException::withMessages([
@@ -376,7 +382,7 @@ class ProductTransferController extends Controller
      */
     public function complete(Request $request, int $id): JsonResponse
     {
-        $transfer = ProductTransfer::with(['positions.product'])->findOrFail($id);
+        $transfer = ProductTransfer::with(['positions.product'])->where('created_by', Auth::id())->findOrFail($id);
 
         if (!$transfer->canBeCompleted()) {
             throw ValidationException::withMessages([
@@ -469,7 +475,7 @@ class ProductTransferController extends Controller
      */
     public function cancel(int $id): JsonResponse
     {
-        $transfer = ProductTransfer::findOrFail($id);
+        $transfer = ProductTransfer::where('created_by', Auth::id())->findOrFail($id);
 
         if (!$transfer->canBeCancelled()) {
             throw ValidationException::withMessages([
@@ -490,7 +496,7 @@ class ProductTransferController extends Controller
      */
     public function destroy(int $id): JsonResponse
     {
-        $transfer = ProductTransfer::findOrFail($id);
+        $transfer = ProductTransfer::where('created_by', Auth::id())->findOrFail($id);
 
         if ($transfer->status !== ProductTransfer::STATUS_DRAFT) {
             throw ValidationException::withMessages([
