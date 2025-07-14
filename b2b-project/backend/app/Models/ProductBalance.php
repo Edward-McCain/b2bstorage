@@ -87,15 +87,17 @@ class ProductBalance extends Model
      */
     public static function decrementBalance($productId, $warehouseId, $quantity)
     {
-        $balance = static::where('product_id', $productId)
-            ->where('warehouse_id', $warehouseId)
-            ->first();
+        $balance = static::firstOrCreate(
+            [
+                'product_id' => $productId,
+                'warehouse_id' => $warehouseId
+            ],
+            [
+                'quantity' => 0
+            ]
+        );
 
-        if ($balance) {
-            $balance->decrement('quantity', $quantity);
-            return $balance;
-        }
-
-        return null;
+        $balance->decrement('quantity', $quantity);
+        return $balance;
     }
 } 

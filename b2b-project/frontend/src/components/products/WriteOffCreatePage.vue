@@ -25,8 +25,8 @@
         </div>
 
         <div class="flex gap-4">
-          <div class="flex-1">
-            <label class="block text-sm text-gray-700 mb-1">Организация *</label>
+          <div class="flex-1 hidden">
+            <label class="block text-sm text-gray-700 mb-1">Организация</label>
             <div v-if="loadingUserData" class="w-full h-10 bg-gray-100 rounded-lg flex items-center justify-center">
               <Loader2 class="animate-spin h-4 w-4 text-gray-400 mr-2" />
               <span class="text-xs text-gray-500">Загрузка данных пользователя...</span>
@@ -86,9 +86,6 @@
               </form>
             </div>
           </div>
-        </div>
-
-        <div class="flex gap-4">
           <div class="flex-1">
             <label class="block text-sm text-gray-700 mb-1">Статус</label>
             <Multiselect
@@ -163,95 +160,80 @@
           </div>
         </div>
 
-        <!-- Добавление товаров -->
-        <div>
-          <label class="block text-sm text-gray-700 mb-1">Товары</label>
-          <div class="flex gap-2">
-            <div class="flex-1">
-              <Multiselect
-                v-model="selectedProduct"
-                :options="productOptions"
-                label="label"
-                value="value"
-                :object="true"
-                placeholder="Выберите товар"
-                searchable
-                :search-placeholder="'Поиск товара'"
-                :max-height="400"
-                class="w-full text-sm multiselect-custom"
-                :loading="loadingProducts"
-                :disabled="loadingProducts"
-                @search-change="onProductSearch"
-              />
-            </div>
-            <button type="button" @click="addProduct" :disabled="!selectedProduct" class="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-semibold px-4 py-2 rounded-lg transition text-sm">
-              Добавить
-            </button>
+        <!-- Блок товаров для списания - всегда видимый -->
+        <div class="mt-6">
+          <h3 class="text-lg font-medium text-gray-900 mb-4">Товары для списания</h3>
+          
+          <!-- Состояние: склад не выбран -->
+          <div v-if="!form.warehouse" class="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
+            <div class="text-gray-500 text-sm">Для получения списка товаров выберите склад</div>
           </div>
-        </div>
-
-        <!-- Таблица позиций -->
-        <div v-if="positions.length > 0" class="mt-6">
-          <table class="min-w-full divide-y divide-gray-200 text-sm">
-            <thead>
-              <tr class="bg-gray-50">
-                <th class="px-3 py-2 text-left font-semibold text-gray-700">Товар</th>
-                <th class="px-3 py-2 text-center font-semibold text-gray-700">Количество</th>
-                <th class="px-3 py-2 text-center font-semibold text-gray-700">Цена</th>
-                <th class="px-3 py-2 text-center font-semibold text-gray-700">Сумма</th>
-                <th class="px-3 py-2 text-center font-semibold text-gray-700">Причина списания</th>
-                <th class="px-3 py-2 text-center font-semibold text-gray-700">Действия</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(position, index) in positions" :key="index" class="hover:bg-gray-50">
-                <td class="px-3 py-2">
-                  <div class="text-sm font-medium text-gray-900">{{ position.name }}</div>
-                  <div class="text-xs text-gray-500">{{ position.code }}</div>
-                </td>
-                <td class="px-3 py-2 text-center">
-                  <input 
-                    v-model="position.quantity" 
-                    type="number" 
-                    step="0.001"
-                    class="w-20 text-center border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
-                    @input="updatePositionQuantity(index, $event.target.value)"
-                  />
-                </td>
-                <td class="px-3 py-2 text-center">
-                  <input 
-                    v-model="position.price" 
-                    type="number" 
-                    step="0.01"
-                    class="w-24 text-center border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
-                    @input="updatePositionPrice(index, $event.target.value)"
-                  />
-                </td>
-                <td class="px-3 py-2 text-center text-sm font-medium">
-                  {{ calculatePositionTotal(position) }}
-                </td>
-                <td class="px-3 py-2 text-center">
-                  <input 
-                    v-model="position.reason" 
-                    type="text" 
-                    class="w-full text-center border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
-                    placeholder="Причина списания"
-                  />
-                </td>
-                <td class="px-3 py-2 text-center">
-                  <button 
-                    type="button"
-                    @click="removePosition(index)"
-                    :disabled="position.deleting"
-                    class="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50 transition-colors"
-                  >
-                    <X v-if="!position.deleting" class="w-4 h-4" />
-                    <Loader2 v-else class="animate-spin w-4 h-4" />
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          
+          <!-- Состояние: загрузка товаров -->
+          <div v-else-if="loadingWarehouseProducts" class="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
+            <Loader2 class="animate-spin h-8 w-8 text-blue-600 mx-auto mb-4" />
+            <div class="text-gray-500 text-sm">Загрузка товаров склада...</div>
+          </div>
+          
+          <!-- Состояние: товары загружены -->
+          <div v-else-if="warehouseProducts.length > 0" class="bg-white border border-gray-200 rounded-lg">
+            <table class="min-w-full divide-y divide-gray-200 text-sm">
+              <thead>
+                <tr class="bg-gray-50">
+                  <th class="px-3 py-2 text-left font-semibold text-gray-700">Товар</th>
+                  <th class="px-3 py-2 text-center font-semibold text-gray-700">Артикул</th>
+                  <th class="px-3 py-2 text-center font-semibold text-gray-700">Остаток на складе</th>
+                  <th class="px-3 py-2 text-center font-semibold text-gray-700">Количество к списанию</th>
+                  <th class="px-3 py-2 text-center font-semibold text-gray-700">Цена</th>
+                  <th class="px-3 py-2 text-center font-semibold text-gray-700">Причина</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(product, index) in warehouseProducts" :key="product.id" class="hover:bg-gray-50">
+                  <td class="px-3 py-2">
+                    <div class="font-medium">{{ product.name }}</div>
+                  </td>
+                  <td class="px-3 py-2 text-center">
+                    <span class="text-sm">{{ product.article || product.code || 'N/A' }}</span>
+                  </td>
+                  <td class="px-3 py-2 text-center">
+                    <span class="font-medium text-blue-600">{{ product.warehouse_quantity }}</span>
+                  </td>
+                  <td class="px-3 py-2 text-center">
+                    <input
+                      v-model.number="product.writeoff_quantity"
+                      type="number"
+                      :max="product.warehouse_quantity"
+                      min="0"
+                      class="w-20 text-center border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      @input="validateWriteoff(product)"
+                    />
+                  </td>
+                  <td class="px-3 py-2 text-center">
+                    <input
+                      v-model.number="product.price"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      class="w-24 text-center border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    />
+                  </td>
+                  <td class="px-3 py-2 text-center">
+                    <input
+                      v-model="product.reason"
+                      type="text"
+                      class="w-32 border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <!-- Состояние: товары не найдены -->
+          <div v-else class="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
+            <div class="text-gray-500 text-sm">На выбранном складе нет товаров для списания</div>
+          </div>
         </div>
 
         <!-- Сообщения об ошибках -->
@@ -281,7 +263,7 @@
 <script setup>
 import ProductsMenu from './ProductsMenu.vue'
 import { useRouter } from 'vue-router'
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { apiRequest } from '@/config/api'
 import Multiselect from '@vueform/multiselect'
 import '@vueform/multiselect/themes/default.css'
@@ -313,15 +295,11 @@ const saving = ref(false)
 const uploading = ref(false)
 const successMessage = ref('')
 
-const products = ref([])
-const loadingProducts = ref(true)
+// Восстанавливаю недостающие переменные
 const loadingUserData = ref(true)
-const selectedProduct = ref(null)
-const positions = ref([])
+const userData = ref(null)
 const uploadedFiles = ref([])
 const fileInput = ref(null)
-const userData = ref(null)
-const productSearch = ref('')
 
 // Переменные для складов
 const warehouses = ref([])
@@ -335,19 +313,15 @@ const warehouseErrors = ref({})
 const warehouseServerError = ref('')
 const warehouseSaving = ref(false)
 
+// Товары склада для списания
+const warehouseProducts = ref([])
+const loadingWarehouseProducts = ref(false)
+const selectedWarehouseName = ref('')
+
 const statusOptions = [
   { label: 'Черновик', value: 'draft' },
   { label: 'Проведено', value: 'posted' }
 ]
-
-const productOptions = computed(() => {
-  if (!Array.isArray(products.value)) return []
-  return products.value.map(p => ({
-    label: `${p.code ? p.code + ' ' : ''}${p.name}${p.article ? ' (' + p.article + ')' : ''}`,
-    value: p.id,
-    product: p
-  }))
-})
 
 const warehouseOptions = computed(() => {
   if (!Array.isArray(warehouses.value)) return []
@@ -359,8 +333,8 @@ const warehouseOptions = computed(() => {
 
 const total = computed(() => {
   let sum = 0
-  for (const pos of positions.value) {
-    const quantity = parseFloat(pos.quantity || 0)
+  for (const pos of warehouseProducts.value) {
+    const quantity = parseFloat(pos.writeoff_quantity || 0)
     const price = parseFloat(pos.price || 0)
     sum += quantity * price
   }
@@ -396,34 +370,6 @@ async function loadUserData() {
   } finally {
     loadingUserData.value = false
   }
-}
-
-async function loadProducts(search = '') {
-  try {
-    loadingProducts.value = true
-    const response = await apiRequest(`/products?search=${encodeURIComponent(search)}`, { method: 'GET' })
-    if (response.ok && response.data) {
-      let productsData = response.data
-      if (response.data.data && Array.isArray(response.data.data)) {
-        productsData = response.data.data
-      } else if (response.data.data && response.data.data.data && Array.isArray(response.data.data.data)) {
-        productsData = response.data.data.data
-      }
-      products.value = Array.isArray(productsData) ? productsData : []
-    }
-  } catch (error) {
-    console.error('Ошибка загрузки товаров:', error)
-    products.value = []
-  } finally {
-    loadingProducts.value = false
-  }
-}
-
-function onProductSearch(query) {
-  // Не отправлять запрос, если query пустой или совпадает с выбранным товаром
-  if (!query || (selectedProduct.value && selectedProduct.value.label === query)) return
-  productSearch.value = query
-  loadProducts(query)
 }
 
 async function loadWarehouses() {
@@ -487,62 +433,7 @@ async function createWarehouse() {
   }
 }
 
-function addProduct() {
-  if (selectedProduct.value) {
-    const product = selectedProduct.value.product
-    positions.value.push({
-      product_id: product.id,
-      name: product.name,
-      code: product.code || '',
-      article: product.article || '',
-      quantity: 1,
-      price: 0,
-      balance: 0,
-      reason: '',
-      gtd: '',
-      rnpt: '',
-      country: product.country || ''
-    })
-    selectedProduct.value = null
-  }
-}
-
-function updatePositionQuantity(index, value) {
-  positions.value[index].quantity = value
-}
-
-function updatePositionPrice(index, value) {
-  positions.value[index].price = value
-}
-
-async function removePosition(index) {
-  const position = positions.value[index]
-  
-  // Устанавливаем флаг удаления для конкретного товара
-  position.deleting = true
-
-  try {
-    // Имитируем задержку для UX
-    await new Promise(resolve => setTimeout(resolve, 300))
-    
-    // Удаляем товар из списка
-    positions.value.splice(index, 1)
-  } catch (error) {
-    console.error('Ошибка при удалении товара:', error)
-  } finally {
-    // Убираем флаг удаления (хотя товар уже удален)
-    if (position) {
-      position.deleting = false
-    }
-  }
-}
-
-function calculatePositionTotal(position) {
-  const quantity = parseFloat(position.quantity || 0)
-  const price = parseFloat(position.price || 0)
-  return (quantity * price).toFixed(2)
-}
-
+// Восстанавливаю функции для работы с файлами
 async function handleFileUpload(event) {
   const files = event.target.files
   if (!files.length) return
@@ -621,81 +512,120 @@ async function removeFile(id) {
   }
 }
 
-function validate() {
-  let isValid = true
-  errors.value = {}
-  
-  if (!form.value.number.trim()) {
-    errors.value.number = 'Номер списания обязателен'
-    isValid = false
+async function loadWarehouseProducts() {
+  console.log('loadWarehouseProducts вызвана, warehouse_id:', form.value.warehouse)
+  try {
+    loadingWarehouseProducts.value = true
+    const response = await apiRequest('/transfers/available-products', {
+      method: 'POST',
+      body: JSON.stringify({ warehouse_id: form.value.warehouse })
+    })
+    console.log('Ответ от /transfers/available-products:', response)
+    if (response.ok) {
+      warehouseProducts.value = response.data.map(product => ({
+        id: product.id,
+        name: product.name,
+        article: product.article,
+        code: product.article,
+        unit: product.unit,
+        supplier: product.description || '',
+        country: '',
+        warehouse_quantity: product.warehouse_quantity,
+        writeoff_quantity: 0, // поле для ввода пользователем
+        price: 0,
+        reason: ''
+      }))
+      // Получаем название склада
+      const warehouseResponse = await apiRequest(`/warehouses/${form.value.warehouse}`, { method: 'GET' })
+      if (warehouseResponse.ok && warehouseResponse.data.success) {
+        selectedWarehouseName.value = warehouseResponse.data.data.name
+      }
+      if (warehouseProducts.value.length > 0) {
+        toastr.success(`Загружено ${warehouseProducts.value.length} товаров`)
+      } else {
+        toastr.info('На выбранном складе нет товаров с остатками')
+      }
+    } else {
+      toastr.error('Ошибка при загрузке товаров склада')
+    }
+  } catch (error) {
+    console.error('Ошибка в loadWarehouseProducts:', error)
+    toastr.error('Ошибка при загрузке товаров склада')
+  } finally {
+    loadingWarehouseProducts.value = false
   }
-  
-  if (!form.value.date) {
-    errors.value.date = 'Дата обязательна'
-    isValid = false
+}
+
+function validateWriteoff(product) {
+  if (product.writeoff_quantity > product.warehouse_quantity) {
+    product.writeoff_quantity = product.warehouse_quantity
+    toastr.warning('Нельзя списать больше, чем есть на складе')
   }
-  
-  if (!form.value.organization.trim()) {
-    errors.value.organization = 'Организация обязательна'
-    isValid = false
+  if (product.writeoff_quantity < 0) {
+    product.writeoff_quantity = 0
   }
-  
-  if (!form.value.warehouse) {
-    errors.value.warehouse = 'Склад обязателен'
-    isValid = false
-  }
-  
-  if (positions.value.length === 0) {
-    errors.value.positions = 'Добавьте хотя бы один товар'
-    isValid = false
-  }
-  
-  return isValid
 }
 
 async function handleSubmit() {
-  if (!validate()) return
-  
+  errors.value = {}
   saving.value = true
-  serverError.value = ''
-  successMessage.value = ''
-  
   try {
-    // Подготавливаем данные для отправки
+    const positions = warehouseProducts.value
+      .filter(p => p.writeoff_quantity > 0)
+      .map(p => ({
+        product_id: p.id,
+        name: p.name,
+        code: p.code,
+        article: p.article,
+        quantity: p.writeoff_quantity,
+        price: p.price,
+        reason: p.reason
+      }))
     const submitData = {
       ...form.value,
-      positions: positions.value,
-      write_off_files: uploadedFiles.value.map(file => ({
-        filename: file.filename,
-        size_mb: file.size_mb,
-        file_url: file.file_url,
-        employee: file.employee
+      positions,
+      write_off_files: uploadedFiles.value.map(f => ({
+        filename: f.filename,
+        file_url: f.file_url,
+        file_size: f.size_mb,
+        uploaded_by: f.employee
       }))
     }
-    
     const response = await apiRequest('/write-offs', {
       method: 'POST',
       body: JSON.stringify(submitData)
     })
-    
     if (response.ok && response.data.success) {
-      successMessage.value = 'Списание успешно создано!'
-      toastr.success('Списание успешно создано')
-      setTimeout(() => {
-        router.push('/products/write-offs')
-      }, 1000)
+      toastr.success('Списание создано')
+      router.push('/products/write-offs')
     } else {
-      serverError.value = response.data.message || 'Произошла ошибка при создании списания'
+      if (response.data.errors) {
+        errors.value = response.data.errors
+      } else {
+        toastr.error(response.data?.message || 'Ошибка при создании списания')
+      }
     }
   } catch (error) {
-    console.error('Ошибка при создании списания:', error)
-    serverError.value = 'Произошла ошибка при создании списания'
+    toastr.error('Ошибка при создании списания')
   } finally {
     saving.value = false
   }
 }
 
 onMounted(async () => {
-  await Promise.all([loadUserData(), loadProducts(), loadWarehouses()])
+  await Promise.all([loadUserData(), loadWarehouses()])
+})
+
+// Автоматическая загрузка товаров при выборе склада
+watch(() => form.value.warehouse, async (newWarehouseId) => {
+  console.log('Watch сработал: form.value.warehouse изменился', { newWarehouseId })
+  if (newWarehouseId) {
+    console.log('Вызываем loadWarehouseProducts для warehouse_id:', newWarehouseId)
+    await loadWarehouseProducts()
+  } else {
+    console.log('Очищаем warehouseProducts')
+    warehouseProducts.value = []
+    selectedWarehouseName.value = ''
+  }
 })
 </script> 

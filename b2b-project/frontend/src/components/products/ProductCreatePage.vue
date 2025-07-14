@@ -561,7 +561,11 @@ watch(selectedCategory, async (cat) => {
     loadingSubcategories.value = true
     try {
       const response = await apiRequest(`/subcategories?category_id=${encodeURIComponent(cat.value)}`)
-      subcategories.value = response.data
+      if (response.ok && response.data.success) {
+        subcategories.value = response.data.data || []
+      } else {
+        subcategoryError.value = 'Ошибка загрузки подкатегорий'
+      }
     } catch (e) {
       subcategoryError.value = 'Ошибка загрузки подкатегорий'
     } finally {
@@ -670,11 +674,13 @@ const categoryOptions = computed(() =>
     : []
 )
 const subcategoryOptions = computed(() =>
-  subcategories.value.map(s => ({
-    label: s.name_ru || s.name,
-    value: s.subcategory_id,
-    raw: s
-  }))
+  Array.isArray(subcategories.value)
+    ? subcategories.value.map(s => ({
+        label: s.name_ru || s.name,
+        value: s.subcategory_id,
+        raw: s
+      }))
+    : []
 )
 
 const countries = computed(() =>
