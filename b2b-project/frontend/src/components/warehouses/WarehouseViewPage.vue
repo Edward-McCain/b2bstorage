@@ -38,7 +38,7 @@
             <div class="text-sm text-gray-600">
               Всего товаров: {{ products.length }}
             </div>
-            <div class="text-sm text-gray-600">
+            <div class="text-sm text-gray-600 hidden">
               Общее количество: {{ totalQuantity }}
             </div>
           </div>
