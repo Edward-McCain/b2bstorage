@@ -456,6 +456,100 @@ class InventoryController extends Controller
     /**
      * Экспорт инвентаризации в Excel
      */
+    // Метод getWarehouseProducts удален - используем api/transfers/available-products
+
+    /**
+     * Рассчитать остатки для товара на складе
+     */
+    public function calculateBalances(Request $request): JsonResponse
+    {
+        try {
+            $request->validate([
+                'warehouse_id' => 'required|exists:warehouses,id',
+                'product_ids' => 'nullable|array',
+                'product_ids.*' => 'exists:products_sklad,id'
+            ]);
+
+            $warehouseId = $request->warehouse_id;
+            $productIds = $request->product_ids ?? [];
+
+            // Получаем все товары на складе, если не указаны конкретные
+            if (empty($productIds)) {
+                $productIds = DB::table('products_sklad')
+                    ->where('user_id', Auth::id())
+                    ->pluck('id')
+                    ->toArray();
+            }
+
+            $balances = [];
+
+            foreach ($productIds as $productId) {
+                // Получаем оприходования (приходы)
+                $receipts = DB::table('receipt_positions as rp')
+                    ->join('receipts as r', 'rp.receipt_id', '=', 'r.id')
+                    ->where('r.warehouse', $warehouseId)
+                    ->where('r.user_id', Auth::id())
+                    ->where('rp.product_id', $productId)
+                    ->sum('rp.quantity');
+
+                // Получаем списания (расходы)
+                $writeOffs = DB::table('write_off_positions as wop')
+                    ->join('write_offs as wo', 'wop.write_off_id', '=', 'wo.id')
+                    ->where('wo.warehouse', $warehouseId)
+                    ->where('wo.user_id', Auth::id())
+                    ->where('wop.product_id', $productId)
+                    ->sum('wop.quantity');
+
+                // Получаем перемещения (приходы с других складов)
+                $transfersIn = DB::table('product_transfer_positions as ptp')
+                    ->join('product_transfers as pt', 'ptp.transfer_id', '=', 'pt.id')
+                    ->where('pt.to_warehouse_id', $warehouseId)
+                    ->where('pt.created_by', Auth::id())
+                    ->where('ptp.product_id', $productId)
+                    ->sum('ptp.actual_quantity');
+
+                // Получаем перемещения (расходы на другие склады)
+                $transfersOut = DB::table('product_transfer_positions as ptp')
+                    ->join('product_transfers as pt', 'ptp.transfer_id', '=', 'pt.id')
+                    ->where('pt.from_warehouse_id', $warehouseId)
+                    ->where('pt.created_by', Auth::id())
+                    ->where('ptp.product_id', $productId)
+                    ->sum('ptp.actual_quantity');
+
+                // Рассчитываем остаток: Оприходования + Перемещения приходы - Списания - Перемещения расходы
+                $calculatedBalance = $receipts + $transfersIn - $writeOffs - $transfersOut;
+
+                // Получаем информацию о товаре
+                $product = DB::table('products_sklad')
+                    ->where('id', $productId)
+                    ->first();
+
+                $balances[] = [
+                    'product_id' => $productId,
+                    'product_name' => $product->name ?? 'Неизвестный товар',
+                    'product_article' => $product->article ?? '',
+                    'calculated_balance' => $calculatedBalance,
+                    'receipts' => $receipts,
+                    'write_offs' => $writeOffs,
+                    'transfers_in' => $transfersIn,
+                    'transfers_out' => $transfersOut
+                ];
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $balances,
+                'warehouse_id' => $warehouseId
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ошибка при расчете остатков: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function export($id): JsonResponse
     {
         try {

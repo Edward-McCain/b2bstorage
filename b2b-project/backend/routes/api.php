@@ -86,6 +86,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/inventories/{id}', [InventoryController::class, 'update']);
     Route::delete('/inventories/{id}', [InventoryController::class, 'destroy']);
     Route::get('/inventories/{id}/export', [InventoryController::class, 'export']);
+    Route::post('/inventories/calculate-balances', [InventoryController::class, 'calculateBalances']);
     // Inventory file routes
     Route::post('/inventory-files/upload', [InventoryFileController::class, 'upload']);
     Route::post('/inventory-files/upload-draft', [InventoryFileController::class, 'uploadDraft']);

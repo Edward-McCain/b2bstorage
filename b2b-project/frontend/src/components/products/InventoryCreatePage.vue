@@ -140,39 +140,31 @@
           </div>
         </div>
 
-        <!-- Добавление товаров -->
-        <div>
-          <label class="block text-sm text-gray-700 mb-1">Товары</label>
-          <div class="flex gap-2">
-            <div class="flex-1">
-              <Multiselect
-                v-model="selectedProduct"
-                :options="productOptions"
-                label="label"
-                value="value"
-                :object="true"
-                placeholder="Выберите товар"
-                searchable
-                :search-placeholder="'Поиск товара'"
-                :max-height="400"
-                class="w-full text-sm multiselect-custom"
-                :loading="loadingProducts"
-                :disabled="loadingProducts"
-                @search-change="onProductSearch"
-              />
+        <!-- Товары склада -->
+        <div v-if="form.warehouse">
+          <div class="flex items-center justify-between mb-4">
+            <label class="block text-sm text-gray-700">Товары склада</label>
+            <div v-if="loadingWarehouseProducts" class="flex items-center gap-2 text-sm text-blue-600">
+              <Loader2 class="animate-spin h-4 w-4" />
+              <span>Загрузка товаров...</span>
             </div>
-            <button type="button" @click="addProduct" :disabled="!selectedProduct" class="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-semibold px-4 py-2 rounded-lg transition text-sm">
-              Добавить
-            </button>
+          </div>
+          
+          <div v-if="warehouseProducts.length > 0" class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+            <div class="text-sm text-green-700">
+              Загружено {{ warehouseProducts.length }} товаров со склада "{{ selectedWarehouseName }}"
+            </div>
           </div>
         </div>
 
-        <!-- Таблица позиций -->
-        <div v-if="positions.length > 0" class="mt-6">
+        <!-- Таблица товаров склада -->
+        <div v-if="warehouseProducts.length > 0" class="mt-6">
+          <h3 class="text-lg font-medium text-gray-900 mb-4">Товары для инвентаризации</h3>
           <table class="min-w-full divide-y divide-gray-200 text-sm">
             <thead>
               <tr class="bg-gray-50">
                 <th class="px-3 py-2 text-left font-semibold text-gray-700">Товар</th>
+                <th class="px-3 py-2 text-center font-semibold text-gray-700">Артикул</th>
                 <th class="px-3 py-2 text-center font-semibold text-gray-700">Расчетный остаток</th>
                 <th class="px-3 py-2 text-center font-semibold text-gray-700">Фактический остаток</th>
                 <th class="px-3 py-2 text-center font-semibold text-gray-700">Разница</th>
@@ -181,41 +173,40 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(position, index) in positions" :key="index" class="hover:bg-gray-50">
+              <tr v-for="(product, index) in warehouseProducts" :key="product.id" class="hover:bg-gray-50">
                 <td class="px-3 py-2">
                   <div>
-                    <div class="font-medium">{{ position.product_name }}</div>
-                    <div class="text-xs text-gray-500">{{ position.product_sku }}</div>
+                    <div class="font-medium">{{ product.name }}</div>
+                    <div class="text-xs text-gray-500">{{ product.supplier || 'N/A' }}</div>
                   </div>
                 </td>
                 <td class="px-3 py-2 text-center">
-                  <input 
-                    v-model.number="position.calculated_quantity" 
-                    type="number" 
-                    step="0.001"
-                    class="w-20 text-center border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  />
+                  <span class="text-sm">{{ product.article || product.code || 'N/A' }}</span>
+                </td>
+                <td class="px-3 py-2 text-center">
+                  <span class="font-medium text-blue-600">{{ product.calculated_balance }}</span>
                 </td>
                 <td class="px-3 py-2 text-center">
                   <input 
-                    v-model.number="position.actual_quantity" 
+                    v-model.number="product.actual_quantity" 
                     type="number" 
                     step="0.001"
                     class="w-20 text-center border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    placeholder="0"
                   />
                 </td>
                 <td class="px-3 py-2 text-center">
-                  <span :class="getDifferenceClass(position)">
-                    {{ calculateDifference(position) }}
+                  <span :class="getDifferenceClass(product)">
+                    {{ calculateDifference(product) }}
                   </span>
                 </td>
                 <td class="px-3 py-2 text-center">
-                  <span :class="getExcessShortageClass(position)">
-                    {{ getExcessShortageText(position) }}
+                  <span :class="getExcessShortageClass(product)">
+                    {{ getExcessShortageText(product) }}
                   </span>
                 </td>
                 <td class="px-3 py-2 text-center">
-                  <button @click="removePosition(index)" class="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50 transition-colors">
+                  <button @click="removeWarehouseProduct(index)" class="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50 transition-colors">
                     <Trash2 class="w-4 h-4" />
                   </button>
                 </td>
@@ -241,7 +232,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import ProductsMenu from './ProductsMenu.vue'
 import { apiRequest } from '@/config/api'
 import { useRouter } from 'vue-router'
@@ -279,11 +270,13 @@ const warehouseErrors = ref({})
 const warehouseSaving = ref(false)
 const warehouseServerError = ref('')
 
-// Товары
-const products = ref([])
-const loadingProducts = ref(false)
-const selectedProduct = ref(null)
+// Товары (больше не нужны для инвентаризации)
 const positions = ref([])
+
+// Товары склада для инвентаризации
+const warehouseProducts = ref([])
+const loadingWarehouseProducts = ref(false)
+const selectedWarehouseName = ref('')
 
 // Файлы
 const uploadedFiles = ref([])
@@ -297,16 +290,7 @@ const warehouseOptions = computed(() => {
   }))
 })
 
-const productOptions = computed(() => {
-  if (!Array.isArray(products.value)) {
-    return []
-  }
-  return products.value.map(p => ({
-    label: `${p.name} (${p.code || p.article || 'N/A'})`,
-    value: p.id,
-    product: p
-  }))
-})
+// productOptions больше не нужны для инвентаризации
 
 const statusOptions = [
   { label: 'Черновик', value: 'draft' },
@@ -376,80 +360,87 @@ async function loadWarehouses() {
   }
 }
 
-async function loadProducts(search = '') {
+// Функции loadProducts и onProductSearch больше не нужны для инвентаризации
+
+async function loadWarehouseProducts() {
   try {
-    loadingProducts.value = true
-    const params = search ? `?search=${encodeURIComponent(search)}` : ''
-    const response = await apiRequest(`/products${params}`, { method: 'GET' })
-    if (response.ok && response.data.success) {
-      // Handle paginated response - products are in data.data
-      products.value = response.data.data?.data || []
+    loadingWarehouseProducts.value = true
+    
+    const response = await apiRequest('/transfers/available-products', {
+      method: 'POST',
+      body: JSON.stringify({
+        warehouse_id: form.value.warehouse
+      })
+    })
+
+    if (response.ok) {
+      // Преобразуем данные в формат для инвентаризации
+      warehouseProducts.value = response.data.map(product => ({
+        id: product.id,
+        name: product.name,
+        article: product.article,
+        code: product.article, // Используем article как code
+        unit: product.unit,
+        supplier: product.description || '', // Используем description как supplier
+        country: '',
+        calculated_balance: product.warehouse_quantity, // Используем warehouse_quantity как calculated_balance
+        actual_quantity: product.warehouse_quantity // Автоматически заполняем фактический остаток расчетным значением
+      }))
+      
+      // Получаем название склада
+      const warehouseResponse = await apiRequest(`/warehouses/${form.value.warehouse}`, { method: 'GET' })
+      if (warehouseResponse.ok && warehouseResponse.data.success) {
+        selectedWarehouseName.value = warehouseResponse.data.data.name
+      }
+      
+      if (warehouseProducts.value.length > 0) {
+        toastr.success(`Загружено ${warehouseProducts.value.length} товаров`)
+      } else {
+        toastr.info('На выбранном складе нет товаров с остатками')
+      }
     } else {
-      products.value = []
+      toastr.error('Ошибка при загрузке товаров склада')
     }
   } catch (error) {
-    console.error('Ошибка загрузки товаров:', error)
-    products.value = []
+    console.error('Ошибка загрузки товаров склада:', error)
+    toastr.error('Ошибка при загрузке товаров склада')
   } finally {
-    loadingProducts.value = false
+    loadingWarehouseProducts.value = false
   }
 }
 
-function onProductSearch(search) {
-  if (search && search.length > 2) {
-    loadProducts(search)
-  }
+function removeWarehouseProduct(index) {
+  warehouseProducts.value.splice(index, 1)
 }
 
-function addProduct() {
-  if (!selectedProduct.value) return
-
-  const product = selectedProduct.value.product
-  const existingIndex = positions.value.findIndex(p => p.product_id === product.id)
-  
-  if (existingIndex !== -1) {
-    toastr.warning('Товар уже добавлен')
-    return
-  }
-
-  positions.value.push({
-    product_id: product.id,
-    product_name: product.name,
-    product_sku: product.code || product.article || 'N/A',
-    calculated_quantity: 0,
-    actual_quantity: 0,
-    notes: ''
-  })
-
-  selectedProduct.value = null
-}
+// Функция addProduct больше не нужна для инвентаризации
 
 function removePosition(index) {
   positions.value.splice(index, 1)
 }
 
-function calculateDifference(position) {
-  const diff = (position.actual_quantity || 0) - (position.calculated_quantity || 0)
+function calculateDifference(product) {
+  const diff = (product.actual_quantity || 0) - (product.calculated_balance || 0)
   // Если разница целое число, показываем без десятичных знаков
   return Number.isInteger(diff) ? diff.toString() : diff.toFixed(3)
 }
 
-function getDifferenceClass(position) {
-  const diff = (position.actual_quantity || 0) - (position.calculated_quantity || 0)
+function getDifferenceClass(product) {
+  const diff = (product.actual_quantity || 0) - (product.calculated_balance || 0)
   if (diff > 0) return 'text-green-600 font-medium'
   if (diff < 0) return 'text-red-600 font-medium'
   return 'text-gray-600'
 }
 
-function getExcessShortageText(position) {
-  const diff = (position.actual_quantity || 0) - (position.calculated_quantity || 0)
+function getExcessShortageText(product) {
+  const diff = (product.actual_quantity || 0) - (product.calculated_balance || 0)
   if (diff > 0) return 'Избыток'
   if (diff < 0) return 'Недостача'
   return 'Норма'
 }
 
-function getExcessShortageClass(position) {
-  const diff = (position.actual_quantity || 0) - (position.calculated_quantity || 0)
+function getExcessShortageClass(product) {
+  const diff = (product.actual_quantity || 0) - (product.calculated_balance || 0)
   if (diff > 0) return 'text-green-600'
   if (diff < 0) return 'text-red-600'
   return 'text-gray-600'
@@ -504,9 +495,17 @@ async function handleSubmit() {
   saving.value = true
 
   try {
+    // Преобразуем товары склада в позиции для отправки
+    const positions = warehouseProducts.value.map(product => ({
+      product_id: product.id,
+      calculated_quantity: product.calculated_balance,
+      actual_quantity: product.actual_quantity || 0,
+      notes: ''
+    }))
+
     const submitData = {
       ...form.value,
-      positions: positions.value,
+      positions: positions,
       inventory_files: uploadedFiles.value.map(f => ({
         filename: f.filename,
         file_url: f.file_url,
@@ -537,8 +536,18 @@ async function handleSubmit() {
   }
 }
 
+// Автоматическая загрузка товаров при выборе склада
+watch(() => form.value.warehouse, async (newWarehouseId) => {
+  if (newWarehouseId) {
+    await loadWarehouseProducts()
+  } else {
+    warehouseProducts.value = []
+    selectedWarehouseName.value = ''
+  }
+})
+
 onMounted(async () => {
-  await Promise.all([loadWarehouses(), loadProducts()])
+  await loadWarehouses()
 })
 </script>
 
