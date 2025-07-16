@@ -187,8 +187,8 @@
                     <div class="flex-shrink-0 h-10 w-10">
                       <img
                         v-if="balance.product?.images?.length > 0"
-                        :src="balance.product.images[0].url"
-                        :alt="balance.product.name"
+                        :src="balance.product.images[0].image_url"
+                        :alt="balance.product.images[0].alt_text || balance.product.name"
                         class="h-10 w-10 rounded-lg object-cover"
                       />
                       <div v-else class="h-10 w-10 bg-gray-200 rounded-lg flex items-center justify-center">

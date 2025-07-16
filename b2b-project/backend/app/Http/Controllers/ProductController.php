@@ -9,6 +9,10 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 
 use Illuminate\Support\Facades\Auth;
+use App\Models\ProductBalance;
+use App\Models\ProductOperation;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class ProductController extends Controller
 {
@@ -129,6 +133,9 @@ class ProductController extends Controller
             'code' => 'nullable|string|max:255',
             'external_code' => 'nullable|string|max:255',
             'unit' => 'nullable|string|max:255',
+            'quantity' => 'required|numeric|min:0',
+            'warehouse_id' => 'required|integer|exists:warehouses,id',
+            'price' => 'nullable|numeric|min:0',
             'weight' => 'nullable|numeric',
             'volume' => 'nullable|numeric',
             'vat' => 'nullable|string|max:255',
@@ -154,6 +161,7 @@ class ProductController extends Controller
             'code' => $request->code,
             'external_code' => $request->external_code,
             'unit' => $request->unit,
+            'warehouse_id' => $request->warehouse_id,
             'weight' => $request->weight,
             'volume' => $request->volume,
             'vat' => $request->vat,
@@ -166,6 +174,57 @@ class ProductController extends Controller
             'cash_register_tax' => $request->cash_register_tax,
             'cash_register_type' => $request->cash_register_type,
         ]);
+
+        // Создаем автоматическое оприходование
+        try {
+            $receipt = \App\Models\Receipt::create([
+                'number' => 'AUTO-' . time(),
+                'date' => now(),
+                'status' => 'posted',
+                'is_posted' => true,
+                'organization' => 'Автоматическое оприходование',
+                'warehouse' => $request->warehouse_id,
+                'user_id' => $user->id,
+                'created_by' => $user->user_name ?? $user->first_name ?? 'System'
+            ]);
+
+            // Создаем позицию оприходования
+            $price = $request->price ?? 0;
+            $amount = $price * $request->quantity;
+            
+            \App\Models\ReceiptPosition::create([
+                'receipt_id' => $receipt->id,
+                'product_id' => $product->id,
+                'name' => $product->name,
+                'article' => $product->article,
+                'code' => $product->code,
+                'quantity' => $request->quantity,
+                'price' => $price,
+                'amount' => $amount,
+                'balance' => $request->quantity
+            ]);
+
+            // Обновляем общую сумму оприходования
+            $receipt->update(['total' => $amount]);
+
+            Log::info('Автоматическое оприходование создано', [
+                'product_id' => $product->id,
+                'receipt_id' => $receipt->id,
+                'quantity' => $request->quantity,
+                'warehouse_id' => $request->warehouse_id,
+                'price' => $price,
+                'amount' => $amount
+            ]);
+
+            // Обновляем остатки товаров при проведении оприходования
+            $this->updateProductBalances($receipt);
+
+        } catch (\Exception $e) {
+            Log::error('Ошибка создания автоматического оприходования', [
+                'product_id' => $product->id,
+                'error' => $e->getMessage()
+            ]);
+        }
 
         return response()->json([
             'success' => true,
@@ -405,5 +464,45 @@ class ProductController extends Controller
             'success' => true,
             'message' => 'Товар успешно удален'
         ]);
+    }
+
+    /**
+     * Обновить остатки товаров при проведении оприходования
+     */
+    private function updateProductBalances($receipt)
+    {
+        $positions = $receipt->positions;
+        
+        foreach ($positions as $position) {
+            // Используем product_id из позиции, если он есть, иначе ищем по артикулу или названию
+            $product = null;
+            if ($position->product_id) {
+                $product = \App\Models\ProductSklad::find($position->product_id);
+            } else {
+                $product = \App\Models\ProductSklad::where('article', $position->article)
+                    ->orWhere('name', $position->name)
+                    ->first();
+            }
+            
+            if ($product) {
+                // Увеличиваем остаток на складе
+                ProductBalance::incrementBalance(
+                    $product->id,
+                    $receipt->warehouse,
+                    $position->quantity
+                );
+                
+                // Создаем запись операции
+                ProductOperation::createOperation([
+                    'product_id' => $product->id,
+                    'warehouse_id' => $receipt->warehouse,
+                    'operation_type' => ProductOperation::TYPE_RECEIPT,
+                    'quantity' => (int)$position->quantity,
+                    'reference_type' => 'receipt',
+                    'reference_id' => $receipt->id,
+                    'notes' => "Оприходование №{$receipt->number}"
+                ]);
+            }
+        }
     }
 } 

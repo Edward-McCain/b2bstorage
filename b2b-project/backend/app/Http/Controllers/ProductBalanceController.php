@@ -19,7 +19,7 @@ class ProductBalanceController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = ProductBalance::with(['product', 'warehouse']);
+        $query = ProductBalance::with(['product.images', 'warehouse']);
 
         // Фильтруем по складам текущего пользователя
         $query->whereHas('warehouse', function ($q) {
@@ -68,6 +68,9 @@ class ProductBalanceController extends Controller
 
         // Получаем цены из последних оприходований для каждого товара
         $this->addPricesToBalances($balances->getCollection());
+        
+        // Преобразуем URL изображений
+        $this->transformImageUrls($balances->getCollection());
 
         return response()->json($balances);
     }
@@ -77,7 +80,7 @@ class ProductBalanceController extends Controller
      */
     public function filter(Request $request): JsonResponse
     {
-        $query = ProductBalance::with(['product', 'warehouse']);
+        $query = ProductBalance::with(['product.images', 'warehouse']);
 
         // Фильтруем по складам текущего пользователя
         $query->whereHas('warehouse', function ($q) {
@@ -129,6 +132,9 @@ class ProductBalanceController extends Controller
 
         // Получаем цены из последних оприходований для каждого товара
         $this->addPricesToBalances($balances->getCollection());
+        
+        // Преобразуем URL изображений
+        $this->transformImageUrls($balances->getCollection());
 
         return response()->json($balances);
     }
@@ -142,7 +148,7 @@ class ProductBalanceController extends Controller
             'warehouse_id' => 'required|exists:warehouses,id'
         ]);
 
-        $balances = ProductBalance::with(['product'])
+        $balances = ProductBalance::with(['product.images'])
             ->where('warehouse_id', $request->warehouse_id)
             ->where('quantity', '>', 0)
             ->whereHas('warehouse', function ($q) {
@@ -168,6 +174,9 @@ class ProductBalanceController extends Controller
 
             return $balance;
         });
+
+        // Преобразуем URL изображений
+        $this->transformImageUrls($balances);
 
         $totalValue = $balances->sum(function ($balance) {
             return $balance->quantity * ($balance->product->price ?? 0);
@@ -209,7 +218,7 @@ class ProductBalanceController extends Controller
      */
     public function summary(Request $request): JsonResponse
     {
-        $query = ProductBalance::with(['product', 'warehouse']);
+        $query = ProductBalance::with(['product.images', 'warehouse']);
 
         // Фильтруем по складам текущего пользователя
         $query->whereHas('warehouse', function ($q) {
@@ -295,7 +304,7 @@ class ProductBalanceController extends Controller
     {
         $threshold = $request->get('threshold', 10);
 
-        $lowStockItems = ProductBalance::with(['product', 'warehouse'])
+        $lowStockItems = ProductBalance::with(['product.images', 'warehouse'])
             ->where('quantity', '<=', $threshold)
             ->where('quantity', '>', 0)
             ->whereHas('warehouse', function ($q) {
@@ -322,6 +331,9 @@ class ProductBalanceController extends Controller
             return $balance;
         });
 
+        // Преобразуем URL изображений
+        $this->transformImageUrls($lowStockItems);
+
         return response()->json([
             'low_stock_items' => $lowStockItems,
             'threshold' => $threshold,
@@ -334,7 +346,7 @@ class ProductBalanceController extends Controller
      */
     public function outOfStock(Request $request): JsonResponse
     {
-        $outOfStockItems = ProductBalance::with(['product', 'warehouse'])
+        $outOfStockItems = ProductBalance::with(['product.images', 'warehouse'])
             ->where('quantity', 0)
             ->whereHas('warehouse', function ($q) {
                 $q->where('user_id', Auth::id());
@@ -359,6 +371,9 @@ class ProductBalanceController extends Controller
 
             return $balance;
         });
+
+        // Преобразуем URL изображений
+        $this->transformImageUrls($outOfStockItems);
 
         return response()->json([
             'out_of_stock_items' => $outOfStockItems,
@@ -452,5 +467,23 @@ class ProductBalanceController extends Controller
             $balance->product->price = $this->getProductPrice($balance->product_id);
             return $balance;
         });
+    }
+
+    /**
+     * Преобразовать относительные пути изображений в полные URL
+     */
+    private function transformImageUrls($balances)
+    {
+        $baseUrl = request()->getSchemeAndHttpHost() . '/storage/';
+        
+        $balances->each(function ($balance) use ($baseUrl) {
+            if ($balance->product && $balance->product->images) {
+                $balance->product->images->each(function ($image) use ($baseUrl) {
+                    $image->image_url = $baseUrl . $image->image_url;
+                });
+            }
+        });
+        
+        return $balances;
     }
 } 
