@@ -14,11 +14,15 @@ class ProductBalance extends Model
     protected $fillable = [
         'product_id',
         'warehouse_id',
-        'quantity'
+        'quantity',
+        'average_price',
+        'total_value'
     ];
 
     protected $casts = [
-        'quantity' => 'integer'
+        'quantity' => 'integer',
+        'average_price' => 'decimal:2',
+        'total_value' => 'decimal:2'
     ];
 
     /**

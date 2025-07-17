@@ -65,6 +65,21 @@ import CounterpartiesBuyersPage from '../components/counterparties/Counterpartie
 import CounterpartiesSuppliersPage from '../components/counterparties/CounterpartiesSuppliersPage.vue'
 import CounterpartiesGroupsPage from '../components/counterparties/CounterpartiesGroupsPage.vue'
 
+// Admin pages
+import AdminDashboardPage from '../components/admin/AdminDashboardPage.vue'
+import AdminProductsPage from '../components/admin/products/AdminProductsPage.vue'
+import AdminUsersPage from '../components/admin/AdminUsersPage.vue'
+import AdminSettingsPage from '../components/admin/AdminSettingsPage.vue'
+
+// Admin products pages
+import AdminProductsMainPage from '../components/admin/products/AdminProductsPage.vue'
+import AdminReceiptsPage from '../components/admin/products/AdminReceiptsPage.vue'
+import AdminWriteOffsPage from '../components/admin/products/AdminWriteOffsPage.vue'
+import AdminInventoryPage from '../components/admin/products/AdminInventoryPage.vue'
+import AdminTransfersPage from '../components/admin/products/AdminTransfersPage.vue'
+import AdminBalancesPage from '../components/admin/products/AdminBalancesPage.vue'
+import AdminWarehousesPage from '../components/admin/products/AdminWarehousesPage.vue'
+
 const routes = [
   {
     path: '/',
@@ -361,6 +376,57 @@ const routes = [
     path: '/counterparties/groups',
     name: 'CounterpartiesGroups',
     component: CounterpartiesGroupsPage
+  },
+  // Admin routes
+  {
+    path: '/admin',
+    name: 'AdminDashboard',
+    component: AdminDashboardPage
+  },
+  {
+    path: '/admin/products',
+    name: 'AdminProducts',
+    component: AdminProductsPage
+  },
+  {
+    path: '/admin/products/receipts',
+    name: 'AdminReceipts',
+    component: AdminReceiptsPage
+  },
+  {
+    path: '/admin/products/write-offs',
+    name: 'AdminWriteOffs',
+    component: AdminWriteOffsPage
+  },
+  {
+    path: '/admin/products/inventory',
+    name: 'AdminInventory',
+    component: AdminInventoryPage
+  },
+  {
+    path: '/admin/products/transfers',
+    name: 'AdminTransfers',
+    component: AdminTransfersPage
+  },
+  {
+    path: '/admin/products/balances',
+    name: 'AdminBalances',
+    component: AdminBalancesPage
+  },
+  {
+    path: '/admin/warehouses',
+    name: 'AdminWarehouses',
+    component: AdminWarehousesPage
+  },
+  {
+    path: '/admin/users',
+    name: 'AdminUsers',
+    component: AdminUsersPage
+  },
+  {
+    path: '/admin/settings',
+    name: 'AdminSettings',
+    component: AdminSettingsPage
   }
 ]
 
@@ -375,7 +441,7 @@ router.beforeEach((to, from, next) => {
   
   // Список роутов, требующих авторизации
   const protectedRoutes = [
-    '/products', '/purchases', '/sales', '/analytics', '/counterparties', '/account-settings', '/warehouses'
+    '/products', '/purchases', '/sales', '/analytics', '/counterparties', '/account-settings', '/warehouses', '/admin'
   ]
   
   // Проверяем, требует ли роут авторизации

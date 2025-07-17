@@ -52,4 +52,36 @@ class ProductSklad extends Model
     {
         return $this->subcategoryRelation ? $this->subcategoryRelation->name_ru : $this->subcategory;
     }
+
+    /**
+     * Связь с пользователем
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /**
+     * Связь со складом
+     */
+    public function warehouse()
+    {
+        return $this->belongsTo(Warehouse::class, 'warehouse_id');
+    }
+
+    /**
+     * Связь с категорией (для админ-панели)
+     */
+    public function category()
+    {
+        return $this->belongsTo(Category::class, 'category', 'category_id');
+    }
+
+    /**
+     * Связь с подкатегорией (для админ-панели)
+     */
+    public function subcategory()
+    {
+        return $this->belongsTo(Subcategory::class, 'subcategory', 'subcategory_id');
+    }
 } 

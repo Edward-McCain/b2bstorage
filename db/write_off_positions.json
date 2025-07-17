@@ -1,0 +1,21 @@
+[
+  {
+    "id": 17,
+    "write_off_id": 10,
+    "name": "Кирпич строительный красный",
+    "code": "СПО-6160",
+    "barcode": null,
+    "article": "СПО-6160",
+    "quantity": 100.000,
+    "balance": 0.000,
+    "price": 10.00,
+    "amount": 1000.00,
+    "reason": "брак",
+    "gtd": "",
+    "rnpt": "",
+    "country": "",
+    "product_id": 43,
+    "created_at": "2025-07-14 12:53:25",
+    "updated_at": "2025-07-14 12:53:25"
+  }
+]

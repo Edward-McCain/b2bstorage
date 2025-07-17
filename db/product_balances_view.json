@@ -1,0 +1,62 @@
+[
+  {
+    "id": 1,
+    "product_id": 45,
+    "product_name": "Диван угловой \"Комфорт\"",
+    "product_article": "АВТ-8730",
+    "warehouse_id": 1,
+    "warehouse_name": "Главный склад",
+    "quantity": 5,
+    "updated_at": "2025-07-14 08:12:40"
+  },
+  {
+    "id": 2,
+    "product_id": 43,
+    "product_name": "Кирпич строительный красный",
+    "product_article": "СПО-6160",
+    "warehouse_id": 1,
+    "warehouse_name": "Главный склад",
+    "quantity": 500,
+    "updated_at": "2025-07-14 12:53:31"
+  },
+  {
+    "id": 4,
+    "product_id": 43,
+    "product_name": "Кирпич строительный красный",
+    "product_article": "СПО-6160",
+    "warehouse_id": 3,
+    "warehouse_name": "Запасной склад",
+    "quantity": 400,
+    "updated_at": "2025-07-14 10:32:13"
+  },
+  {
+    "id": 7,
+    "product_id": 75,
+    "product_name": "Apple display pro xdr",
+    "product_article": null,
+    "warehouse_id": 9,
+    "warehouse_name": "Склад 1",
+    "quantity": 10,
+    "updated_at": "2025-07-16 06:55:07"
+  },
+  {
+    "id": 5,
+    "product_id": 73,
+    "product_name": "Iphone 15 pro max",
+    "product_article": null,
+    "warehouse_id": 9,
+    "warehouse_name": "Склад 1",
+    "quantity": 10,
+    "updated_at": "2025-07-16 06:39:36"
+  },
+  {
+    "id": 6,
+    "product_id": 74,
+    "product_name": "Macbook air M2",
+    "product_article": null,
+    "warehouse_id": 9,
+    "warehouse_name": "Склад 1",
+    "quantity": 5,
+    "updated_at": "2025-07-16 06:48:05"
+  }
+]

@@ -20,6 +20,11 @@ const avatarUrl = computed(() => {
   return getFileUrl(user.value.avatar_url)
 })
 
+// Проверка роли пользователя
+const isAdmin = computed(() => {
+  return user.value?.role === 1
+})
+
 onMounted(() => {
   const token = localStorage.getItem('auth_token')
   const userData = localStorage.getItem('user')
@@ -104,6 +109,11 @@ const closeUserMenu = () => {
 
 const goToAccountSettings = () => {
   router.push('/account-settings')
+  userMenuOpen.value = false
+}
+
+const goToAdminPanel = () => {
+  router.push('/admin')
   userMenuOpen.value = false
 }
 
@@ -620,6 +630,20 @@ const handleAvatarUpdated = (newAvatarUrl) => {
                     @currency-changed="handleCurrencyChanged"
                   />
                 </div>
+                
+                <!-- Админ панель (только для администраторов) -->
+                <button
+                  v-if="isAdmin"
+                  @click="goToAdminPanel"
+                  class="flex items-center gap-3 text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 w-full text-left cursor-pointer"
+                  role="menuitem"
+                  tabindex="-1"
+                >
+                  <svg class="h-5 w-5 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                  Админ панель
+                </button>
                 
                 <!-- Настройки аккаунта -->
                 <button

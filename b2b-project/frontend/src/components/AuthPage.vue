@@ -44,8 +44,16 @@ export default {
   },
   methods: {
     handleAuthSuccess(data) {
-      // После успешной авторизации/регистрации переходим на страницу /products
-      window.location.href = '/products'
+      // Проверяем роль пользователя
+      const user = data.user || JSON.parse(localStorage.getItem('user') || '{}')
+      
+      if (user.role === 1) {
+        // Администратор - перенаправляем на админ панель
+        window.location.href = '/admin'
+      } else {
+        // Обычный пользователь - перенаправляем на страницу товаров
+        window.location.href = '/products'
+      }
     }
   }
 }

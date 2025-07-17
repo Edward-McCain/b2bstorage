@@ -1,0 +1,12 @@
+[
+  {
+    "id": 4,
+    "transfer_id": 4,
+    "product_id": 43,
+    "quantity": 400,
+    "actual_quantity": 400,
+    "notes": "примечание товара",
+    "created_at": "2025-07-14 10:32:08",
+    "updated_at": "2025-07-14 10:32:08"
+  }
+]

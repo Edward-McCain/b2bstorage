@@ -1,0 +1,42 @@
+[
+  {
+    "id": 1,
+    "migration": "0001_01_01_000000_create_users_table",
+    "batch": 1
+  },
+  {
+    "id": 2,
+    "migration": "0001_01_01_000001_create_cache_table",
+    "batch": 1
+  },
+  {
+    "id": 3,
+    "migration": "0001_01_01_000002_create_jobs_table",
+    "batch": 1
+  },
+  {
+    "id": 4,
+    "migration": "2025_07_03_084605_create_personal_access_tokens_table",
+    "batch": 2
+  },
+  {
+    "id": 5,
+    "migration": "2025_07_02_103104_create_personal_access_tokens_table",
+    "batch": 3
+  },
+  {
+    "id": 6,
+    "migration": "2025_07_02_112732_create_sessions_table",
+    "batch": 4
+  },
+  {
+    "id": 7,
+    "migration": "2025_07_02_102909_create_users_table",
+    "batch": 1
+  },
+  {
+    "id": 8,
+    "migration": "2025_07_03_131830_create_personal_access_tokens_table",
+    "batch": 5
+  }
+]

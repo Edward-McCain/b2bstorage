@@ -14,17 +14,7 @@ use App\Http\Controllers\InventoryFileController;
 use App\Http\Controllers\ProductTransferController;
 use App\Http\Controllers\ProductBalanceController;
 use App\Http\Controllers\CurrencyController;
-
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
-|
-*/
+use App\Http\Controllers\AdminController;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -129,6 +119,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/currencies/convert', [CurrencyController::class, 'convert']);
     Route::get('/user/currency', [CurrencyController::class, 'getUserCurrency']);
     Route::put('/user/currency', [CurrencyController::class, 'updateUserCurrency']);
+    
+    // Admin routes
+    Route::prefix('admin')->group(function () {
+        Route::get('/users', [AdminController::class, 'getUsers']);
+        Route::get('/stats', [AdminController::class, 'getStats']);
+        Route::get('/recent-users', [AdminController::class, 'getRecentUsers']);
+        Route::get('/products', [AdminController::class, 'getProducts']);
+        Route::post('/products/search', [AdminController::class, 'searchProducts']);
+        Route::get('/users/{id}', [AdminController::class, 'getUserDetails']);
+        Route::get('/subcategories', [AdminController::class, 'getSubcategories']);
+        Route::get('/warehouses', [AdminController::class, 'getWarehouses']);
+    });
 });
 
 Route::get('/categories', [CategoryController::class, 'index']);

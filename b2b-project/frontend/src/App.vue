@@ -1,13 +1,23 @@
 <script setup>
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
 import Header from './components/Header.vue'
 import Footer from './components/Footer.vue'
+
+const route = useRoute()
+
+// Проверяем, является ли текущий маршрут административным
+const isAdminRoute = computed(() => {
+  return route.path.startsWith('/admin')
+})
 </script>
 
 <template>
   <div>
-    <Header />
+    <!-- Показываем Header и Footer только для не-административных страниц -->
+    <Header v-if="!isAdminRoute" />
     <router-view />
-    <Footer />
+    <Footer v-if="!isAdminRoute" />
   </div>
 </template>
 
