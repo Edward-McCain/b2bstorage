@@ -149,13 +149,8 @@ class AdminController extends Controller
     public function getProducts(Request $request): JsonResponse
     {
         try {
-            // Начинаем с таблицы product_balances для правильной фильтрации по складам
-            $query = ProductBalance::with([
-                'product.user', 
-                'warehouse', 
-                'product.category', 
-                'product.subcategory'
-            ]);
+            // Максимально упрощаем запрос
+            $query = ProductBalance::with(['product.user', 'product.images', 'warehouse']);
             
             // Поиск по наименованию, артикулу или ИНН компании
             if ($request->has('search') && !empty($request->search)) {
@@ -163,10 +158,7 @@ class AdminController extends Controller
                 $query->whereHas('product', function($productQuery) use ($search) {
                     $productQuery->where(function($q) use ($search) {
                         $q->where('name', 'like', "%{$search}%")
-                          ->orWhere('article', 'like', "%{$search}%")
-                          ->orWhereHas('user', function($userQuery) use ($search) {
-                              $userQuery->where('inn', 'like', "%{$search}%");
-                          });
+                          ->orWhere('article', 'like', "%{$search}%");
                     });
                 });
             }
@@ -190,19 +182,6 @@ class AdminController extends Controller
                 });
             }
             
-            // Сортировка
-            $sortBy = $request->get('sort_by', 'created_at');
-            $sortOrder = $request->get('sort_order', 'desc');
-            
-            // Если сортировка по полям продукта, используем whereHas с orderBy
-            if (in_array($sortBy, ['name', 'article'])) {
-                $query->whereHas('product', function($productQuery) use ($sortBy, $sortOrder) {
-                    $productQuery->orderBy($sortBy, $sortOrder);
-                });
-            } else {
-                $query->orderBy($sortBy, $sortOrder);
-            }
-            
             // Пагинация
             $perPage = $request->get('per_page', 15);
             $products = $query->paginate($perPage);
@@ -211,10 +190,37 @@ class AdminController extends Controller
             $productsWithData = collect($products->items())->map(function ($balance) {
                 $product = $balance->product;
                 
+                // Получаем цену товара из receipt_positions
+                $price = DB::table('receipt_positions')
+                    ->where('product_id', $product->id)
+                    ->orderBy('created_at', 'desc')
+                    ->value('price') ?? 0;
+                
                 // Получаем изображение товара
                 $imageUrl = null;
                 if ($product->images && $product->images->count() > 0) {
                     $imageUrl = $this->transformImageUrl($product->images->first()->image_path);
+                }
+                
+                // Получаем категорию и подкатегорию через связи
+                $category = null;
+                $subcategory = null;
+                
+                // Поскольку category и subcategory хранятся как строки (slug), получаем данные из таблиц
+                if ($product->category) {
+                    $category = DB::table('categories')
+                        ->where('name', $product->category)
+                        ->orWhere('name_ru', $product->category)
+                        ->select('id as category_id', 'name_ru as name')
+                        ->first();
+                }
+                
+                if ($product->subcategory) {
+                    $subcategory = DB::table('subcategories')
+                        ->where('name', $product->subcategory)
+                        ->orWhere('name_ru', $product->subcategory)
+                        ->select('id as subcategory_id', 'name_ru as name')
+                        ->first();
                 }
                 
                 return [
@@ -223,10 +229,10 @@ class AdminController extends Controller
                     'article' => $product->article,
                     'description' => $product->description,
                     'warehouse' => $balance->warehouse,
-                    'category' => $product->category,
-                    'subcategory' => $product->subcategory,
+                    'category' => $category,
+                    'subcategory' => $subcategory,
                     'quantity' => $balance->quantity,
-                    'price' => $balance->average_price ?? 0,
+                    'price' => $price,
                     'image_url' => $imageUrl,
                     'user' => $product->user,
                     'created_at' => $product->created_at,
@@ -276,13 +282,8 @@ class AdminController extends Controller
     public function searchProducts(Request $request): JsonResponse
     {
         try {
-            // Начинаем с таблицы product_balances для правильной фильтрации по складам
-            $query = ProductBalance::with([
-                'product.user', 
-                'warehouse', 
-                'product.category', 
-                'product.subcategory'
-            ]);
+            // Максимально упрощаем запрос
+            $query = ProductBalance::with(['product.user', 'product.images', 'warehouse']);
             
             // Поиск по наименованию, артикулу или ИНН компании
             if ($request->has('search') && !empty($request->search)) {
@@ -290,10 +291,7 @@ class AdminController extends Controller
                 $query->whereHas('product', function($productQuery) use ($search) {
                     $productQuery->where(function($q) use ($search) {
                         $q->where('name', 'like', "%{$search}%")
-                          ->orWhere('article', 'like', "%{$search}%")
-                          ->orWhereHas('user', function($userQuery) use ($search) {
-                              $userQuery->where('inn', 'like', "%{$search}%");
-                          });
+                          ->orWhere('article', 'like', "%{$search}%");
                     });
                 });
             }
@@ -317,19 +315,6 @@ class AdminController extends Controller
                 });
             }
             
-            // Сортировка - используем поля из product_balances или связанных таблиц
-            $sortBy = $request->get('sort_by', 'created_at');
-            $sortOrder = $request->get('sort_order', 'desc');
-            
-            // Если сортировка по полям продукта, используем whereHas с orderBy
-            if (in_array($sortBy, ['name', 'article'])) {
-                $query->whereHas('product', function($productQuery) use ($sortBy, $sortOrder) {
-                    $productQuery->orderBy($sortBy, $sortOrder);
-                });
-            } else {
-                $query->orderBy($sortBy, $sortOrder);
-            }
-            
             // Пагинация
             $perPage = $request->get('per_page', 15);
             $products = $query->paginate($perPage);
@@ -338,10 +323,42 @@ class AdminController extends Controller
             $productsWithData = collect($products->items())->map(function ($balance) {
                 $product = $balance->product;
                 
+                // Получаем цену товара из receipt_positions
+                $price = DB::table('receipt_positions')
+                    ->where('product_id', $product->id)
+                    ->orderBy('created_at', 'desc')
+                    ->value('price') ?? 0;
+                
                 // Получаем изображение товара
                 $imageUrl = null;
                 if ($product->images && $product->images->count() > 0) {
                     $imageUrl = $this->transformImageUrl($product->images->first()->image_path);
+                }
+                
+                // Получаем категорию и подкатегорию через связи
+                $category = null;
+                $subcategory = null;
+                
+                // Получаем данные из таблицы products_sklad по ID товара
+                $productSklad = DB::table('products_sklad')
+                    ->where('id', $balance->product_id)
+                    ->select('category', 'subcategory')
+                    ->first();
+                
+                // Получаем название категории по category_id из таблицы categories
+                if ($productSklad && $productSklad->category) {
+                    $category = DB::table('categories')
+                        ->where('category_id', $productSklad->category)
+                        ->select('category_id', 'name')
+                        ->first();
+                }
+                
+                // Получаем название подкатегории по subcategory_id из таблицы subcategories
+                if ($productSklad && $productSklad->subcategory) {
+                    $subcategory = DB::table('subcategories')
+                        ->where('subcategory_id', $productSklad->subcategory)
+                        ->select('subcategory_id', 'name')
+                        ->first();
                 }
                 
                 return [
@@ -350,10 +367,10 @@ class AdminController extends Controller
                     'article' => $product->article,
                     'description' => $product->description,
                     'warehouse' => $balance->warehouse,
-                    'category' => $product->category,
-                    'subcategory' => $product->subcategory,
+                    'category' => $category,
+                    'subcategory' => $subcategory,
                     'quantity' => $balance->quantity,
-                    'price' => $balance->average_price ?? 0,
+                    'price' => $price,
                     'image_url' => $imageUrl,
                     'user' => $product->user,
                     'created_at' => $product->created_at,
