@@ -584,7 +584,7 @@ const handleAvatarUpdated = (newAvatarUrl) => {
           Контрагенты
         </router-link>
         <router-link
-          to="/api-docs"
+          to="/docs_api"
           class="text-sm font-semibold text-gray-900 hover:text-blue-600 transition-colors flex items-center gap-1"
         >
           API Документация
@@ -911,7 +911,7 @@ const handleAvatarUpdated = (newAvatarUrl) => {
           <!-- API Документация -->
           <!-- <div class="space-y-2">
             <router-link
-              to="/api-docs"
+              to="/docs_api"
               class="block text-sm text-gray-700 hover:text-blue-600 py-2"
               @click="toggleMobileMenu"
             >

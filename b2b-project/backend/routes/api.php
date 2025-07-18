@@ -158,4 +158,4 @@ Route::get('/categories/{id}/subcategories', [CategoryController::class, 'subcat
 Route::get('/subcategories', [CategoryController::class, 'subcategories']); 
 
 // API Documentation route
-Route::get('/api-docs', [\App\Http\Controllers\ApiDocumentationController::class, 'index']);
+Route::get('/docs_api', [\App\Http\Controllers\ApiDocumentationController::class, 'index']);

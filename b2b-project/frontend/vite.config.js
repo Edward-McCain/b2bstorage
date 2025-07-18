@@ -33,8 +33,8 @@ export default defineConfig({
           });
         },
         bypass: (req, res) => {
-          // Не проксировать /api-docs, пусть Vue Router обработает
-          if (req.url === '/api-docs') {
+          // Не проксировать /docs_api, пусть Vue Router обработает
+          if (req.url === '/docs_api') {
             return req.url;
           }
         }

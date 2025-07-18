@@ -8,7 +8,7 @@ use Illuminate\Http\JsonResponse;
 class ApiDocumentationController extends Controller
 {
     /**
-     * Обработка запроса к /api-docs
+     * Обработка запроса к /docs_api
      * Возвращает информацию о доступных API endpoints
      */
     public function index(Request $request): JsonResponse
@@ -18,7 +18,7 @@ class ApiDocumentationController extends Controller
             'description' => 'This API provides endpoints for B2B Storage management system',
             'version' => '1.0',
             'base_url' => 'https://api.b2bstorage.ru',
-            'frontend_docs_url' => 'https://b2bstorage.ru/api-docs',
+            'frontend_docs_url' => 'https://b2bstorage.ru/docs_api',
             'available_endpoints' => [
                 'auth' => [
                     'POST /api/register' => 'User registration',

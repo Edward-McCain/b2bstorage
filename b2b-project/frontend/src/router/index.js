@@ -448,7 +448,7 @@ const routes = [
     component: AdminSettingsPage
   },
   {
-    path: '/api-docs',
+    path: '/docs_api',
     name: 'ApiDocumentation',
     component: ApiDocumentationPage
   }
