@@ -156,3 +156,6 @@ Route::get('/admin/transfers/{id}', [AdminController::class, 'getTransferDetails
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/categories/{id}/subcategories', [CategoryController::class, 'subcategories']);
 Route::get('/subcategories', [CategoryController::class, 'subcategories']); 
+
+// API Documentation route
+Route::get('/api-docs', [\App\Http\Controllers\ApiDocumentationController::class, 'index']);
