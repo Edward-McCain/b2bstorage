@@ -74,7 +74,10 @@ import AdminSettingsPage from '../components/admin/AdminSettingsPage.vue'
 // Admin products pages
 import AdminProductsMainPage from '../components/admin/products/AdminProductsPage.vue'
 import AdminReceiptsPage from '../components/admin/products/AdminReceiptsPage.vue'
+import AdminReceiptViewPage from '../components/admin/products/AdminReceiptViewPage.vue'
 import AdminWriteOffsPage from '../components/admin/products/AdminWriteOffsPage.vue'
+import AdminWriteOffViewPage from '../components/admin/products/AdminWriteOffViewPage.vue'
+import AdminInventoryViewPage from '../components/admin/products/AdminInventoryViewPage.vue'
 import AdminInventoryPage from '../components/admin/products/AdminInventoryPage.vue'
 import AdminTransfersPage from '../components/admin/products/AdminTransfersPage.vue'
 import AdminBalancesPage from '../components/admin/products/AdminBalancesPage.vue'
@@ -394,9 +397,24 @@ const routes = [
     component: AdminReceiptsPage
   },
   {
+    path: '/admin/receipts/:id',
+    name: 'AdminReceiptView',
+    component: AdminReceiptViewPage
+  },
+  {
     path: '/admin/products/write-offs',
     name: 'AdminWriteOffs',
     component: AdminWriteOffsPage
+  },
+  {
+    path: '/admin/write-offs/:id',
+    name: 'AdminWriteOffView',
+    component: AdminWriteOffViewPage
+  },
+  {
+    path: '/admin/inventories/:id',
+    name: 'AdminInventoryView',
+    component: AdminInventoryViewPage
   },
   {
     path: '/admin/products/inventory',

@@ -230,7 +230,7 @@ class InventoryController extends Controller
             $inventory->items->each(function ($item) {
                 if ($item->product) {
                     $item->product_name = $item->product->name ?? null;
-                    $item->product_sku = $item->product->sku ?? null;
+                    $item->product_sku = $item->product->article ?? null;
                 }
                 
                 // Вычисляем разницу
@@ -368,7 +368,7 @@ class InventoryController extends Controller
             $inventory->items->each(function ($item) {
                 if ($item->product) {
                     $item->product_name = $item->product->name ?? null;
-                    $item->product_sku = $item->product->sku ?? null;
+                    $item->product_sku = $item->product->article ?? null;
                 }
                 
                 // Вычисляем разницу

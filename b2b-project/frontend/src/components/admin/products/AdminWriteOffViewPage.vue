@@ -1,0 +1,216 @@
+<template>
+  <AdminLayout>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Заголовок страницы -->
+      <div class="mb-8">
+        <div class="flex items-center justify-between">
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900">Списание №{{ writeOff?.number }}</h1>
+            <p class="mt-2 text-gray-600">Детальная информация о списании</p>
+          </div>
+          <button 
+            @click="goBack"
+            class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium px-4 py-2 rounded-lg text-sm transition"
+          >
+            Назад к списку
+          </button>
+        </div>
+      </div>
+      
+      <div v-if="loading" class="flex items-center justify-center py-12">
+        <Loader2 class="animate-spin h-8 w-8 text-blue-600 mr-3" />
+        <span class="text-lg text-gray-600">Загрузка списания...</span>
+      </div>
+      
+      <div v-else-if="writeOff" class="space-y-6">
+        <!-- Основная информация -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h2 class="text-xl font-semibold text-gray-900 mb-4">Основная информация</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Номер</label>
+              <p class="text-sm text-gray-900">{{ writeOff.number }}</p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Дата</label>
+              <p class="text-sm text-gray-900">{{ formatDate(writeOff.date) }}</p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Организация</label>
+              <p class="text-sm text-gray-900">{{ writeOff.organization }}</p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Проект</label>
+              <p class="text-sm text-gray-900">{{ writeOff.project || 'Не указан' }}</p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Склад</label>
+              <p class="text-sm text-gray-900">{{ writeOff.warehouse_name }}</p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Статус</label>
+              <span 
+                :class="{
+                  'px-2 py-1 text-xs rounded-full': true,
+                  'bg-yellow-100 text-yellow-800': writeOff.status === 'draft',
+                  'bg-green-100 text-green-800': writeOff.status === 'posted'
+                }"
+              >
+                {{ writeOff.status === 'draft' ? 'Черновик' : 'Проведено' }}
+              </span>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Общая сумма</label>
+              <p class="text-sm text-gray-900 font-semibold">{{ formatPrice(writeOff.total) }}</p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Накладные расходы</label>
+              <p class="text-sm text-gray-900">{{ formatPrice(writeOff.overhead_costs) }}</p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Комментарий</label>
+              <p class="text-sm text-gray-900">{{ writeOff.comment || 'Нет комментария' }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Информация о пользователе -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h2 class="text-xl font-semibold text-gray-900 mb-4">Пользователь</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Имя пользователя</label>
+              <p class="text-sm text-gray-900">{{ writeOff.user?.first_name }}</p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <p class="text-sm text-gray-900">{{ writeOff.user?.email }}</p>
+            </div>
+            <div v-if="writeOff.user?.phone_number">
+              <label class="block text-sm font-medium text-gray-700 mb-1">Телефон</label>
+              <p class="text-sm text-gray-900">{{ writeOff.user.phone_number }}</p>
+            </div>
+            <div v-if="writeOff.user?.company_name">
+              <label class="block text-sm font-medium text-gray-700 mb-1">Компания</label>
+              <p class="text-sm text-gray-900">{{ writeOff.user.company_name }}</p>
+            </div>
+            <div v-if="writeOff.user?.inn">
+              <label class="block text-sm font-medium text-gray-700 mb-1">ИНН</label>
+              <p class="text-sm text-gray-900">{{ writeOff.user.inn }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Позиции -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h2 class="text-xl font-semibold text-gray-900 mb-4">Позиции</h2>
+          <div v-if="writeOff.positions && writeOff.positions.length > 0">
+            <table class="min-w-full divide-y divide-gray-200 text-sm">
+              <thead>
+                <tr class="bg-gray-50">
+                  <th class="px-3 py-2 text-left font-semibold text-gray-700">Наименование</th>
+                  <th class="px-3 py-2 text-center font-semibold text-gray-700">Код</th>
+                  <th class="px-3 py-2 text-center font-semibold text-gray-700">Количество</th>
+                  <th class="px-3 py-2 text-center font-semibold text-gray-700">Цена</th>
+                  <th class="px-3 py-2 text-center font-semibold text-gray-700">Сумма</th>
+                  <th class="px-3 py-2 text-center font-semibold text-gray-700">Причина</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <tr v-for="position in writeOff.positions" :key="position.id" class="hover:bg-gray-50">
+                  <td class="px-3 py-2 text-gray-900">{{ position.name }}</td>
+                  <td class="px-3 py-2 text-center text-gray-900">{{ position.code || '-' }}</td>
+                  <td class="px-3 py-2 text-center text-gray-900">{{ position.quantity }}</td>
+                  <td class="px-3 py-2 text-center text-gray-900">{{ formatPrice(position.price) }}</td>
+                  <td class="px-3 py-2 text-center text-gray-900 font-semibold">{{ formatPrice(position.amount) }}</td>
+                  <td class="px-3 py-2 text-center text-gray-900">{{ position.reason || '-' }}</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="text-right mt-2 text-base font-semibold text-gray-900">Итого: {{ formatPrice(writeOff.total) }}</div>
+          </div>
+          <div v-else class="text-center py-8 text-gray-500">
+            Позиции не найдены
+          </div>
+        </div>
+
+        <!-- Файлы -->
+        <div v-if="writeOff.files && writeOff.files.length > 0" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h2 class="text-xl font-semibold text-gray-900 mb-4">Файлы</h2>
+          <ul class="list-disc pl-5">
+            <li v-for="file in writeOff.files" :key="file.id" class="mb-1">
+              <a :href="file.file_url || '#'" target="_blank" class="text-blue-600 hover:underline text-sm">{{ file.filename }}</a>
+              <span class="text-gray-400 text-xs ml-2">({{ file.size_mb }} МБ)</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+      
+      <div v-else class="text-center py-12">
+        <div class="mx-auto h-12 w-12 text-gray-400 mb-4">
+          <AlertCircle class="h-12 w-12" />
+        </div>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">Списание не найдено</h3>
+        <p class="text-gray-500">Запрашиваемое списание не существует или было удалено.</p>
+      </div>
+    </div>
+  </AdminLayout>
+</template>
+
+<script setup>
+import { ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import AdminLayout from '../AdminLayout.vue'
+import { apiRequest } from '@/config/api'
+import { Loader2, AlertCircle } from 'lucide-vue-next'
+
+// Устанавливаем заголовок страницы
+document.title = 'B2B SKLAD - Админ - Просмотр списания'
+
+const route = useRoute()
+const router = useRouter()
+
+const writeOff = ref(null)
+const loading = ref(true)
+
+function formatDate(date) {
+  if (!date) return ''
+  return new Date(date).toLocaleDateString('ru-RU')
+}
+
+function formatPrice(price) {
+  if (!price) return '0 ₽'
+  return new Intl.NumberFormat('ru-RU', {
+    style: 'currency',
+    currency: 'RUB',
+    minimumFractionDigits: 0
+  }).format(price)
+}
+
+function goBack() {
+  router.push('/admin/products/write-offs')
+}
+
+async function fetchWriteOff() {
+  loading.value = true
+  try {
+    const writeOffId = route.params.id
+    const res = await apiRequest(`/admin/write-offs/${writeOffId}`, { method: 'GET' })
+    
+    if (res.ok && res.data && res.data.success) {
+      writeOff.value = res.data.data
+    } else {
+      writeOff.value = null
+    }
+  } catch (error) {
+    console.error('Ошибка загрузки списания:', error)
+    writeOff.value = null
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(() => {
+  fetchWriteOff()
+})
+</script> 

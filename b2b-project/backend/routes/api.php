@@ -130,8 +130,28 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/users/{id}', [AdminController::class, 'getUserDetails']);
         Route::get('/subcategories', [AdminController::class, 'getSubcategories']);
         Route::get('/warehouses', [AdminController::class, 'getWarehouses']);
+        // Admin receipts routes
+        Route::get('/receipts', [AdminController::class, 'getReceipts']);
+        Route::get('/receipts/{id}', [AdminController::class, 'getReceiptDetails']);
+        // Admin write-offs routes
+        Route::get('/write-offs', [AdminController::class, 'getWriteOffs']);
+        Route::get('/write-offs/{id}', [AdminController::class, 'getWriteOffDetails']);
+        // Admin inventories routes
+        Route::get('/inventories', [AdminController::class, 'getInventories']);
+        Route::get('/inventories/{id}', [AdminController::class, 'getInventoryDetails']);
+        // Admin balances routes
+        Route::get('/balances', [AdminController::class, 'getBalances']);
+        Route::post('/balances', [AdminController::class, 'getBalances']);
+        Route::post('/balances/movements', [AdminController::class, 'getBalanceMovements']);
+        // Admin warehouses routes
+        Route::get('/warehouses', [AdminController::class, 'getWarehouses']);
+        Route::get('/warehouses/{id}', [AdminController::class, 'getWarehouseDetails']);
     });
 });
+
+// Админские маршруты для перемещений
+Route::get('/admin/transfers', [AdminController::class, 'getTransfers']);
+Route::get('/admin/transfers/{id}', [AdminController::class, 'getTransferDetails']);
 
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/categories/{id}/subcategories', [CategoryController::class, 'subcategories']);
