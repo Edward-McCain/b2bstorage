@@ -82,6 +82,7 @@ import AdminInventoryPage from '../components/admin/products/AdminInventoryPage.
 import AdminTransfersPage from '../components/admin/products/AdminTransfersPage.vue'
 import AdminBalancesPage from '../components/admin/products/AdminBalancesPage.vue'
 import AdminWarehousesPage from '../components/admin/products/AdminWarehousesPage.vue'
+import ApiDocumentationPage from '../components/ApiDocumentationPage.vue'
 
 const routes = [
   {
@@ -445,6 +446,11 @@ const routes = [
     path: '/admin/settings',
     name: 'AdminSettings',
     component: AdminSettingsPage
+  },
+  {
+    path: '/api-docs',
+    name: 'ApiDocumentation',
+    component: ApiDocumentationPage
   }
 ]
 

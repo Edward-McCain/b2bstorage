@@ -583,6 +583,12 @@ const handleAvatarUpdated = (newAvatarUrl) => {
         >
           Контрагенты
         </router-link>
+        <router-link
+          to="/api-docs"
+          class="text-sm font-semibold text-gray-900 hover:text-blue-600 transition-colors flex items-center gap-1"
+        >
+          API Документация
+        </router-link>
       </div>
       <!-- Справа: кнопки авторизации -->
       <div class="hidden lg:flex lg:flex-1 lg:justify-end items-center gap-4">
@@ -901,6 +907,17 @@ const handleAvatarUpdated = (newAvatarUrl) => {
               Контрагенты
             </router-link>
           </div>
+
+          <!-- API Документация -->
+          <!-- <div class="space-y-2">
+            <router-link
+              to="/api-docs"
+              class="block text-sm text-gray-700 hover:text-blue-600 py-2"
+              @click="toggleMobileMenu"
+            >
+              API Документация
+            </router-link>
+          </div> -->
 
           <!-- Выбор валюты -->
           <div class="border-t border-gray-200 pt-4 hidden">

@@ -49,7 +49,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/products/draft', [\App\Http\Controllers\ProductController::class, 'storeDraft']);
     // Product update route
     Route::put('/products/{id}', [\App\Http\Controllers\ProductController::class, 'update']);
-    // Receipt routes
+    // Receipt routes 
     Route::get('/receipts', [ReceiptController::class, 'index']);
     Route::get('/receipts/{id}', [ReceiptController::class, 'show']);
     Route::post('/receipts', [ReceiptController::class, 'store']);
