@@ -14,6 +14,8 @@
         @register-success="handleAuthSuccess"
       />
     </main>
+    
+    <Footer />
   </div>
 </template>
 
@@ -21,6 +23,7 @@
 import LoginForm from './LoginForm.vue'
 import RegisterForm from './RegisterForm.vue'
 import Header from './Header.vue'
+import Footer from './Footer.vue'
 import { useRouter } from 'vue-router'
 
 export default {
@@ -28,7 +31,8 @@ export default {
   components: {
     LoginForm,
     RegisterForm,
-    Header
+    Header,
+    Footer
   },
   setup() {
     const router = useRouter()
@@ -58,3 +62,9 @@ export default {
   }
 }
 </script> 
+
+<style>
+footer {
+    display: block !important;
+}
+</style>
