@@ -148,6 +148,7 @@ export async function getCategoriesWithCache() {
     try {
       const { data, timestamp } = JSON.parse(cached);
       if (Date.now() - timestamp < CATEGORIES_TTL) {
+        console.log('Категории загружены из кеша');
         return data;
       }
     } catch (e) {
@@ -155,13 +156,23 @@ export async function getCategoriesWithCache() {
     }
   }
   // Если нет кеша или он устарел — делаем запрос
+  console.log('Делаем запрос к API для получения категорий...');
   const response = await apiRequest('/categories');
   if (response.ok) {
+    console.log('Категории получены с сервера:', response.data.data);
+    
+    // Преобразуем данные для совместимости
+    const processedData = response.data.data.map(cat => ({
+      ...cat,
+      name_ru: cat.name || cat.name_ru // Используем name как name_ru для совместимости
+    }));
+    
     localStorage.setItem(CATEGORIES_KEY, JSON.stringify({
-      data: response.data.data,
+      data: processedData,
       timestamp: Date.now()
     }));
-    return response.data.data;
+    return processedData;
   }
+  console.log('Ошибка получения категорий с сервера');
   return [];
 } 

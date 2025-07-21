@@ -49,6 +49,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/products/draft', [\App\Http\Controllers\ProductController::class, 'storeDraft']);
     // Product update route
     Route::put('/products/{id}', [\App\Http\Controllers\ProductController::class, 'update']);
+    // Новый маршрут массового импорта с оприходованием
+    Route::post('/products/import-with-receipt', [\App\Http\Controllers\ProductController::class, 'importWithReceipt']);
     // Receipt routes 
     Route::get('/receipts', [ReceiptController::class, 'index']);
     Route::get('/receipts/{id}', [ReceiptController::class, 'show']);

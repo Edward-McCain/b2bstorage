@@ -586,4 +586,109 @@ class ProductController extends Controller
             }
         }
     }
+
+    /**
+     * Массовый импорт товаров с автоматическим оприходованием
+     */
+    public function importWithReceipt(Request $request)
+    {
+        $user = $request->user();
+        $warehouseId = $request->input('warehouse_id');
+        $products = $request->input('products');
+
+        if (!$warehouseId || !is_array($products) || count($products) === 0) {
+            return response()->json(['success' => false, 'error' => 'warehouse_id и products обязательны'], 422);
+        }
+
+        DB::beginTransaction();
+        try {
+            // 1. Массовое создание товаров
+            $createdProducts = [];
+            foreach ($products as $prod) {
+                $product = \App\Models\ProductSklad::create([
+                    'user_id' => $user->id,
+                    'name' => $prod['name'],
+                    'description' => $prod['description'] ?? null,
+                    'category' => $prod['category'] ?? null,
+                    'subcategory' => $prod['subcategory'] ?? null,
+                    'country' => $prod['country'] ?? null,
+                    'supplier' => $prod['supplier'] ?? null,
+                    'article' => $prod['article'] ?? null,
+                    'code' => $prod['code'] ?? null,
+                    'external_code' => $prod['external_code'] ?? null,
+                    'unit' => $prod['unit'] ?? null,
+                    'warehouse_id' => $warehouseId,
+                    'weight' => $prod['weight'] ?? null,
+                    'volume' => $prod['volume'] ?? null,
+                    'vat' => $prod['vat'] ?? null,
+                    'packing' => $prod['packing'] ?? null,
+                    'accounting_type' => $prod['accounting_type'] ?? null,
+                    'product_type' => $prod['product_type'] ?? null,
+                    'barcode_type' => $prod['barcode_type'] ?? null,
+                    'barcode' => $prod['barcode'] ?? null,
+                    'cash_register_tax' => $prod['cash_register_tax'] ?? null,
+                    'cash_register_type' => $prod['cash_register_type'] ?? null,
+                ]);
+                $createdProducts[] = [
+                    'model' => $product,
+                    'input' => $prod,
+                ];
+            }
+
+            // 2. Создать приход (receipts)
+            $receipt = \App\Models\Receipt::create([
+                'number' => now()->format('Y-m-d_H:i:s'),
+                'date' => now(),
+                'warehouse' => $warehouseId,
+                'user_id' => $user->id,
+                'status' => 'posted',
+                'is_posted' => true,
+                'created_by' => $user->id,
+                'organization' => $user->organization ?? '',
+            ]);
+
+            // 3. Массовое создание позиций прихода
+            $totalAmount = 0;
+            foreach ($createdProducts as $item) {
+                $quantity = $item['input']['quantity'] ?? 0;
+                $price = $item['input']['price'] ?? 0;
+                $amount = $quantity * $price;
+                $totalAmount += $amount;
+
+                \App\Models\ReceiptPosition::create([
+                    'receipt_id' => $receipt->id,
+                    'product_id' => $item['model']->id,
+                    'name' => $item['model']->name,
+                    'quantity' => $quantity,
+                    'price' => $price,
+                    'amount' => $amount,
+                    'article' => $item['model']->article,
+                    'code' => $item['model']->code,
+                    'barcode' => $item['model']->barcode,
+                    'country' => $item['model']->country,
+                ]);
+            }
+            // 4. Обновить total в receipt
+            $receipt->update(['total' => $totalAmount]);
+
+            // 4. Массовое создание/обновление остатков
+            foreach ($createdProducts as $item) {
+                \App\Models\ProductBalance::updateOrCreate(
+                    [
+                        'product_id' => $item['model']->id,
+                        'warehouse_id' => $warehouseId
+                    ],
+                    [
+                        'quantity' => $item['input']['quantity'] ?? 0
+                    ]
+                );
+            }
+
+            DB::commit();
+            return response()->json(['success' => true, 'receipt_id' => $receipt->id]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
 } 

@@ -31,12 +31,14 @@
           </router-link>
           <button 
             @click="openImportModal"
-            class="flex-1 bg-white border border-gray-300 px-3 py-1.5 rounded font-medium text-sm relative group hover:bg-gray-50 transition-colors" 
-            title="Импорт товаров из файла"
+            :disabled="importLoading"
+            class="flex-1 bg-white border border-gray-300 px-3 py-1.5 rounded font-medium text-sm relative group hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center" 
+            :title="importLoading ? 'Обработка файла...' : 'Импорт товаров из файла'"
           >
-            Импорт
+            <Loader2 v-if="importLoading" class="w-4 h-4 animate-spin mr-1" />
+            {{ importLoading ? 'Обработка...' : 'Импорт' }}
             <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
-              Импорт товаров из файла
+              {{ importLoading ? 'Обработка файла...' : 'Импорт товаров из файла' }}
               <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
             </div>
           </button>
@@ -307,7 +309,7 @@
                 placeholder="Выберите категорию"
                 searchable
                 :max-height="400"
-                class="w-full text-sm multiselect-custom"
+                class="w-full min-w-[200px] text-sm multiselect-custom"
                 :loading="loadingCategories"
               />
             </div>
@@ -322,7 +324,7 @@
                 placeholder="Выберите подкатегорию"
                 searchable
                 :max-height="400"
-                class="w-full text-xs multiselect-custom"
+                class="w-full min-w-[200px] text-xs multiselect-custom"
                 :loading="loadingSubcategories"
                 :disabled="!selectedCategory"
               />
@@ -339,7 +341,7 @@
                 searchable
                 :search-placeholder="'Поиск страны'"
                 :max-height="400"
-                class="w-full text-sm multiselect-custom"
+                class="w-full min-w-[200px] text-sm multiselect-custom"
               />
             </div>
             <div>
@@ -368,7 +370,7 @@
                 :object="true"
                 placeholder="Выберите единицу измерения"
                 :max-height="400"
-                class="w-full text-sm multiselect-custom"
+                class="w-full min-w-[200px] text-sm multiselect-custom"
               />
             </div>
             <div>
@@ -393,7 +395,7 @@
                 :object="true"
                 placeholder="Выберите фасовку"
                 :max-height="400"
-                class="w-full text-sm multiselect-custom"
+                class="w-full min-w-[200px] text-sm multiselect-custom"
               />
             </div>
             <div>
@@ -406,7 +408,7 @@
                 :object="true"
                 placeholder="Выберите тип учета"
                 :max-height="400"
-                class="w-full text-sm multiselect-custom"
+                class="w-full min-w-[200px] text-sm multiselect-custom"
               />
             </div>
             <div>
@@ -423,7 +425,7 @@
                 :object="true"
                 placeholder="Выберите тип маркировки товара"
                 :max-height="400"
-                class="w-full text-sm multiselect-custom"
+                class="w-full min-w-[200px] text-sm multiselect-custom"
               />
             </div>
             <div>
@@ -436,7 +438,7 @@
                 :object="true"
                 placeholder="Выберите тип штрихкода"
                 :max-height="400"
-                class="w-full text-sm multiselect-custom"
+                class="w-full min-w-[200px] text-sm multiselect-custom"
               />
             </div>
             <div class="md:col-span-2">
@@ -552,7 +554,15 @@
               />
             </div>
             <p class="text-sm text-gray-500">Поддерживаются файлы .xlsx и .xls</p>
-            <p class="text-xs text-gray-400 mt-2">Файл должен содержать колонки: Наименование, Описание, Категория, Подкатегория, Страна, Поставщик, Артикул, Код, Внешний код, Единица измерения, Вес (кг), Объем (л), НДС (%), Фасовка, Тип учета, Тип продукции, Тип штрихкода, Штрихкод, Система налогообложения, Признак предмета расчета</p>
+            <div class="text-xs text-gray-600 mt-4 space-y-2">
+              <p><strong>Обязательные поля:</strong> Наименование, Количество, Стоимость</p>
+              <p><strong>Дополнительные поля:</strong> Категория, Подкатегория, Артикул, Единица измерения.</p>
+              <p class="text-gray-500">Поддерживаемые названия колонок:</p>
+              <p class="text-gray-500 text-xs">• Категория: "Категория", "Категория товара"</p>
+              <p class="text-gray-500 text-xs">• Единица измерения: "Единица измерения", "Ед. изм.", "Единица"</p>
+              <p class="text-gray-500">Если в файле есть эти колонки - они будут автоматически заполнены при загрузке</p>
+              <p class="text-gray-500">Остальные поля можно будет заполнить после загрузки файла в форме на сайте</p>
+            </div>
           </div>
         </div>
 
@@ -571,41 +581,136 @@
         <div v-if="parsedProducts.length && !importLoading" class="mb-6">
           <div class="flex items-center justify-between mb-4">
             <h3 class="text-sm font-semibold">Найдено товаров: {{ parsedProducts.length }}</h3>
-            <button 
-              @click="saveImportedProducts" 
-              :disabled="importSaving"
-              class="bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white font-semibold px-6 py-2 rounded-lg transition-colors flex items-center gap-2 text-sm"
-            >
-              <Loader2 v-if="importSaving" class="animate-spin h-4 w-4" />
-              {{ importSaving ? 'Сохранение...' : 'Сохранить товары в базу' }}
-            </button>
+            <div class="flex items-center gap-4">
+              <div class="flex items-center gap-2">
+                <label class="text-sm font-medium text-gray-700">Склад:</label>
+                <div class="relative">
+                  <Multiselect
+                    v-model="selectedWarehouseForImport"
+                    :options="warehouseOptions"
+                    label="label"
+                    value="value"
+                    :object="true"
+                    placeholder="Выберите склад"
+                    :max-height="200"
+                    :disabled="loadingWarehouses"
+                    class="w-64 min-w-[200px] text-xs multiselect-custom"
+                  />
+                  <div v-if="loadingWarehouses" class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 rounded">
+                    <Loader2 class="w-4 h-4 animate-spin text-blue-500" />
+                  </div>
+                </div>
+              </div>
+              <button 
+                @click="saveImportedProducts" 
+                :disabled="importSaving || !selectedWarehouseForImport"
+                class="bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white font-semibold px-6 py-2 rounded-lg transition-colors flex items-center gap-2 text-sm"
+              >
+                <Loader2 v-if="importSaving" class="animate-spin h-4 w-4" />
+                {{ importSaving ? 'Сохранение...' : 'Сохранить товары в базу' }}
+              </button>
+            </div>
           </div>
           
           <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200 text-sm">
               <thead class="bg-gray-50">
                 <tr>
-                  <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Наименование</th>
-                  <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Категория</th>
-                  <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Поставщик</th>
-                  <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Артикул</th>
-                  <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ед. изм.</th>
-                  <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Вес</th>
-                  <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">НДС</th>
+                  <th class="px-3 py-2 text-left text-sm font-medium text-gray-500">Наименование</th>
+                  <th class="px-3 py-2 text-left text-sm font-medium text-gray-500">Категория</th>
+                  <th class="px-3 py-2 text-left text-sm font-medium text-gray-500">Данные</th>
+                  <th class="px-3 py-2 text-left text-sm font-medium text-gray-500">Артикул</th>
+                  <th class="px-3 py-2 text-left text-sm font-medium text-gray-500">Действия</th>
                 </tr>
               </thead>
               <tbody class="bg-white divide-y divide-gray-200">
                 <tr v-for="(product, index) in parsedProducts" :key="index" class="hover:bg-gray-50">
-                  <td class="px-3 py-2 text-sm text-gray-900 max-w-[200px] truncate" :title="product.name">{{ product.name }}</td>
-                  <td class="px-3 py-2 text-sm text-gray-900">
-                    <div>{{ product.category }}</div>
-                    <div v-if="product.subcategory" class="text-xs text-gray-500">{{ product.subcategory }}</div>
+                  <td class="px-3 py-2 text-sm text-gray-900 max-w-[200px] truncate" :title="product.name">
+                    <input v-model="product.name" type="text" class="w-full text-sm border border-gray-300 rounded px-2 py-1" placeholder="Наименование" />
                   </td>
-                  <td class="px-3 py-2 text-sm text-gray-900 max-w-[150px] truncate" :title="product.supplier">{{ product.supplier }}</td>
-                  <td class="px-3 py-2 text-sm text-gray-900">{{ product.article }}</td>
-                  <td class="px-3 py-2 text-sm text-gray-900">{{ product.unit }}</td>
-                  <td class="px-3 py-2 text-sm text-gray-900">{{ product.weight }}</td>
-                  <td class="px-3 py-2 text-sm text-gray-900">{{ product.vat }}</td>
+                  <td class="px-3 py-2 text-sm text-gray-900">
+                    <div class="space-y-2">
+                      <div class="relative">
+                        <Multiselect 
+                          style="margin-bottom: 5px;" 
+                          v-model="product.selectedCategory"
+                          :options="categoryOptions"
+                          label="label"
+                          value="value"
+                          :object="true"
+                          placeholder="Выберите категорию"
+                          searchable
+                          :search-placeholder="'Поиск категории'"
+                          :max-height="200"
+                          :disabled="loadingCategories"
+                          class="w-full min-w-[180px] text-xs multiselect-custom"
+                          @update:model-value="(val) => onCategoryChange(val, index)"
+                        />
+                        <div v-if="loadingCategories" class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 rounded">
+                          <Loader2 class="w-4 h-4 animate-spin text-blue-500" />
+                        </div>
+                      </div>
+                      <div class="relative">
+                        <Multiselect
+                          v-model="product.selectedSubcategory"
+                          :options="product.subcategoryOptions || []"
+                          label="label"
+                          value="value"
+                          :object="true"
+                          placeholder="Выберите подкатегорию"
+                          searchable
+                          :search-placeholder="'Поиск подкатегории'"
+                          :max-height="200"
+                          :disabled="!product.selectedCategory || loadingSubcategories"
+                          class="w-full min-w-[180px] text-xs multiselect-custom"
+                        />
+                        <div v-if="loadingSubcategories" class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 rounded">
+                          <Loader2 class="w-4 h-4 animate-spin text-blue-500" />
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-3 py-2 text-sm text-gray-900">
+                    <div class="space-y-2">
+                      <div>
+                        <label class="block text-xs text-gray-600 mb-1">Количество</label>
+                        <input v-model="product.quantity" type="number" step="0.001" class="w-full text-sm border border-gray-300 rounded px-2 py-1" placeholder="Количество" />
+                      </div>
+                      <div>
+                        <label class="block text-xs text-gray-600 mb-1">Единица измерения</label>
+                        <Multiselect
+                          v-model="product.selectedUnit"
+                          :options="unitOptions"
+                          label="label"
+                          value="value"
+                          :object="true"
+                          placeholder="Выберите единицу"
+                          :max-height="200"
+                          class="w-full min-w-[150px] text-xs multiselect-custom"
+                        />
+                      </div>
+                      <div>
+                        <label class="block text-xs text-gray-600 mb-1">Стоимость</label>
+                        <input v-model="product.price" type="number" step="0.01" class="w-full text-sm border border-gray-300 rounded px-2 py-1" placeholder="Стоимость" />
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-3 py-2 text-sm text-gray-900">
+                    <input v-model="product.article" type="text" class="w-full text-sm border border-gray-300 rounded px-2 py-1" placeholder="Артикул" />
+                  </td>
+                  <td class="px-3 py-2 text-sm text-gray-900">
+                    <button 
+                      @click="removeProductFromImport(index)"
+                      class="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50 transition-colors relative group"
+                      title="Удалить товар из списка"
+                    >
+                      <Trash2 class="w-4 h-4" />
+                      <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                        Удалить товар из списка
+                        <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                      </div>
+                    </button>
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -619,6 +724,7 @@
 <script setup>
 import { ref, computed, onMounted, reactive, watch } from 'vue'
 import { apiRequest, getCategoriesWithCache } from '@/config/api'
+import categoriesData from '../../../cats.json'
 import ProductsMenu from './ProductsMenu.vue'
 import toastr from 'toastr'
 import Multiselect from '@vueform/multiselect'
@@ -651,6 +757,11 @@ const importError = ref('')
 
 // Состояния для экспорта товаров
 const exportLoading = ref(false)
+
+// Состояния для складов
+const warehouses = ref([])
+const selectedWarehouseForImport = ref('')
+const loadingWarehouses = ref(false)
 
 const filter = reactive({
   category: null,
@@ -850,10 +961,25 @@ function closeFilterModal() {
 async function loadCategories() {
   loadingCategories.value = true
   try {
-    categories.value = await getCategoriesWithCache()
+    console.log('Загружаем категории...')
+    const categoriesData = await getCategoriesWithCache()
+    console.log('Получены категории:', categoriesData)
+    
+    // Проверяем структуру данных
+    if (Array.isArray(categoriesData)) {
+      categoryOptions.value = categoriesData.map(cat => ({
+        label: cat.name_ru || cat.name || 'Без названия',
+        value: cat.category_id || cat.id,
+        category_id: cat.category_id || cat.id
+      }))
+      console.log('Категории обработаны:', categoryOptions.value)
+    } else {
+      console.error('Неверная структура данных категорий:', categoriesData)
+      categoryOptions.value = []
+    }
   } catch (error) {
     console.error('Ошибка загрузки категорий:', error)
-    categoryError.value = 'Ошибка загрузки категорий'
+    categoryOptions.value = []
   } finally {
     loadingCategories.value = false
   }
@@ -866,14 +992,19 @@ async function loadSubcategories(categoryId) {
   }
   loadingSubcategories.value = true
   try {
+    console.log('Загружаем подкатегории для категории:', categoryId)
     const res = await apiRequest(`/subcategories?category_id=${categoryId}`)
-    if (res.data && Array.isArray(res.data)) {
-      subcategoryOptions.value = res.data.map(subcat => ({ 
-        label: subcat.name_ru, 
-        value: subcat.id,
-        subcategory_id: subcat.subcategory_id 
+    console.log('Ответ API подкатегорий:', res)
+    
+    if (res.ok && res.data && res.data.data && Array.isArray(res.data.data)) {
+      subcategoryOptions.value = res.data.data.map(subcat => ({ 
+        label: subcat.name_ru || subcat.name || 'Без названия', 
+        value: subcat.subcategory_id || subcat.id,
+        subcategory_id: subcat.subcategory_id || subcat.id
       }))
+      console.log('Подкатегории обработаны:', subcategoryOptions.value)
     } else {
+      console.error('Неверная структура данных подкатегорий:', res.data)
       subcategoryOptions.value = []
     }
   } catch (error) {
@@ -1047,11 +1178,31 @@ function resetFilter() {
 }
 
 // Открытие модалки импорта
-function openImportModal() {
+async function openImportModal() {
   showImportModal.value = true
   parsedProducts.value = []
   importError.value = ''
   importFile.value = null
+  
+  // Загружаем категории если еще не загружены
+  if (!categoryOptions.value || categoryOptions.value.length === 0) {
+    try {
+      await loadCategories()
+    } catch (error) {
+      console.error('Ошибка загрузки категорий при открытии модалки:', error)
+    }
+  }
+  
+  // Загружаем склады если еще не загружены
+  if (!warehouses.value || warehouses.value.length === 0) {
+    try {
+      await loadWarehouses()
+    } catch (error) {
+      console.error('Ошибка загрузки складов при открытии модалки:', error)
+    }
+  }
+  
+  // Единицы измерения определены статически, загрузка не требуется
 }
 
 // Закрытие модалки импорта
@@ -1062,6 +1213,7 @@ function closeImportModal() {
   importFile.value = null
   importLoading.value = false
   importSaving.value = false
+  selectedWarehouseForImport.value = ''
 }
 
 // Обработка загрузки файла
@@ -1099,7 +1251,7 @@ async function handleFileUpload(event) {
     const headers = jsonData[0]
     
     // Проверяем обязательные колонки
-    const requiredColumns = ['Наименование', 'Категория', 'Поставщик', 'Артикул']
+    const requiredColumns = ['Название', 'Количество', 'Стоимость']
     const missingColumns = requiredColumns.filter(col => !headers.includes(col))
     
     if (missingColumns.length > 0) {
@@ -1118,22 +1270,24 @@ async function handleFileUpload(event) {
       })
       
       // Проверяем обязательные поля
-      if (!product['Наименование'] || !product['Категория']) {
+      if (!product['Название'] || !product['Количество'] || !product['Стоимость']) {
         continue // Пропускаем строки без обязательных полей
       }
       
       // Преобразуем данные в нужный формат
       const parsedProduct = {
-        name: product['Наименование']?.toString() || '',
+        name: product['Название']?.toString() || '',
         description: product['Описание']?.toString() || '',
-        category: product['Категория']?.toString() || '',
-        subcategory: product['Подкатегория']?.toString() || '',
+        category: product['Категория']?.toString() || product['Категория товара']?.toString() || '',
+        subcategory: product['Подкатегория']?.toString() || product['Подкатегория товара']?.toString() || '',
         country: product['Страна']?.toString() || '',
         supplier: product['Поставщик']?.toString() || '',
         article: product['Артикул']?.toString() || '',
         code: product['Код']?.toString() || '',
         external_code: product['Внешний код']?.toString() || '',
-        unit: product['Единица измерения']?.toString() || '',
+        unit: product['Единица измерения']?.toString() || product['Ед. изм.']?.toString() || product['Единица']?.toString() || '',
+        quantity: product['Количество'] ? parseFloat(product['Количество']) : 0,
+        price: product['Стоимость'] ? parseFloat(product['Стоимость']) : 0,
         weight: product['Вес (кг)'] ? parseFloat(product['Вес (кг)']) : null,
         volume: product['Объем (л)'] ? parseFloat(product['Объем (л)']) : null,
         vat: product['НДС (%)']?.toString() || '',
@@ -1143,7 +1297,12 @@ async function handleFileUpload(event) {
         barcode_type: product['Тип штрихкода']?.toString() || '',
         barcode: product['Штрихкод']?.toString() || '',
         cash_register_tax: product['Система налогообложения']?.toString() || '',
-        cash_register_type: product['Признак предмета расчета']?.toString() || 'Товар'
+        cash_register_type: product['Признак предмета расчета']?.toString() || 'Товар',
+        // Добавляем селекты для интерфейса
+        selectedCategory: null,
+        selectedSubcategory: null,
+        selectedUnit: null,
+        subcategoryOptions: []
       }
       
       products.push(parsedProduct)
@@ -1151,6 +1310,114 @@ async function handleFileUpload(event) {
     
     if (products.length === 0) {
       throw new Error('Не найдено товаров для импорта')
+    }
+    
+    // Убеждаемся, что категории и единицы измерения загружены
+    if (!categoryOptions.value || !Array.isArray(categoryOptions.value)) {
+      console.warn('Категории не загружены, пропускаем автоматическое заполнение категорий')
+      // Попробуем загрузить категории
+      try {
+        await loadCategories()
+      } catch (error) {
+        console.error('Не удалось загрузить категории:', error)
+      }
+    }
+    if (!unitOptions || !Array.isArray(unitOptions)) {
+      console.warn('Единицы измерения не определены, пропускаем автоматическое заполнение единиц')
+    }
+    
+    // Автоматически заполняем категории и единицы измерения из Excel файла
+    for (const product of products) {
+      // Заполняем категорию, если она есть в Excel
+      if (product.category) {
+        // Сначала ищем в локальном файле
+        const localCategory = findCategoryByName(product.category)
+        if (localCategory) {
+          // Ищем соответствующую категорию в селекте
+          const foundCategory = categoryOptions.value.find(cat => 
+            String(cat.value) === String(localCategory.category_id)
+          )
+          if (foundCategory) {
+            product.selectedCategory = foundCategory;
+            product.subcategoryOptions = localCategory.subcategories.map(sub => ({
+              label: sub.name_ru || sub.name || 'Без названия',
+              value: sub.subcategory_id
+            }))
+            if (product.subcategory) {
+              const localSubcategory = findSubcategoryByName(localCategory.category_id, product.subcategory)
+              if (localSubcategory) {
+                const foundSubcategory = product.subcategoryOptions.find(sub => 
+                  String(sub.value) === String(localSubcategory.subcategory_id)
+                )
+                if (foundSubcategory) {
+                  product.selectedSubcategory = foundSubcategory
+                } else {
+                  product.selectedSubcategory = null
+                }
+              } else {
+                product.selectedSubcategory = null
+              }
+            } else {
+              product.selectedSubcategory = null
+            }
+          } else {
+            product.selectedCategory = null;
+            product.selectedSubcategory = null;
+            product.subcategoryOptions = [];
+          }
+        } else {
+          // Если не найдено в локальном файле, ищем в селекте (старый способ)
+          if (categoryOptions.value && Array.isArray(categoryOptions.value)) {
+            const foundCategory = categoryOptions.value.find(cat => 
+              cat && cat.label && product.category &&
+              (cat.label.toLowerCase() === product.category.toLowerCase() ||
+               cat.label.toLowerCase().includes(product.category.toLowerCase()) ||
+               product.category.toLowerCase().includes(cat.label.toLowerCase()))
+            )
+            if (foundCategory) {
+              product.selectedCategory = foundCategory
+              
+              // Загружаем подкатегории через API
+              if (product.subcategory) {
+                try {
+                  const response = await apiRequest(`/categories/${foundCategory.value}/subcategories`)
+                  if (response.ok && response.data && response.data.data) {
+                    product.subcategoryOptions = response.data.data.map(sub => ({
+                      label: sub.name_ru || sub.name || 'Без названия',
+                      value: sub.subcategory_id || sub.id
+                    }))
+                    
+                    const foundSubcategory = product.subcategoryOptions.find(sub => 
+                      sub && sub.label && product.subcategory &&
+                      (sub.label.toLowerCase() === product.subcategory.toLowerCase() ||
+                       sub.label.toLowerCase().includes(product.subcategory.toLowerCase()) ||
+                       product.subcategory.toLowerCase().includes(sub.label.toLowerCase()))
+                    )
+                    if (foundSubcategory) {
+                      product.selectedSubcategory = foundSubcategory
+                    }
+                  }
+                } catch (error) {
+                  console.error('Ошибка загрузки подкатегорий:', error)
+                }
+              }
+            }
+          }
+        }
+      }
+      
+      // Заполняем единицу измерения, если она есть в Excel
+      if (product.unit && unitOptions && Array.isArray(unitOptions)) {
+        const foundUnit = unitOptions.find(unit => 
+          unit && unit.label && product.unit &&
+          (unit.label.toLowerCase() === product.unit.toLowerCase() ||
+           unit.label.toLowerCase().includes(product.unit.toLowerCase()) ||
+           product.unit.toLowerCase().includes(unit.label.toLowerCase()))
+        )
+        if (foundUnit) {
+          product.selectedUnit = foundUnit
+        }
+      }
     }
     
     parsedProducts.value = products
@@ -1165,88 +1432,58 @@ async function handleFileUpload(event) {
 
 // Сохранение импортированных товаров
 async function saveImportedProducts() {
-  if (parsedProducts.value.length === 0) return
-  
-  importSaving.value = true
-  importError.value = ''
-  
+  if (parsedProducts.value.length === 0 || !selectedWarehouseForImport.value) return;
+
+  importSaving.value = true;
+  importError.value = '';
+
   try {
-    let successCount = 0
-    let errorCount = 0
-    
-    for (const product of parsedProducts.value) {
-      try {
-        // Создаем черновик товара
-        const draftResponse = await apiRequest('/products/draft', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: product.name })
-        })
-        
-        if (!draftResponse.ok) {
-          errorCount++
-          continue
-        }
-        
-        const productId = draftResponse.data.id
-        
-        // Сохраняем полные данные товара
-        const saveResponse = await apiRequest(`/products/${productId}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name: product.name,
-            description: product.description,
-            category: product.category,
-            subcategory: product.subcategory,
-            country: product.country,
-            supplier: product.supplier,
-            article: product.article,
-            code: product.code,
-            external_code: product.external_code,
-            unit: product.unit,
-            weight: product.weight,
-            volume: product.volume,
-            vat: product.vat,
-            packing: product.packing,
-            accounting_type: product.accounting_type,
-            product_type: product.product_type,
-            barcode_type: product.barcode_type,
-            barcode: product.barcode,
-            cash_register_tax: product.cash_register_tax,
-            cash_register_type: product.cash_register_type
-          })
-        })
-        
-        if (saveResponse.ok) {
-          successCount++
-        } else {
-          errorCount++
-        }
-        
-      } catch (error) {
-        console.error('Ошибка сохранения товара:', error)
-        errorCount++
-      }
-    }
-    
-    // Показываем результат
-    if (successCount > 0) {
-      toastr.success(`Успешно импортировано ${successCount} товаров`)
-      if (errorCount > 0) {
-        toastr.warning(`${errorCount} товаров не удалось импортировать`)
-      }
-      closeImportModal()
-      loadProducts() // Обновляем список товаров
+    const response = await apiRequest('/products/import-with-receipt', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        warehouse_id: selectedWarehouseForImport.value.value || selectedWarehouseForImport.value,
+        products: parsedProducts.value.map(product => ({
+          name: product.name,
+          description: product.description,
+          category: product.selectedCategory?.value || product.category,
+          subcategory: product.selectedSubcategory?.value || product.subcategory,
+          country: product.country,
+          supplier: product.supplier,
+          article: product.article,
+          code: product.code,
+          external_code: product.external_code,
+          unit: product.selectedUnit?.value || product.unit,
+          weight: product.weight,
+          volume: product.volume,
+          vat: product.vat,
+          packing: product.packing,
+          accounting_type: product.accounting_type,
+          product_type: product.product_type,
+          barcode_type: product.barcode_type,
+          barcode: product.barcode,
+          cash_register_tax: product.cash_register_tax,
+          cash_register_type: product.cash_register_type,
+          quantity: product.quantity,
+          price: product.price,
+        }))
+      })
+    });
+
+    if (response.ok && response.data.success) {
+      toastr.success('Товары и оприходование успешно созданы!');
+      // Сбросить модалку и форму
+      closeImportModal();
+      // Можно обновить список товаров
+      loadProducts();
     } else {
-      importError.value = 'Не удалось импортировать ни одного товара'
+      throw new Error(response.data.error || 'Ошибка массового импорта');
     }
-    
   } catch (error) {
-    console.error('Ошибка импорта:', error)
-    importError.value = 'Ошибка импорта товаров'
+    importError.value = error.message || 'Ошибка массового импорта';
+    toastr.error(importError.value);
   } finally {
-    importSaving.value = false
+    importSaving.value = false;
   }
 }
 
@@ -1352,8 +1589,117 @@ async function exportProducts() {
   }
 }
 
+// Загрузка складов
+async function loadWarehouses() {
+  loadingWarehouses.value = true
+  try {
+    console.log('Загружаем склады...')
+    const response = await apiRequest('/warehouses')
+    if (response.ok) {
+      warehouses.value = response.data.data || []
+      console.log('Склады загружены:', warehouses.value)
+    }
+  } catch (error) {
+    console.error('Ошибка загрузки складов:', error)
+  } finally {
+    loadingWarehouses.value = false
+  }
+}
+
+// Computed свойства для селектов
+const warehouseOptions = computed(() =>
+  warehouses.value.map(warehouse => ({
+    label: warehouse.name,
+    value: warehouse.id
+  }))
+)
+
+// Функция для обработки изменения категории
+async function onCategoryChange(category, productIndex) {
+  const product = parsedProducts.value[productIndex]
+  if (!category) {
+    product.selectedSubcategory = null
+    product.subcategoryOptions = []
+    return
+  }
+  
+  try {
+    console.log('Загружаем подкатегории для категории:', category.value)
+    
+    // Сначала ищем в локальном файле
+    const localCategory = categoriesData.find(cat => cat.category_id === category.value)
+    if (localCategory && Array.isArray(localCategory.subcategories)) {
+      console.log('Найдены подкатегории в локальном файле:', localCategory.subcategories)
+      product.subcategoryOptions = localCategory.subcategories.map(sub => ({
+        label: sub.name_ru || sub.name || 'Без названия',
+        value: sub.subcategory_id
+      }))
+      console.log('Подкатегории в модалке обработаны:', product.subcategoryOptions)
+    } else {
+      // Если не найдено в локальном файле, загружаем через API
+      const response = await apiRequest(`/categories/${category.value}/subcategories`)
+      console.log('Ответ API подкатегорий в модалке:', response)
+      
+      if (response.ok && response.data && response.data.data) {
+        product.subcategoryOptions = response.data.data.map(sub => ({
+          label: sub.name_ru || sub.name || 'Без названия',
+          value: sub.subcategory_id || sub.id
+        }))
+        console.log('Подкатегории в модалке обработаны:', product.subcategoryOptions)
+      } else {
+        console.error('Неверная структура данных подкатегорий в модалке:', response.data)
+        product.subcategoryOptions = []
+      }
+    }
+  } catch (error) {
+    console.error('Ошибка загрузки подкатегорий в модалке:', error)
+    product.subcategoryOptions = []
+  }
+}
+
+// Функция для удаления товара из списка импорта
+function removeProductFromImport(index) {
+  parsedProducts.value.splice(index, 1)
+}
+
+// Функция для быстрого поиска категории в локальном файле
+function findCategoryByName(categoryName) {
+  if (!categoryName || !Array.isArray(categoriesData)) return null
+  
+  const normalizedName = categoryName.toLowerCase().trim()
+  
+  return categoriesData.find(cat => 
+    (cat.name_ru && cat.name_ru.toLowerCase().includes(normalizedName)) ||
+    (cat.name && cat.name.toLowerCase().includes(normalizedName)) ||
+    (cat.name_en && cat.name_en.toLowerCase().includes(normalizedName)) ||
+    (cat.name_uz && cat.name_uz.toLowerCase().includes(normalizedName))
+  )
+}
+
+// Функция для быстрого поиска подкатегории в локальном файле
+function findSubcategoryByName(categoryId, subcategoryName) {
+  if (!categoryId || !subcategoryName || !Array.isArray(categoriesData)) return null
+  
+  const category = categoriesData.find(cat => cat.category_id === categoryId)
+  if (!category || !Array.isArray(category.subcategories)) return null
+  
+  const normalizedName = subcategoryName.toLowerCase().trim()
+  
+  return category.subcategories.find(sub => 
+    (sub.name_ru && sub.name_ru.toLowerCase().includes(normalizedName)) ||
+    (sub.name && sub.name.toLowerCase().includes(normalizedName)) ||
+    (sub.name_en && sub.name_en.toLowerCase().includes(normalizedName)) ||
+    (sub.name_uz && sub.name_uz.toLowerCase().includes(normalizedName))
+  )
+}
+
 onMounted(() => {
   document.title = 'B2B SKLAD - Товары'
   loadProducts()
+  loadWarehouses()
+  
+  // Очищаем кеш категорий для принудительной загрузки
+  localStorage.removeItem('categories_cache')
+  loadCategories()
 })
 </script> 

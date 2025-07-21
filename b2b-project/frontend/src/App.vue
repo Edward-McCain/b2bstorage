@@ -52,6 +52,7 @@ const isAdminRoute = computed(() => {
 .multiselect.multiselect-custom {
   display: block !important;
   width: 100%;
+  min-width: 200px;
 }
 
 .notification-toast {
