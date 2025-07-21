@@ -1,247 +1,320 @@
 <template>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-sm">
-    <!-- Tailwind Notification -->
-    <transition name="fade">
-      <div v-if="notification.show" :class="['fixed z-index-[99999999] right-6 px-4 py-3 rounded-lg shadow-lg text-sm font-medium', notification.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white']">
-        {{ notification.message }}
+    <!-- Наименование и кнопки -->
+    <div class="mb-6 w-full" style="position: sticky;top: 62px;background: #fff;z-index: 99;padding: 10px 0;">
+      <div class="flex flex-col gap-3 sm:inline-flex sm:flex-row sm:items-center w-full">
+        <input v-model="product.name" @blur="handleNameBlur" type="text" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" placeholder="Наименование товара *" />
+        <div class="flex gap-2 mt-3 sm:mt-0">
+          <button @click="handleSave" :disabled="!product.name || !selectedCategory || !selectedSubcategory || !selectedWarehouse || !product.unit || !product.quantity || isSavingProduct" class="bg-lime-500 hover:bg-lime-600 text-white font-semibold px-6 py-2 rounded-lg shadow transition text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+            <svg v-if="isSavingProduct" class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+            </svg>
+            {{ isSavingProduct ? 'Сохранение...' : 'Сохранить' }}
+          </button>
+          <button @click="showCloseModal = true" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold px-6 py-2 rounded-lg border shadow transition text-sm">Закрыть</button>
+        </div>
       </div>
-    </transition>
+      <div v-if="saveError" class="text-red-500 text-xs mt-2">{{ saveError }}</div>
+    </div>
 
-    <div v-if="loadingProduct" class="flex items-center justify-center py-20">
-      <div class="text-center">
-        <Loader2 class="animate-spin h-8 w-8 text-blue-500 mx-auto mb-4" />
-        <p class="text-gray-600">Загрузка товара...</p>
+    <!-- Область загрузки изображений -->
+    <div class="w-full mb-6">
+      <div class="bg-gray-50 rounded-xl p-4 shadow-sm">
+        <div class="font-semibold mb-2">Изображения</div>
+        <template v-if="loadingProduct">
+          <div class="w-full h-32 flex items-center justify-center bg-white border border-gray-200 rounded-lg">
+            <Loader2 class="animate-spin h-8 w-8 text-blue-500" />
+            <span class="ml-3 text-sm text-gray-500">Загрузка изображений...</span>
+          </div>
+        </template>
+        <template v-else>
+          <ImageDropzone :product-id="productId" :images="images" :disabled="!product.name" @uploaded="onImageUploaded" @deleted="handleDeleteImage" />
+        </template>
+        <div v-if="imageUploadError" class="text-red-500 text-xs mt-2">{{ imageUploadError }}</div>
       </div>
     </div>
 
-    <div v-else-if="productError" class="text-center py-20">
-      <p class="text-red-500 mb-4">{{ productError }}</p>
-      <button @click="loadProduct" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
-        Попробовать снова
-      </button>
-    </div>
-
-    <div v-else>
-      <!-- Наименование и кнопки -->
-      <div class="mb-6 w-full" style="position: sticky;top: 62px;background: #fff;z-index: 99;padding: 10px 0;">
-        <div class="flex flex-col gap-3 sm:inline-flex sm:flex-row sm:items-center w-full">
-          <div class="flex-1">
-            <div v-if="loadingProduct" class="h-10 bg-gray-200 rounded w-full animate-pulse"></div>
-            <input v-else v-model="product.name" type="text" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white w-full" placeholder="* Наименование товара" />
-          </div>
-          <div class="flex gap-2 mt-3 sm:mt-0">
-            <div v-if="loadingProduct" class="h-10 w-32 bg-gray-200 rounded animate-pulse"></div>
-            <button v-else @click="handleSave" :disabled="!product.name || isSavingProduct" class="bg-lime-500 hover:bg-lime-600 text-white font-semibold px-6 py-2 rounded-lg shadow transition text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
-              <Loader2 v-if="isSavingProduct" class="animate-spin h-4 w-4" />
-              {{ isSavingProduct ? 'Сохранение...' : 'Сохранить' }}
-            </button>
-            <!-- <button @click="showCloseModal = true" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold px-6 py-2 rounded-lg border shadow transition text-sm">Закрыть</button> -->
-          </div>
-        </div>
-        <div v-if="saveError" class="text-red-500 text-xs mt-2">{{ saveError }}</div>
-      </div>
-
-      <!-- Область загрузки изображений -->
-      <div class="w-full mb-6">
-        <div class="bg-gray-50 rounded-xl p-4 shadow-sm">
-          <div class="font-semibold mb-2">Изображения</div>
-          <div v-if="loadingProduct" class="h-32 bg-gray-200 rounded animate-pulse"></div>
-          <ImageDropzone v-else :product-id="productId" :images="images" :disabled="!product.name" @uploaded="onImageUploaded" @deleted="handleDeleteImage" />
-          <div v-if="imageUploadError" class="text-red-500 text-xs mt-2">{{ imageUploadError }}</div>
-        </div>
-      </div>
-
-      <!-- Существующие изображения -->
-      <div v-if="existingImages.length > 0 || loadingProduct" class="w-full mb-6">
-        <div class="bg-gray-50 rounded-xl p-4 shadow-sm">
-          <div class="font-semibold mb-4">Существующие изображения</div>
-          <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            <template v-if="loadingProduct">
-              <div v-for="n in 2" :key="n" class="h-24 bg-gray-200 rounded-lg animate-pulse"></div>
-            </template>
-            <template v-else>
-              <div v-for="image in existingImages" :key="image.id" class="relative group">
-                <img 
-                  :src="image.image_url" 
-                  :alt="image.alt_text || product.name"
-                  class="w-full h-24 object-cover rounded-lg border border-gray-200"
-                />
-                <!-- Оверлей прелоадера -->
-                <div v-if="deletingImageIds.includes(image.id)" class="absolute inset-0 bg-white bg-opacity-70 flex items-center justify-center z-10 rounded-lg">
-                  <Loader2 class="animate-spin w-6 h-6 text-blue-500" />
+    <!-- Блоки с данными о товаре -->
+    <div class="w-full flex flex-col gap-6">
+      <!-- Общие данные -->
+      <div class="bg-gray-50 rounded-xl p-4 shadow-sm">
+        <div class="font-semibold mb-2">Общие данные</div>
+        <div class="flex flex-col gap-3">
+          <!-- Категория и подкатегория -->
+          <div class="flex flex-col gap-2 w-full">
+            <div class="w-full">
+              <label class="block text-xs text-gray-700 mb-1">Категория <span class="text-red-500">*</span></label>
+              <template v-if="loadingProduct">
+                <div class="w-full h-10 flex items-center justify-center bg-white border border-gray-200 rounded-lg">
+                  <Loader2 class="animate-spin h-5 w-5 text-blue-500" />
+                  <span class="ml-2 text-xs text-gray-500">Загрузка данных товара...</span>
                 </div>
-                <button 
-                  @click="deleteExistingImage(image.id)"
-                  class="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                  title="Удалить"
-                >
-                  <X class="w-3 h-3" />
-                </button>
-              </div>
-            </template>
-          </div>
-        </div>
-      </div>
-
-      <!-- Блоки с данными о товаре -->
-      <div class="w-full flex flex-col gap-6">
-        <!-- Общие данные -->
-        <div class="bg-gray-50 rounded-xl p-4 shadow-sm">
-          <div class="font-semibold mb-2">Общие данные</div>
-          <div class="flex flex-col gap-3">
-            <div>
-              <label class="block text-xs text-gray-700 mb-1">Описание</label>
-              <div v-if="loadingProduct" class="h-20 bg-gray-200 rounded w-full animate-pulse"></div>
-              <textarea v-else v-model="product.description" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm"></textarea>
-            </div>
-            <!-- Категория и подкатегория -->
-            <div class="flex flex-col gap-2 w-full">
-              <div class="w-full">
-                <label class="block text-xs text-gray-700 mb-1">Категория</label>
-                <div v-if="loadingProduct" class="h-10 bg-gray-200 rounded w-full animate-pulse"></div>
-                <template v-else>
-                  <Multiselect
-                    v-model="selectedCategory"
-                    :options="categoryOptions"
-                    label="label"
-                    value="value"
-                    track-by="value"
-                    :object="true"
-                    placeholder="Выберите категорию"
-                    searchable
-                    :search-placeholder="'Поиск категории'"
-                    :max-height="400"
-                    class="w-full text-xs multiselect-custom"
-                    @open="onCategoryOpen"
-                    @close="onCategoryClose"
-                  />
-                </template>
-              </div>
-              <div class="w-full">
-                <label class="block text-xs text-gray-700 mb-1">Подкатегория</label>
-                <div v-if="loadingProduct" class="h-10 bg-gray-200 rounded w-full animate-pulse"></div>
-                <template v-else>
-                  <Multiselect
-                    v-model="selectedSubcategory"
-                    :options="subcategoryOptions"
-                    label="label"
-                    value="value"
-                    track-by="value"
-                    :object="true"
-                    placeholder="Выберите подкатегорию"
-                    :search-placeholder="'Поиск подкатегории'"
-                    :max-height="400"
-                    :disabled="!selectedCategory"
-                    :no-options="subcategoryError || 'Нет подкатегорий'"
-                    searchable
-                    class="w-full text-xs multiselect-custom"
-                    @open="onSubcategoryOpen"
-                    @close="onSubcategoryClose"
-                  />
-                </template>
-              </div>
-            </div>
-            <div class="flex gap-2">
-              <div class="flex-1">
-                <label class="block text-xs text-gray-700 mb-1">Страна</label>
-                <div v-if="loadingProduct" class="h-10 bg-gray-200 rounded w-full animate-pulse"></div>
-                <Multiselect v-else
-                  v-model="selectedCountry"
-                  :options="countries"
+              </template>
+              <template v-else>
+                <Multiselect
+                  v-model="selectedCategory"
+                  :options="categoryOptions"
                   label="label"
                   value="value"
-                  track-by="value"
                   :object="true"
-                  placeholder="Выберите страну"
+                  :placeholder="categoryPlaceholder"
                   searchable
-                  :search-placeholder="'Поиск страны'"
+                  :search-placeholder="categorySearchPlaceholder"
                   :max-height="400"
-                  class="w-full text-xs multiselect-custom"
+                  class="w-full text-xs multiselect-custom bg-white"
+                  @open="onCategoryOpen"
+                  @close="onCategoryClose"
                 />
-              </div>
-              <div class="flex-1">
-                <label class="block text-xs text-gray-700 mb-1">Поставщик</label>
-                <div v-if="loadingProduct" class="h-10 bg-gray-200 rounded w-full animate-pulse"></div>
-                <input v-else v-model="product.supplier" type="text" placeholder="Поставщик" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm" />
-              </div>
+              </template>
             </div>
-            <div class="flex gap-2 relative">
-              <div class="flex-1 relative">
-                <label class="block text-xs text-gray-700 mb-1 flex items-center gap-1 relative">
-                  Артикул
-                  <span @mouseenter="showTooltip.article = true" @mouseleave="showTooltip.article = false" class="text-blue-400 cursor-pointer relative">
-                    <HelpCircle class="h-4 w-4 inline" />
-                    <span v-if="showTooltip.article" class="absolute left-0 top-full z-10 mt-2 max-w-xs w-max rounded bg-gray-900 text-white text-xs px-3 py-2 shadow-lg transition-opacity duration-200 whitespace-pre-line">
-                      <span class="absolute -top-2 left-4 w-3 h-3 bg-gray-900 rotate-45"></span>
-                      Назначенный производителем идентификатор товара.
-                    </span>
-                  </span>
-                </label>
-                <div v-if="loadingProduct" class="h-10 bg-gray-200 rounded w-full animate-pulse"></div>
-                <input v-else v-model="product.article" type="text" placeholder="Артикул" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm" />
-              </div>
-              <div class="flex-1 relative">
-                <label class="block text-xs text-gray-700 mb-1 flex items-center gap-1 relative">
-                  Код
-                  <span @mouseenter="showTooltip.code = true" @mouseleave="showTooltip.code = false" class="text-blue-400 cursor-pointer relative">
-                    <HelpCircle class="h-4 w-4 inline" />
-                    <span v-if="showTooltip.code" class="absolute left-0 top-full z-10 mt-2 max-w-xs w-max rounded bg-gray-900 text-white text-xs px-3 py-2 shadow-lg transition-opacity duration-200 whitespace-pre-line">
-                      <span class="absolute -top-2 left-4 w-3 h-3 bg-gray-900 rotate-45"></span>
-                      Внутренний код товара в вашей системе.
-                    </span>
-                  </span>
-                </label>
-                <div v-if="loadingProduct" class="h-10 bg-gray-200 rounded w-full animate-pulse"></div>
-                <input v-else v-model="product.code" type="text" placeholder="Код" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm" />
-              </div>
-              <div class="flex-1">
-                <label class="block text-xs text-gray-700 mb-1">Внешний код</label>
-                <div v-if="loadingProduct" class="h-10 bg-gray-200 rounded w-full animate-pulse"></div>
-                <input v-else v-model="product.external_code" type="text" placeholder="Внешний код" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm" />
-              </div>
-            </div>
-            <div class="flex gap-2">
-              <div class="flex-1">
-                <label class="block text-xs text-gray-700 mb-1">Ед-ца измерения</label>
-                <div v-if="loadingProduct" class="h-10 bg-gray-200 rounded w-full animate-pulse"></div>
-                <Multiselect v-else
-                  v-model="selectedUnit"
-                  :options="unitOptions"
+            <div class="w-full">
+              <label class="block text-xs text-gray-700 mb-1">Подкатегория <span class="text-red-500">*</span></label>
+              <template v-if="loadingProduct">
+                <div class="w-full h-10 flex items-center justify-center bg-white border border-gray-200 rounded-lg">
+                  <Loader2 class="animate-spin h-5 w-5 text-blue-500" />
+                  <span class="ml-2 text-xs text-gray-500">Загрузка данных товара...</span>
+                </div>
+              </template>
+              <template v-else>
+                <Multiselect
+                  v-model="selectedSubcategory"
+                  :options="subcategoryOptions"
                   label="label"
                   value="value"
-                  track-by="value"
+                  :object="true"
+                  :placeholder="subcategoryPlaceholder"
+                  :search-placeholder="subcategorySearchPlaceholder"
+                  :max-height="400"
+                  :disabled="!selectedCategory"
+                  :no-options="subcategoryError || 'Нет подкатегорий'"
+                  searchable
+                  class="w-full text-xs multiselect-custom bg-white"
+                  @open="onSubcategoryOpen"
+                  @close="onSubcategoryClose"
+                />
+              </template>
+            </div>
+          </div>
+          <!-- Склад товара (скрыт) -->
+          <div class="w-full hidden">
+            <label class="block text-xs text-gray-700 mb-1">Склад товара</label>
+            <div class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-gray-50 text-gray-600">
+              {{ selectedWarehouse ? selectedWarehouse.label : 'Не выбран' }}
+            </div>
+          </div>
+          <!-- Количество единиц товара, единица измерения и стоимость -->
+          <div class="flex gap-2">
+            <div class="flex-1">
+              <label class="block text-xs text-gray-700 mb-1">Количество единиц товара <span class="text-red-500">*</span></label>
+              <template v-if="loadingProduct">
+                <div class="w-full h-10 flex items-center justify-center bg-white border border-gray-200 rounded-lg">
+                  <Loader2 class="animate-spin h-5 w-5 text-blue-500" />
+                  <span class="ml-2 text-xs text-gray-500">Загрузка данных товара...</span>
+                </div>
+              </template>
+              <template v-else>
+                <input v-model="product.quantity" type="number" min="0" step="1" placeholder="0" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" />
+              </template>
+            </div>
+            <div class="flex-1">
+              <label class="block text-xs text-gray-700 mb-1">Ед-ца измерения <span class="text-red-500">*</span></label>
+              <template v-if="loadingProduct">
+                <div class="w-full h-10 flex items-center justify-center bg-white border border-gray-200 rounded-lg">
+                  <Loader2 class="animate-spin h-5 w-5 text-blue-500" />
+                  <span class="ml-2 text-xs text-gray-500">Загрузка данных товара...</span>
+                </div>
+              </template>
+              <template v-else>
+                <Multiselect
+                  v-model="product.unit"
+                  :options="[
+                    { label: 'Штука', value: 'Штука' },
+                    { label: 'Килограмм', value: 'Килограмм' },
+                    { label: 'Грамм', value: 'Грамм' },
+                    { label: 'Тонна', value: 'Тонна' },
+                    { label: 'Литр', value: 'Литр' },
+                    { label: 'Миллилитр', value: 'Миллилитр' },
+                    { label: 'Метр', value: 'Метр' },
+                    { label: 'Сантиметр', value: 'Сантиметр' },
+                    { label: 'Квадратный метр', value: 'Квадратный метр' },
+                    { label: 'Кубический метр', value: 'Кубический метр' },
+                    { label: 'Упаковка', value: 'Упаковка' },
+                    { label: 'Пара', value: 'Пара' },
+                    { label: 'Рулон', value: 'Рулон' },
+                    { label: 'Блок', value: 'Блок' },
+                    { label: 'Бочка', value: 'Бочка' },
+                    { label: 'Пачка', value: 'Пачка' },
+                    { label: 'Комплект', value: 'Комплект' },
+                    { label: 'Лист', value: 'Лист' },
+                    { label: 'Погонный метр', value: 'Погонный метр' }
+                  ]"
+                  label="label"
+                  value="value"
                   :object="true"
                   placeholder="Выберите единицу измерения"
                   :max-height="400"
-                  class="w-full text-xs multiselect-custom"
+                  class="w-full text-xs multiselect-custom bg-white"
                 />
-              </div>
-              <div class="flex-1">
-                <label class="block text-xs text-gray-700 mb-1">Вес</label>
-                <div v-if="loadingProduct" class="h-10 bg-gray-200 rounded w-full animate-pulse"></div>
-                <input v-else v-model="product.weight" type="number" step="0.001" placeholder="Вес" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm" />
-              </div>
-              <div class="flex-1">
-                <label class="block text-xs text-gray-700 mb-1">Объем</label>
-                <div v-if="loadingProduct" class="h-10 bg-gray-200 rounded w-full animate-pulse"></div>
-                <input v-else v-model="product.volume" type="number" step="0.001" placeholder="Объем" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm" />
-              </div>
+              </template>
             </div>
+            <div class="flex-1">
+              <label class="block text-xs text-gray-700 mb-1">Стоимость за единицу</label>
+              <template v-if="loadingProduct">
+                <div class="w-full h-10 flex items-center justify-center bg-white border border-gray-200 rounded-lg">
+                  <Loader2 class="animate-spin h-5 w-5 text-blue-500" />
+                  <span class="ml-2 text-xs text-gray-500">Загрузка данных товара...</span>
+                </div>
+              </template>
+              <template v-else>
+                <input v-model="product.price" type="number" min="0" step="0.01" placeholder="0.00" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" />
+              </template>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Информация о последнем оприходовании -->
+      <div v-if="product.latestReceiptData" class="bg-blue-50 rounded-xl p-4 shadow-sm mb-6">
+        <div class="font-semibold mb-3 text-blue-800">Информация о последнем оприходовании</div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+          <div v-if="product.latestReceiptData.quantity">
+            <div class="text-gray-600 text-xs">Количество</div>
+            <div class="font-medium">{{ product.latestReceiptData.quantity }}</div>
+          </div>
+          <div v-if="product.latestReceiptData.price">
+            <div class="text-gray-600 text-xs">Цена</div>
+            <div class="font-medium">{{ product.latestReceiptData.price }}</div>
+          </div>
+          <div v-if="product.latestReceiptData.amount">
+            <div class="text-gray-600 text-xs">Сумма</div>
+            <div class="font-medium">{{ product.latestReceiptData.amount }}</div>
+          </div>
+          <div v-if="product.latestReceiptData.balance">
+            <div class="text-gray-600 text-xs">Остаток</div>
+            <div class="font-medium">{{ product.latestReceiptData.balance }}</div>
+          </div>
+          <div v-if="product.latestReceiptData.gtd">
+            <div class="text-gray-600 text-xs">ГТД</div>
+            <div class="font-medium">{{ product.latestReceiptData.gtd }}</div>
+          </div>
+          <div v-if="product.latestReceiptData.rnpt">
+            <div class="text-gray-600 text-xs">РНПТ</div>
+            <div class="font-medium">{{ product.latestReceiptData.rnpt }}</div>
+          </div>
+          <div v-if="product.latestReceiptData.reason">
+            <div class="text-gray-600 text-xs">Причина</div>
+            <div class="font-medium">{{ product.latestReceiptData.reason }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Дополнительные данные (сворачиваемый блок) -->
+      <div class="bg-gray-50 rounded-xl p-4 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <div class="font-semibold">Дополнительные данные</div>
+          <button @click="showAdditionalData = !showAdditionalData" class="flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm">
+            <span>{{ showAdditionalData ? 'Свернуть' : 'Развернуть' }}</span>
+            <svg :class="showAdditionalData ? 'rotate-180' : ''" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </button>
+        </div>
+        
+        <div v-show="showAdditionalData" class="flex flex-col gap-3">
+          <!-- Описание -->
+          <div>
+            <label class="block text-xs text-gray-700 mb-1">Описание</label>
+            <textarea v-model="product.description" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white"></textarea>
+          </div>
+          
+          <!-- Страна и поставщик -->
+          <div class="flex gap-2">
+            <div class="flex-1">
+              <label class="block text-xs text-gray-700 mb-1">Страна</label>
+              <Multiselect
+                v-model="product.country"
+                :options="countries"
+                label="label"
+                value="value"
+                :object="true"
+                placeholder="Выберите страну"
+                searchable
+                :search-placeholder="'Поиск страны'"
+                :max-height="400"
+                class="w-full text-xs multiselect-custom"
+              />
+            </div>
+            <div class="flex-1">
+              <label class="block text-xs text-gray-700 mb-1">Поставщик</label>
+              <input v-model="product.supplier" type="text" placeholder="" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" />
+            </div>
+          </div>
+          
+          <!-- Артикул, код, внешний код -->
+          <div class="flex gap-2 relative">
+            <div class="flex-1 relative">
+              <label class="block text-xs text-gray-700 mb-1 flex items-center gap-1 relative">
+                Артикул
+                <span @mouseenter="showTooltip.article = true" @mouseleave="showTooltip.article = false" class="text-blue-400 cursor-pointer relative">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z" /></svg>
+                  <span v-if="showTooltip.article" class="absolute left-0 top-full z-10 mt-2 max-w-xs w-max rounded bg-gray-900 text-white text-xs px-3 py-2 shadow-lg transition-opacity duration-200 whitespace-pre-line">
+                    <span class="absolute -top-2 left-4 w-3 h-3 bg-gray-900 rotate-45"></span>
+                    Назначенный производителем идентификатор товара.
+                  </span>
+                </span>
+              </label>
+              <input v-model="product.article" type="text" placeholder="" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" />
+            </div>
+            <div class="flex-1 relative">
+              <label class="block text-xs text-gray-700 mb-1 flex items-center gap-1 relative">
+                Код
+                <span @mouseenter="showTooltip.code = true" @mouseleave="showTooltip.code = false" class="text-blue-400 cursor-pointer relative">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z" /></svg>
+                  <span v-if="showTooltip.code" class="absolute left-0 top-full z-10 mt-2 max-w-xs w-max rounded bg-gray-900 text-white text-xs px-3 py-2 shadow-lg transition-opacity duration-200 whitespace-pre-line">
+                    <span class="absolute -top-2 left-4 w-3 h-3 bg-gray-900 rotate-45"></span>
+                    Внутренний код товара в вашей системе.
+                  </span>
+                </span>
+              </label>
+              <input v-model="product.code" type="text" placeholder="" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" />
+            </div>
+            <div class="flex-1">
+              <label class="block text-xs text-gray-700 mb-1">Внешний код</label>
+              <input v-model="product.external_code" type="text" placeholder="" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" />
+            </div>
+          </div>
+          
+          <!-- Вес, объем, НДС -->
+          <div class="flex gap-2">
+            <div class="flex-1">
+              <label class="block text-xs text-gray-700 mb-1">Вес</label>
+              <input v-model="product.weight" type="number" placeholder="" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" />
+            </div>
+            <div class="flex-1">
+              <label class="block text-xs text-gray-700 mb-1">Объем</label>
+              <input v-model="product.volume" type="number" placeholder="" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" />
+            </div>
+            <div class="flex-1">
+              <label class="block text-xs text-gray-700 mb-1">НДС</label>
+              <input v-model="product.vat" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" />
+            </div>
+          </div>
+          
+          <!-- Особенности учета -->
+          <div class="flex flex-col gap-2">
             <div class="flex gap-2">
               <div class="flex-1">
-                <label class="block text-xs text-gray-700 mb-1">Ставка НДС</label>
-                <div v-if="loadingProduct" class="h-10 bg-gray-200 rounded w-full animate-pulse"></div>
-                <input v-else v-model="product.vat" type="text" placeholder="Ставка НДС" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm" />
-              </div>
-              <div class="flex-1">
                 <label class="block text-xs text-gray-700 mb-1">Фасовка</label>
-                <div v-if="loadingProduct" class="h-10 bg-gray-200 rounded w-full animate-pulse"></div>
-                <Multiselect v-else
-                  v-model="selectedPacking"
-                  :options="packingOptions"
+                <Multiselect
+                  v-model="product.packing"
+                  :options="[
+                    { label: 'Штучная', value: 'Штучная' },
+                    { label: 'Весовая', value: 'Весовая' },
+                    { label: 'Разливная', value: 'Разливная' }
+                  ]"
                   label="label"
                   value="value"
-                  track-by="value"
                   :object="true"
                   placeholder="Выберите фасовку"
                   :max-height="400"
@@ -250,13 +323,16 @@
               </div>
               <div class="flex-1">
                 <label class="block text-xs text-gray-700 mb-1">Тип учета</label>
-                <div v-if="loadingProduct" class="h-10 bg-gray-200 rounded w-full animate-pulse"></div>
-                <Multiselect v-else
-                  v-model="selectedAccountingType"
-                  :options="accountingTypeOptions"
+                <Multiselect
+                  v-model="product.accounting_type"
+                  :options="[
+                    { label: 'Без специализированного учета', value: 'Без специализированного учета' },
+                    { label: 'Алкогольный товар', value: 'Алкогольный товар' },
+                    { label: 'Учет по серийным номерам', value: 'Учет по серийным номерам' },
+                    { label: 'СИЗ', value: 'Средство индивидуальной защиты' }
+                  ]"
                   label="label"
                   value="value"
-                  track-by="value"
                   :object="true"
                   placeholder="Выберите тип учета"
                   :max-height="400"
@@ -264,73 +340,89 @@
                 />
               </div>
             </div>
-            <div class="flex gap-2">
-              <div class="flex-1">
-                <label class="block text-xs text-gray-700 mb-1">Маркировка</label>
-                <div v-if="loadingProduct" class="h-10 bg-gray-200 rounded w-full animate-pulse"></div>
-                <input v-else v-model="product.marking" type="text" placeholder="Маркировка" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm" />
-              </div>
-              <div class="flex-1">
-                <label class="block text-xs text-gray-700 mb-1">Тип маркировки товара</label>
-                <div v-if="loadingProduct" class="h-10 bg-gray-200 rounded w-full animate-pulse"></div>
-                <Multiselect v-else
-                  v-model="selectedProductType"
-                  :options="productTypeOptions"
-                  label="label"
-                  value="value"
-                  track-by="value"
-                  :object="true"
-                  placeholder="Выберите тип маркировки товара"
-                  :max-height="400"
-                  class="w-full text-xs multiselect-custom"
-                />
-              </div>
+
+            <div>
+              <label class="block text-xs text-gray-700 mb-1">Тип продукции</label>
+              <Multiselect
+                v-model="product.product_type"
+                :options="[
+                  { label: 'Не маркируется', value: 'Не маркируется' },
+                  { label: 'Табачная продукция', value: 'Табачная продукция' },
+                  { label: 'Обувь', value: 'Обувь' },
+                  { label: 'Одежда', value: 'Одежда' },
+                  { label: 'Постельное белье', value: 'Постельное белье' },
+                  { label: 'Духи и туалетная вода', value: 'Духи и туалетная вода' },
+                  { label: 'Фотокамеры и лампы-вспышки', value: 'Фотокамеры и лампы-вспышки' },
+                  { label: 'Шины и покрышки', value: 'Шины и покрышки' },
+                  { label: 'Молочная продукция', value: 'Молочная продукция' },
+                  { label: 'Упакованная вода', value: 'Упакованная вода' },
+                  { label: 'Альтернативная табачная продукция', value: 'Альтернативная табачная продукция' },
+                  { label: 'Никотиносодержащая продукция', value: 'Никотиносодержащая продукция' },
+                  { label: 'Биологически активные добавки к пище', value: 'Биологически активные добавки к пище' },
+                  { label: 'Антисептики', value: 'Антисептики' },
+                  { label: 'Медизделия и кресла-коляски', value: 'Медизделия и кресла-коляски' },
+                  { label: 'Безалкогольные напитки', value: 'Безалкогольные напитки' },
+                  { label: 'Ветеринарные препараты', value: 'Ветеринарные препараты' },
+                  { label: 'Икра и морепродукты', value: 'Икра и морепродукты' },
+                  { label: 'Велосипеды', value: 'Велосипеды' },
+                  { label: 'Безалкогольное пиво', value: 'Безалкогольное пиво' }
+                ]"
+                label="label"
+                value="value"
+                :object="true"
+                placeholder="Выберите тип продукции"
+                :max-height="400"
+                class="w-full text-xs multiselect-custom"
+              />
             </div>
           </div>
-        </div>
-
-        <!-- Штрихкоды товара -->
-        <div class="bg-gray-50 rounded-xl p-4 shadow-sm">
-          <div class="font-semibold mb-2 flex items-center gap-2">Штрихкоды товара <span class="text-blue-400 cursor-pointer text-xs">?</span></div>
-          <div class="text-xs text-gray-600 mb-4">
-            Укажите штрихкод товара, чтобы добавлять его в документы при помощи сканера штрихкодов. Код GTIN включает только цифры и может иметь длину 8, 12, 13 или 14 цифр. В учетных системах всегда используется 14 знаков, коды меньшей длины дополняются нулями слева.
-          </div>
-          <div class="flex flex-col gap-3">
-            <div class="flex gap-2">
-              <div class="flex-1">
+          
+          <!-- Штрихкоды товара -->
+          <div>
+            <div class="font-semibold mb-2 flex items-center gap-2">Штрихкоды товара <span class="text-blue-400 cursor-pointer text-xs">?</span></div>
+            <div class="bg-blue-50 text-xs text-gray-700 rounded p-3 mb-3">
+              Укажите штрихкод товара, чтобы добавлять его в документы при помощи сканера штрихкодов. Код GTIN включает только цифры и может иметь длину 8, 12, 13 или 14 цифр. В учетных системах всегда используется 14 знаков, коды с меньшим количеством цифр дополняют ведущими нулями.
+            </div>
+            <div class="flex gap-2 mb-2">
+              <div class="w-32">
                 <label class="block text-xs text-gray-700 mb-1">Тип штрихкода</label>
                 <Multiselect
-                  v-model="selectedBarcodeType"
-                  :options="barcodeTypeOptions"
+                  v-model="product.barcode_type"
+                  :options="[
+                    { label: 'EAN8', value: 'EAN8' },
+                    { label: 'EAN13', value: 'EAN13' },
+                    { label: 'Code128', value: 'Code128' },
+                    { label: 'GTIN', value: 'GTIN' },
+                    { label: 'UPC', value: 'UPC' }
+                  ]"
                   label="label"
                   value="value"
-                  track-by="value"
                   :object="true"
-                  placeholder="Выберите тип штрихкода"
+                  placeholder="Тип"
                   :max-height="400"
-                  class="w-full text-xs multiselect-custom"
+                  class="w-full text-xs multiselect-custom bg-white"
                 />
               </div>
               <div class="flex-1">
                 <label class="block text-xs text-gray-700 mb-1">Штрихкод</label>
-                <input v-model="product.barcode" type="text" placeholder="Штрихкод" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm" />
+                <input v-model="product.barcode" type="text" placeholder="" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" />
               </div>
             </div>
           </div>
-        </div>
-
-        <!-- Кассовый аппарат -->
-        <div class="bg-gray-50 rounded-xl p-4 shadow-sm">
-          <div class="font-semibold mb-2">Кассовый аппарат</div>
-          <div class="flex flex-col gap-3">
-            <div class="flex gap-2">
-              <div class="flex-1">
-                <label class="block text-xs text-gray-700 mb-1">Налог</label>
-                <input v-model="product.cash_register_tax" type="text" placeholder="ОСН" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm" />
-              </div>
-              <div class="flex-1">
-                <label class="block text-xs text-gray-700 mb-1">Тип</label>
-                <input v-model="product.cash_register_type" type="text" placeholder="Товар" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm" />
+          
+          <!-- Кассовый чек -->
+          <div>
+            <div class="font-semibold mb-2">Кассовый чек</div>
+            <div class="flex flex-col gap-2">
+              <div class="flex gap-2">
+                <div class="flex-1">
+                  <label class="block text-xs text-gray-700 mb-1">Система налогообложения</label>
+                  <input v-model="product.cash_register_tax" type="text" placeholder="" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" />
+                </div>
+                <div class="flex-1">
+                  <label class="block text-xs text-gray-700 mb-1">Признак предмета расчета</label>
+                  <input v-model="product.cash_register_type" type="text" placeholder="" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" />
+                </div>
               </div>
             </div>
           </div>
@@ -338,18 +430,14 @@
       </div>
     </div>
 
-    <!-- Модальное окно закрытия -->
-    <div v-if="showCloseModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-        <h3 class="text-lg font-semibold mb-4">Закрыть редактирование?</h3>
-        <p class="text-gray-600 mb-6">Все несохраненные изменения будут потеряны.</p>
-        <div class="flex gap-3">
-          <button @click="showCloseModal = false" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold px-4 py-2 rounded-lg">
-            Отмена
-          </button>
-          <router-link to="/products" class="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold px-4 py-2 rounded-lg text-center">
-            Закрыть
-          </router-link>
+    <!-- Модалка закрытия -->
+    <div v-if="showCloseModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+      <div class="bg-white rounded-lg shadow-2xl p-8 max-w-sm w-full text-sm">
+        <div class="text-base font-semibold mb-4">Выйти без сохранения?</div>
+        <div class="mb-6 text-gray-600">Изменения не будут сохранены. Вы уверены, что хотите выйти?</div>
+        <div class="flex justify-end gap-3">
+          <button @click="closeModalAndGo" class="bg-red-600 hover:bg-red-700 text-white font-semibold px-5 py-2 rounded-lg shadow transition text-sm">Выйти</button>
+          <button @click="showCloseModal = false" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold px-5 py-2 rounded-lg border shadow transition text-sm">Отмена</button>
         </div>
       </div>
     </div>
@@ -357,184 +445,245 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch, onMounted, onBeforeUnmount } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import Multiselect from 'vue-multiselect'
-import ImageDropzone from './ImageDropzone.vue'
-import { apiRequest, getCategoriesWithCache } from '@/config/api'
-import countriesData from '@/data/countries.json'
-import toastr from 'toastr'
-import { Loader2, X, HelpCircle } from 'lucide-vue-next'
+import { ref, reactive, computed, onMounted, watch, onBeforeUnmount } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 
 const route = useRoute()
+import Multiselect from '@vueform/multiselect'
+import '@vueform/multiselect/themes/default.css'
+import { apiRequest, getCategoriesWithCache } from '@/config/api'
+import ImageDropzone from './ImageDropzone.vue'
+import countriesData from '@/data/countries.json'
+import toastr from 'toastr'
+import { Loader2 } from 'lucide-vue-next'
+
+const showCloseModal = ref(false)
+const hasUnsavedChanges = ref(false)
 const router = useRouter()
 
-// Получаем ID товара из URL
-const productId = ref(parseInt(route.params.id))
-
-// Состояние загрузки
-const loadingProduct = ref(true)
-const loadingCategories = ref(false)
-const loadingSubcategories = ref(false)
-const isSavingProduct = ref(false)
-const isInitializing = ref(false)
-
-// Ошибки
-const productError = ref('')
-const saveError = ref('')
-const categoryError = ref('')
-const subcategoryError = ref('')
-const imageUploadError = ref('')
-
-// Данные
+/** @type {import('vue').Ref<Array>} */
 const categories = ref([])
+/** @type {import('vue').Ref<Array>} */
 const subcategories = ref([])
-const images = ref([])
-const existingImages = ref([])
-
-// Выбранные значения
+/** @type {import('vue').Ref<Object|null>} */
 const selectedCategory = ref(null)
+/** @type {import('vue').Ref<Object|null>} */
 const selectedSubcategory = ref(null)
-const selectedCountry = ref(null)
-const selectedUnit = ref(null)
-const selectedPacking = ref(null)
-const selectedAccountingType = ref(null)
-const selectedProductType = ref(null)
-const selectedBarcodeType = ref(null)
+/** @type {import('vue').Ref<boolean>} */
+const loadingProduct = ref(true)
+/** @type {import('vue').Ref<boolean>} */
+const loadingCategories = ref(false)
+/** @type {import('vue').Ref<boolean>} */
+const loadingSubcategories = ref(false)
+/** @type {import('vue').Ref<boolean>} */
+const isInitialLoad = ref(true)
+/** @type {import('vue').Ref<string>} */
+const componentId = ref(Math.random().toString(36).substr(2, 9))
+/** @type {import('vue').Ref<string>} */
+const categoryError = ref('')
+/** @type {import('vue').Ref<string>} */
+const subcategoryError = ref('')
 
-// Модальное окно
-const showCloseModal = ref(false)
+/** @type {import('vue').Ref<number|null>} */
+const productId = ref(null)
+/** @type {import('vue').Ref<number|null>} */
+const lastLoadedProductId = ref(null)
+/** @type {import('vue').Ref<boolean>} */
+const isSavingProduct = ref(false)
+/** @type {import('vue').Ref<string>} */
+const saveError = ref('')
 
-// Тултипы
-const showTooltip = reactive({
-  article: false,
-  code: false
-})
+/** @type {import('vue').Ref<string>} */
+const categoryPlaceholder = ref('Выберите категорию')
+/** @type {import('vue').Ref<string>} */
+const categorySearchPlaceholder = ref('Поиск')
+/** @type {import('vue').Ref<string>} */
+const subcategoryPlaceholder = ref('Выберите подкатегорию')
+/** @type {import('vue').Ref<string>} */
+const subcategorySearchPlaceholder = ref('Поиск')
 
-// Данные товара
+/** @type {import('vue').Reactive<Object>} */
 const product = reactive({
   name: '',
   description: '',
   category: '',
   subcategory: '',
-  country: '',
+  country: null,
   supplier: '',
   article: '',
   code: '',
   external_code: '',
-  unit: '',
+  unit: null,
   weight: null,
   volume: null,
   vat: '',
-  packing: '',
-  accounting_type: '',
-  marking: '',
-  product_type: '',
-  barcode_type: '',
+  packing: null,
+  accounting_type: null,
+  product_type: null,
+  barcode_type: null,
   barcode: '',
   cash_register_tax: '',
-  cash_register_type: ''
+  cash_register_type: '',
+  quantity: null,
+  warehouse: null,
+  price: null,
+  latestReceiptData: null
 })
 
-// Опции для селектов
-const countries = computed(() => countriesData.map(country => ({
-  label: country.name,
-  value: String(country.name)
-})))
+/** @type {import('vue').Ref<Array>} */
+const images = ref([])
+/** @type {import('vue').Ref<string>} */
+const imageUploadError = ref('')
+/** @type {import('vue').Ref<boolean>} */
+const isUploadingImage = ref(false)
+/** @type {import('vue').Ref<string>} */
+const newAltText = ref('')
 
-const unitOptions = [
-  { label: 'Штука', value: 'Штука' },
-  { label: 'Килограмм', value: 'Килограмм' },
-  { label: 'Грамм', value: 'Грамм' },
-  { label: 'Тонна', value: 'Тонна' },
-  { label: 'Литр', value: 'Литр' },
-  { label: 'Миллилитр', value: 'Миллилитр' },
-  { label: 'Метр', value: 'Метр' },
-  { label: 'Сантиметр', value: 'Сантиметр' },
-  { label: 'Квадратный метр', value: 'Квадратный метр' },
-  { label: 'Кубический метр', value: 'Кубический метр' },
-  { label: 'Упаковка', value: 'Упаковка' },
-  { label: 'Пара', value: 'Пара' },
-  { label: 'Рулон', value: 'Рулон' },
-  { label: 'Блок', value: 'Блок' },
-  { label: 'Бочка', value: 'Бочка' },
-  { label: 'Пачка', value: 'Пачка' },
-  { label: 'Комплект', value: 'Комплект' },
-  { label: 'Лист', value: 'Лист' },
-  { label: 'Погонный метр', value: 'Погонный метр' }
-]
+/** @type {import('vue').Ref<Object|null>} */
+const selectedWarehouse = ref(null)
 
-const packingOptions = [
-  { label: 'Штучная', value: 'Штучная' },
-  { label: 'Весовая', value: 'Весовая' },
-  { label: 'Разливная', value: 'Разливная' }
-]
+/** @type {import('vue').Ref<boolean>} */
+const showAdditionalData = ref(false)
 
-const accountingTypeOptions = [
-  { label: 'Без специализированного учета', value: 'Без специализированного учета' },
-  { label: 'Алкогольный товар', value: 'Алкогольный товар' },
-  { label: 'Учет по серийным номерам', value: 'Учет по серийным номерам' },
-  { label: 'СИЗ', value: 'Средство индивидуальной защиты' }
-]
+const countries = computed(() =>
+  countriesData.map(country => ({
+    label: country.name,
+    value: country.id,
+    code: country.code,
+    raw: country
+  }))
+)
 
-const productTypeOptions = [
-  { label: 'Не маркируется', value: 'Не маркируется' },
-  { label: 'Табачная продукция', value: 'Табачная продукция' },
-  { label: 'Обувь', value: 'Обувь' },
-  { label: 'Одежда', value: 'Одежда' },
-  { label: 'Постельное белье', value: 'Постельное белье' },
-  { label: 'Духи и туалетная вода', value: 'Духи и туалетная вода' },
-  { label: 'Фотокамеры и лампы-вспышки', value: 'Фотокамеры и лампы-вспышки' },
-  { label: 'Шины и покрышки', value: 'Шины и покрышки' },
-  { label: 'Молочная продукция', value: 'Молочная продукция' },
-  { label: 'Упакованная вода', value: 'Упакованная вода' },
-  { label: 'Альтернативная табачная продукция', value: 'Альтернативная табачная продукция' },
-  { label: 'Никотиносодержащая продукция', value: 'Никотиносодержащая продукция' },
-  { label: 'Биологически активные добавки к пище', value: 'Биологически активные добавки к пище' },
-  { label: 'Антисептики', value: 'Антисептики' },
-  { label: 'Медизделия и кресла-коляски', value: 'Медизделия и кресла-коляски' },
-  { label: 'Безалкогольные напитки', value: 'Безалкогольные напитки' },
-  { label: 'Ветеринарные препараты', value: 'Ветеринарные препараты' },
-  { label: 'Икра и морепродукты', value: 'Икра и морепродукты' }
-]
+const showTooltip = reactive({
+  article: false,
+  code: false
+})
 
-const barcodeTypeOptions = [
-  { label: 'EAN8', value: 'EAN8' },
-  { label: 'EAN13', value: 'EAN13' },
-  { label: 'Code128', value: 'Code128' },
-  { label: 'Code39', value: 'Code39' },
-  { label: 'QR', value: 'QR' }
-]
+async function handleNameBlur() {
+  // Для редактирования товара это не нужно, так как товар уже существует
+}
 
-// Опции для категорий и подкатегорий
-const categoryOptions = computed(() => categories.value.map(category => ({
-  label: category.name,
-  value: String(category.category_id)
-})))
 
-const subcategoryOptions = computed(() => subcategories.value.map(subcategory => ({
-  label: subcategory.name,
-  value: String(subcategory.subcategory_id)
-})))
 
-const deletingImageIds = ref([])
 
-// Tailwind Notification state
-const notification = reactive({ show: false, message: '', type: 'success' })
-let notificationTimeout = null
 
-// Загрузка данных товара
+async function handleImageUpload(event) {
+  if (!productId.value) return
+  const file = event.target.files[0]
+  if (!file) return
+  imageUploadError.value = ''
+  isUploadingImage.value = true
+  try {
+    const formData = new FormData()
+    formData.append('image', file)
+    if (newAltText.value) formData.append('alt_text', newAltText.value)
+    
+    const response = await apiRequest(`/products/${productId.value}/images`, {
+      method: 'POST',
+      headers: {}, // Убираем Content-Type для FormData
+      body: formData
+    })
+    
+    if (response.ok && response.data.image) {
+      images.value.push(response.data.image)
+      newAltText.value = ''
+    } else {
+      imageUploadError.value = response.data.message || 'Ошибка загрузки изображения'
+    }
+  } catch (e) {
+    console.error('Upload error:', e)
+    imageUploadError.value = 'Ошибка загрузки изображения'
+  } finally {
+    isUploadingImage.value = false
+    event.target.value = '' // сбросить input
+  }
+}
+
+async function handleDeleteImage(imgId) {
+  try {
+    const response = await apiRequest(`/products/images/${imgId}`, { method: 'DELETE' })
+    if (response.ok) {
+      images.value = images.value.filter(img => img.id !== imgId)
+    }
+  } catch (e) {
+    console.error('Error deleting image:', e)
+  }
+}
+
+
+
+onMounted(async () => {
+  console.log('onMounted called for component:', componentId.value)
+  
+  // Получаем ID товара из URL
+  const newProductId = parseInt(route.params.id)
+  
+  // Если ID товара изменился, сбрасываем флаги
+  if (productId.value !== newProductId) {
+    console.log('Product ID changed from', productId.value, 'to', newProductId, 'component:', componentId.value)
+    lastLoadedProductId.value = null
+    isInitialLoad.value = true
+  }
+  
+  productId.value = newProductId
+  
+  // Загружаем категории
+  loadingCategories.value = true
+  try {
+    categories.value = await getCategoriesWithCache()
+  } catch (e) {
+    categoryError.value = 'Ошибка загрузки категорий'
+  } finally {
+    loadingCategories.value = false
+  }
+  
+  // Загружаем данные товара (это загрузит и изображения)
+  await loadProduct()
+  
+  // Устанавливаем флаг завершения начальной загрузки
+  isInitialLoad.value = false
+  
+  // Добавляем обработчики для предотвращения случайного закрытия
+  window.addEventListener('beforeunload', handleBeforeUnload)
+  
+  // Добавляем обработчик для навигации внутри приложения
+  router.beforeEach(handleBeforeRouteLeave)
+})
+
+onBeforeUnmount(() => {
+  console.log('Component unmounting:', componentId.value)
+  // Удаляем обработчики при размонтировании компонента
+  window.removeEventListener('beforeunload', handleBeforeUnload)
+  // Удаляем обработчик маршрутов - используем пустую функцию
+  router.beforeEach(() => true)
+})
+
+// Обработчик для навигации внутри приложения
+function handleBeforeRouteLeave(to, from, next) {
+  console.log('Route guard triggered:', { to: to.path, from: from.path, hasUnsavedChanges: hasUnsavedChanges.value })
+  if (hasUnsavedChanges.value) {
+    showCloseModal.value = true
+    next(false)
+  } else {
+    next()
+  }
+}
+
 async function loadProduct() {
-  isInitializing.value = true
-  if (!productId.value) {
-    productError.value = 'ID товара не указан'
+  if (!productId.value) return
+  
+  // Проверяем, не загружали ли мы уже этот товар
+  if (lastLoadedProductId.value === productId.value) {
+    console.log('Product already loaded, skipping:', productId.value)
     return
   }
-
+  
+  console.log('loadProduct called for productId:', productId.value)
   loadingProduct.value = true
+  
   try {
     const response = await apiRequest(`/products/${productId.value}`)
-    if (response.ok) {
+    if (response.ok && response.data.success) {
       const productData = response.data.data
       
       // Заполняем данные товара
@@ -547,289 +696,422 @@ async function loadProduct() {
       product.weight = productData.weight
       product.volume = productData.volume
       product.vat = productData.vat || ''
-      product.marking = productData.marking || ''
       product.barcode = productData.barcode || ''
       product.cash_register_tax = productData.cash_register_tax || ''
       product.cash_register_type = productData.cash_register_type || ''
-
-      // Загружаем изображения
-      if (productData.images) {
-        existingImages.value = productData.images
+      product.quantity = productData.quantity || 0
+      product.price = productData.price || 0
+      
+      // Сохраняем данные из receipt_positions для отображения
+      if (productData.latest_quantity !== undefined || productData.latest_price !== undefined) {
+        product.latestReceiptData = {
+          quantity: productData.latest_quantity,
+          price: productData.latest_price,
+          amount: productData.latest_amount,
+          balance: productData.latest_balance,
+          gtd: productData.latest_gtd,
+          rnpt: productData.latest_rnpt,
+          reason: productData.latest_reason
+        }
       }
-
-      // Загружаем категории и подкатегории
-      await loadCategories()
+      
+      // Используем данные из receipt_positions для количества и цены
+      if (productData.latest_quantity !== undefined) {
+        product.quantity = productData.latest_quantity
+      }
+      if (productData.latest_price !== undefined) {
+        product.price = productData.latest_price
+      }
+      
+      // Дополняем данные из receipt_positions, если они отсутствуют в основном товаре
+      if (productData.latest_code !== undefined && !product.code) {
+        product.code = productData.latest_code
+      }
+      if (productData.latest_article !== undefined && !product.article) {
+        product.article = productData.latest_article
+      }
+      if (productData.latest_barcode !== undefined && !product.barcode) {
+        product.barcode = productData.latest_barcode
+      }
+      if (productData.latest_country !== undefined && !product.country) {
+        product.country = countries.value.find(c => c.value === productData.latest_country) || null
+      }
+      
+      // Устанавливаем единицу измерения
+      if (productData.unit) {
+        product.unit = { label: productData.unit, value: productData.unit }
+      }
+      
+      // Устанавливаем страну (если не установлена из receipt_positions)
+      if (productData.country && !product.country) {
+        product.country = countries.value.find(c => c.value === productData.country) || null
+      }
+      
+      // Устанавливаем фасовку
+      if (productData.packing) {
+        product.packing = { label: productData.packing, value: productData.packing }
+      }
+      
+      // Устанавливаем тип учета
+      if (productData.accounting_type) {
+        product.accounting_type = { label: productData.accounting_type, value: productData.accounting_type }
+      }
+      
+      // Устанавливаем тип продукции
+      if (productData.product_type) {
+        product.product_type = { label: productData.product_type, value: productData.product_type }
+      }
+      
+      // Устанавливаем тип штрихкода
+      if (productData.barcode_type) {
+        product.barcode_type = { label: productData.barcode_type, value: productData.barcode_type }
+      }
       
       // Устанавливаем категорию и подкатегорию
       if (productData.category) {
-        selectedCategory.value = categoryOptions.value.find(c => c.value === String(productData.category)) || null
-        await loadSubcategories(productData.category)
+        selectedCategory.value = categoryOptions.value.find(c => c.value === productData.category) || null
+        
+        // Загружаем подкатегории напрямую, без watch
+        if (productData.category) {
+          loadingSubcategories.value = true
+          try {
+            const response = await apiRequest(`/subcategories?category_id=${encodeURIComponent(productData.category)}`)
+            if (response.ok && response.data.success) {
+              subcategories.value = response.data.data || []
+            } else {
+              subcategoryError.value = 'Ошибка загрузки подкатегорий'
+            }
+          } catch (e) {
+            subcategoryError.value = 'Ошибка загрузки подкатегорий'
+          } finally {
+            loadingSubcategories.value = false
+          }
+        }
         
         if (productData.subcategory) {
-          selectedSubcategory.value = subcategoryOptions.value.find(s => s.value === String(productData.subcategory)) || null
+          selectedSubcategory.value = subcategoryOptions.value.find(s => s.value === productData.subcategory) || null
         }
       }
-
-      // Устанавливаем остальные селекты
-      if (productData.country) {
-        selectedCountry.value = countries.value.find(c => c.value === String(productData.country)) || null
+      
+      // Устанавливаем склад (просто сохраняем ID)
+      if (productData.warehouse_id) {
+        selectedWarehouse.value = { label: 'Склад товара', value: productData.warehouse_id }
       }
       
-      if (productData.unit) {
-        selectedUnit.value = unitOptions.find(u => u.value === String(productData.unit)) || null
+      // Изображения уже загружены вместе с товаром
+      if (productData.images) {
+        images.value = productData.images
       }
       
-      if (productData.packing) {
-        selectedPacking.value = packingOptions.find(p => p.value === String(productData.packing)) || null
-      }
+      // Отмечаем, что товар загружен
+      lastLoadedProductId.value = productId.value
       
-      if (productData.accounting_type) {
-        selectedAccountingType.value = accountingTypeOptions.find(a => a.value === String(productData.accounting_type)) || null
-      }
-      
-      if (productData.product_type) {
-        selectedProductType.value = productTypeOptions.find(t => t.value === String(productData.product_type)) || null
-      }
-      
-      if (productData.barcode_type) {
-        selectedBarcodeType.value = barcodeTypeOptions.find(b => b.value === String(productData.barcode_type)) || null
-      }
     } else {
-      productError.value = response.data.message || 'Ошибка загрузки товара'
+      saveError.value = response.data.message || 'Ошибка загрузки товара'
     }
   } catch (error) {
     console.error('Ошибка загрузки товара:', error)
-    productError.value = 'Ошибка загрузки товара'
+    saveError.value = 'Ошибка загрузки товара'
   } finally {
     loadingProduct.value = false
-    isInitializing.value = false
   }
 }
 
-// Загрузка категорий
-async function loadCategories() {
-  loadingCategories.value = true
-  try {
-    categories.value = await getCategoriesWithCache()
-  } catch (error) {
-    console.error('Ошибка загрузки категорий:', error)
-    categoryError.value = 'Ошибка загрузки категорий'
-  } finally {
-    loadingCategories.value = false
-  }
-}
-
-// Загрузка подкатегорий
 async function loadSubcategories(categoryId) {
   if (!categoryId) return
   
   loadingSubcategories.value = true
   try {
-    const response = await apiRequest(`/categories/${categoryId}/subcategories`)
-    if (response.ok) {
-      subcategories.value = response.data.data
+    const response = await apiRequest(`/subcategories?category_id=${encodeURIComponent(categoryId)}`)
+    if (response.ok && response.data.success) {
+      subcategories.value = response.data.data || []
     } else {
-      subcategoryError.value = response.data.message || 'Ошибка загрузки подкатегорий'
+      subcategoryError.value = 'Ошибка загрузки подкатегорий'
     }
-  } catch (error) {
-    console.error('Ошибка загрузки подкатегорий:', error)
+  } catch (e) {
     subcategoryError.value = 'Ошибка загрузки подкатегорий'
   } finally {
     loadingSubcategories.value = false
   }
 }
 
-// Сохранение товара
+watch(selectedCategory, async (cat) => {
+  // Пропускаем при начальной загрузке
+  if (isInitialLoad.value) return
+  
+  selectedSubcategory.value = null
+  product.category = cat ? cat.value : ''
+  subcategories.value = []
+  if (cat && cat.value) {
+    await loadSubcategories(cat.value)
+  }
+})
+
+watch(selectedSubcategory, (subcat) => {
+  product.subcategory = subcat ? subcat.value : ''
+})
+
+watch(selectedWarehouse, (warehouse) => {
+  product.warehouse = warehouse ? warehouse.value : null
+})
+
+// Отслеживаем изменения в форме для показа предупреждения
+watch(() => product.name, () => {
+  if (isInitialLoad.value) return
+  if (product.name) hasUnsavedChanges.value = true
+})
+
+watch(() => product.description, () => {
+  if (isInitialLoad.value) return
+  if (product.description) hasUnsavedChanges.value = true
+})
+
+watch(() => product.category, () => {
+  if (isInitialLoad.value) return
+  if (product.category) hasUnsavedChanges.value = true
+})
+
+watch(() => product.subcategory, () => {
+  if (isInitialLoad.value) return
+  if (product.subcategory) hasUnsavedChanges.value = true
+})
+
+watch(() => product.country, () => {
+  if (isInitialLoad.value) return
+  if (product.country && product.country.value) hasUnsavedChanges.value = true
+})
+
+watch(() => product.supplier, () => {
+  if (isInitialLoad.value) return
+  if (product.supplier) hasUnsavedChanges.value = true
+})
+
+watch(() => product.article, () => {
+  if (isInitialLoad.value) return
+  if (product.article) hasUnsavedChanges.value = true
+})
+
+watch(() => product.code, () => {
+  if (isInitialLoad.value) return
+  if (product.code) hasUnsavedChanges.value = true
+})
+
+watch(() => product.external_code, () => {
+  if (isInitialLoad.value) return
+  if (product.external_code) hasUnsavedChanges.value = true
+})
+
+watch(() => product.unit, () => {
+  if (isInitialLoad.value) return
+  if (product.unit && product.unit.value) hasUnsavedChanges.value = true
+})
+
+watch(() => product.weight, () => {
+  if (isInitialLoad.value) return
+  if (product.weight) hasUnsavedChanges.value = true
+})
+
+watch(() => product.volume, () => {
+  if (isInitialLoad.value) return
+  if (product.volume) hasUnsavedChanges.value = true
+})
+
+watch(() => product.vat, () => {
+  if (isInitialLoad.value) return
+  if (product.vat) hasUnsavedChanges.value = true
+})
+
+watch(() => product.packing, () => {
+  if (isInitialLoad.value) return
+  if (product.packing && product.packing.value) hasUnsavedChanges.value = true
+})
+
+watch(() => product.accounting_type, () => {
+  if (isInitialLoad.value) return
+  if (product.accounting_type && product.accounting_type.value) hasUnsavedChanges.value = true
+})
+
+watch(() => product.product_type, () => {
+  if (isInitialLoad.value) return
+  if (product.product_type && product.product_type.value) hasUnsavedChanges.value = true
+})
+
+watch(() => product.barcode, () => {
+  if (isInitialLoad.value) return
+  if (product.barcode) hasUnsavedChanges.value = true
+})
+
+watch(() => product.barcode_type, () => {
+  if (isInitialLoad.value) return
+  if (product.barcode_type && product.barcode_type.value) hasUnsavedChanges.value = true
+})
+
+watch(() => product.cash_register_tax, () => {
+  if (isInitialLoad.value) return
+  if (product.cash_register_tax) hasUnsavedChanges.value = true
+})
+
+watch(() => product.cash_register_type, () => {
+  if (isInitialLoad.value) return
+  if (product.cash_register_type) hasUnsavedChanges.value = true
+})
+
+watch(() => product.quantity, () => {
+  if (isInitialLoad.value) return
+  if (product.quantity) hasUnsavedChanges.value = true
+})
+
+watch(() => product.warehouse, () => {
+  if (isInitialLoad.value) return
+  if (product.warehouse) hasUnsavedChanges.value = true
+})
+
+watch(() => product.price, () => {
+  if (isInitialLoad.value) return
+  if (product.price) hasUnsavedChanges.value = true
+})
+
+// Отслеживаем изменения в изображениях
+watch(images, () => {
+  if (isInitialLoad.value) return
+  if (images.value.length > 0) hasUnsavedChanges.value = true
+}, { deep: true })
+
+// Отслеживаем изменения в route.params
+watch(() => route.params.id, (newId) => {
+  if (newId && parseInt(newId) !== productId.value) {
+    console.log('Route ID changed to:', newId, 'component:', componentId.value)
+    // Сбрасываем флаги при изменении ID товара
+    lastLoadedProductId.value = null
+    isInitialLoad.value = true
+    productId.value = parseInt(newId)
+    // Перезагружаем данные
+    loadProduct()
+  }
+})
+
+const categoryOptions = computed(() =>
+  Array.isArray(categories.value)
+    ? categories.value.map(c => ({
+        label: c.name_ru || c.name,
+        value: c.category_id,
+        raw: c
+      }))
+    : []
+)
+const subcategoryOptions = computed(() =>
+  Array.isArray(subcategories.value)
+    ? subcategories.value.map(s => ({
+        label: s.name_ru || s.name,
+        value: s.subcategory_id,
+        raw: s
+      }))
+    : []
+)
+
+
+
+function closeModalAndGo() {
+  showCloseModal.value = false
+  hasUnsavedChanges.value = false
+  router.push('/products')
+}
+
+function handleBeforeUnload(event) {
+  if (hasUnsavedChanges.value) {
+    event.preventDefault()
+    event.returnValue = 'У вас есть несохраненные изменения. Вы уверены, что хотите покинуть страницу?'
+    return 'У вас есть несохраненные изменения. Вы уверены, что хотите покинуть страницу?'
+  }
+}
+
 async function handleSave() {
-  if (!product.name) {
-    saveError.value = 'Наименование товара обязательно'
+  if (!productId.value) {
+    toastr.error('Товар не найден')
     return
   }
 
   isSavingProduct.value = true
-  saveError.value = ''
 
   try {
+    // Подготавливаем данные для отправки
     const productData = {
+      id: productId.value,
       name: product.name,
       description: product.description,
-      category_id: selectedCategory.value?.value,
-      subcategory_id: selectedSubcategory.value?.value,
-      country: selectedCountry.value?.value,
+      category_id: product.category,
+      subcategory_id: product.subcategory,
+      country: product.country ? product.country.value : null,
       supplier: product.supplier,
       article: product.article,
       code: product.code,
       external_code: product.external_code,
-      unit: selectedUnit.value?.value,
+      unit: product.unit ? product.unit.value : null,
       weight: product.weight,
       volume: product.volume,
       vat: product.vat,
-      packing: selectedPacking.value?.value,
-      accounting_type: selectedAccountingType.value?.value,
-      marking: product.marking,
-      product_type: selectedProductType.value?.value,
-      barcode_type: selectedBarcodeType.value?.value,
+      packing: product.packing ? product.packing.value : null,
+      accounting_type: product.accounting_type ? product.accounting_type.value : null,
+      product_type: product.product_type ? product.product_type.value : null,
+      barcode_type: product.barcode_type ? product.barcode_type.value : null,
       barcode: product.barcode,
       cash_register_tax: product.cash_register_tax,
-      cash_register_type: product.cash_register_type
+      cash_register_type: product.cash_register_type,
+      quantity: product.quantity,
+      price: product.price
     }
 
+    // Отправляем запрос на сохранение
     const response = await apiRequest(`/products/${productId.value}`, {
       method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(productData)
     })
 
     if (response.ok) {
-      toastr.success('Данные товара успешно изменены')
+      hasUnsavedChanges.value = false
+      toastr.success('Товар успешно сохранен')
+      console.log('Сохраненные данные:', productData)
+      // Перенаправляем на страницу всех товаров
+      router.push('/products')
     } else {
-      toastr.error(response.data.message || 'Ошибка сохранения товара')
+      toastr.error('Ошибка при сохранении товара: ' + (response.error || 'Неизвестная ошибка'))
     }
   } catch (error) {
-    console.error('Ошибка сохранения товара:', error)
-    saveError.value = 'Ошибка сохранения товара'
+    console.error('Ошибка при сохранении товара:', error)
+    toastr.error('Ошибка при сохранении товара: ' + error.message)
   } finally {
     isSavingProduct.value = false
   }
 }
 
-// Обработчики событий
-async function onImageUploaded() {
-  // После загрузки изображения — обновляем список изображений с сервера
-  try {
-    const response = await apiRequest(`/products/${productId.value}/images`);
-    if (response.ok) {
-      existingImages.value = response.data.images;
-    }
-  } catch (e) {
-    // обработка ошибки (можно добавить toastr)
-  }
-  imageUploadError.value = '';
-}
-
-async function deleteExistingImage(imageId) {
-  deletingImageIds.value.push(imageId)
-  try {
-    const response = await apiRequest(`/products/images/${imageId}`, {
-      method: 'DELETE'
-    })
-    
-    if (response.ok) {
-      existingImages.value = existingImages.value.filter(img => img.id !== imageId)
-      toastr.success('Изображение удалено')
-    } else {
-      toastr.error(response.data.message || 'Ошибка удаления изображения')
-    }
-  } catch (error) {
-    console.error('Ошибка удаления изображения:', error)
-    toastr.error('Ошибка удаления изображения')
-  } finally {
-    deletingImageIds.value = deletingImageIds.value.filter(id => id !== imageId)
-  }
-}
-
-function handleDeleteImage(imageId) {
-  existingImages.value = existingImages.value.filter(img => img.id !== imageId)
-}
-
 function onCategoryOpen() {
-  if (categories.value.length === 0) {
-    loadCategories()
-  }
+  categoryPlaceholder.value = ''
 }
-
 function onCategoryClose() {
-  // Логика при закрытии категории
+  categoryPlaceholder.value = 'Выберите категорию'
 }
-
 function onSubcategoryOpen() {
-  if (selectedCategory.value && subcategories.value.length === 0) {
-    loadSubcategories(selectedCategory.value.value)
-  }
+  subcategoryPlaceholder.value = ''
 }
-
 function onSubcategoryClose() {
-  // Логика при закрытии подкатегории
+  subcategoryPlaceholder.value = 'Выберите подкатегорию'
 }
 
-// Наблюдатели
-watch(selectedCategory, (newCategory) => {
-  if (isInitializing.value) return;
-  if (newCategory) {
-    selectedSubcategory.value = null
-    subcategories.value = []
-    loadSubcategories(newCategory.value)
-  }
-})
+const onImageUploaded = (img) => {
+  images.value.push(img)
+}
 
-// Инициализация
-onMounted(() => {
-  loadProduct()
-})
 </script>
 
 <style scoped>
-.multiselect-custom {
-  --ms-option-bg-selected: #3b82f6;
-  --ms-option-color-selected: #ffffff;
-  --ms-option-bg-pointed: #f3f4f6;
-  --ms-option-color-pointed: #374151;
-  --ms-tag-bg: #3b82f6;
-  --ms-tag-color: #ffffff;
-  --ms-border-color: #d1d5db;
-  --ms-border-width: 1px;
-  --ms-border-radius: 0.5rem;
-  --ms-py: 0.5rem;
-  --ms-px: 0.75rem;
-  --ms-font-size: 0.875rem;
-  min-width: 0;
-  width: 100%;
+.multiselect-custom,
+.multiselect,
+.multiselect__input,
+.multiselect__option {
+  font-size: 0.95rem !important;
 }
-
-.multiselect-custom .multiselect-tag {
-  background: var(--ms-tag-bg);
-  color: var(--ms-tag-color);
-  border-radius: 0.25rem;
-  padding: 0.125rem 0.375rem;
-  margin: 0.125rem;
-  font-size: 0.75rem;
-}
-
-.multiselect-custom .multiselect-option {
-  padding: var(--ms-py) var(--ms-px);
-  font-size: var(--ms-font-size);
-}
-
-.multiselect-custom .multiselect-option.is-selected {
-  background: var(--ms-option-bg-selected);
-  color: var(--ms-option-color-selected);
-}
-
-.multiselect-custom .multiselect-option.is-pointed {
-  background: var(--ms-option-bg-pointed);
-  color: var(--ms-option-color-pointed);
-}
-
-.multiselect-custom .multiselect-single-label {
-  font-size: var(--ms-font-size);
-  padding: var(--ms-py) var(--ms-px);
-  text-align: center;
-}
-
-.multiselect-custom .multiselect-search {
-  font-size: var(--ms-font-size);
-  padding: var(--ms-py) var(--ms-px);
-}
-
-.multiselect-custom .multiselect-dropdown {
-  border: var(--ms-border-width) solid var(--ms-border-color);
-  border-radius: var(--ms-border-radius);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-}
-
-.fade-enter-active, .fade-leave-active {
-  transition: opacity 0.3s;
-}
-.fade-enter-from, .fade-leave-to {
-  opacity: 0;
+.multiselect__content-wrapper {
+  max-height: 400px !important;
 }
 </style> 

@@ -184,7 +184,8 @@ const routes = [
   {
     path: '/products/edit/:id',
     name: 'ProductEdit',
-    component: ProductEditPage
+    component: ProductEditPage,
+    props: true
   },
   {
     path: '/products/receipts/create',

@@ -89,7 +89,7 @@ class ProductController extends Controller
      */
     public function getImages($id)
     {
-        $images = ProductImage::where('product_id', $id)->orderBy('id')->get();
+        $images = ProductImage::where('product_id', $id)->orderBy('created_at', 'asc')->get();
         
         // Преобразуем URL изображений
         $images = $this->transformImageUrls($images);
@@ -134,7 +134,6 @@ class ProductController extends Controller
             'external_code' => 'nullable|string|max:255',
             'unit' => 'nullable|string|max:255',
             'quantity' => 'required|numeric|min:0',
-            'warehouse_id' => 'required|integer|exists:warehouses,id',
             'price' => 'nullable|numeric|min:0',
             'weight' => 'nullable|numeric',
             'volume' => 'nullable|numeric',
@@ -161,7 +160,6 @@ class ProductController extends Controller
             'code' => $request->code,
             'external_code' => $request->external_code,
             'unit' => $request->unit,
-            'warehouse_id' => $request->warehouse_id,
             'weight' => $request->weight,
             'volume' => $request->volume,
             'vat' => $request->vat,
@@ -173,7 +171,36 @@ class ProductController extends Controller
             'barcode' => $request->barcode,
             'cash_register_tax' => $request->cash_register_tax,
             'cash_register_type' => $request->cash_register_type,
+            'quantity' => $request->quantity,
+            'price' => $request->price,
         ]);
+
+        // Если изменились количество или цена, обновляем последнюю запись в receipt_positions
+        $latestReceiptPosition = \App\Models\ReceiptPosition::where('product_id', $id)
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        if ($latestReceiptPosition) {
+            $updated = false;
+            
+            // Обновляем количество, если оно изменилось
+            if ($latestReceiptPosition->quantity != $request->quantity) {
+                $latestReceiptPosition->quantity = $request->quantity;
+                $updated = true;
+            }
+            
+            // Обновляем цену, если она изменилась
+            if ($latestReceiptPosition->price != $request->price) {
+                $latestReceiptPosition->price = $request->price;
+                $updated = true;
+            }
+            
+            // Пересчитываем сумму
+            if ($updated) {
+                $latestReceiptPosition->amount = $request->quantity * $request->price;
+                $latestReceiptPosition->save();
+            }
+        }
 
         // Создаем автоматическое оприходование
         try {
@@ -411,15 +438,38 @@ class ProductController extends Controller
 
         $product = ProductSklad::where('id', $id)
             ->where('user_id', $user->id)
-            ->with(['images', 'categoryRelation', 'subcategoryRelation'])
+            ->with(['images' => function($query) {
+                $query->orderBy('created_at', 'asc');
+            }, 'categoryRelation', 'subcategoryRelation'])
             ->first();
 
         if (!$product) {
             return response()->json(['error' => 'Товар не найден'], 404);
         }
 
+        // Получаем последние данные из receipt_positions для этого товара
+        $latestReceiptPosition = \App\Models\ReceiptPosition::where('product_id', $id)
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        // Если есть данные из receipt_positions, используем их для дополнения информации о товаре
+        if ($latestReceiptPosition) {
+            // Дополняем данные товара информацией из последней позиции оприходования
+            $product->latest_quantity = $latestReceiptPosition->quantity;
+            $product->latest_price = $latestReceiptPosition->price;
+            $product->latest_amount = $latestReceiptPosition->amount;
+            $product->latest_balance = $latestReceiptPosition->balance;
+            $product->latest_code = $latestReceiptPosition->code;
+            $product->latest_article = $latestReceiptPosition->article;
+            $product->latest_barcode = $latestReceiptPosition->barcode;
+            $product->latest_country = $latestReceiptPosition->country;
+            $product->latest_gtd = $latestReceiptPosition->gtd;
+            $product->latest_rnpt = $latestReceiptPosition->rnpt;
+            $product->latest_reason = $latestReceiptPosition->reason;
+        }
+
         // Преобразуем URL изображений и добавляем названия категорий
-        if ($product->images) {
+        if ($product->images && $product->images->count() > 0) {
             $product->images = $this->transformImageUrls($product->images);
         }
         
