@@ -17,7 +17,7 @@ const isAdminRoute = computed(() => {
     <!-- Показываем Header и Footer только для не-административных страниц -->
     <Header v-if="!isAdminRoute" />
     <router-view />
-    <Footer v-if="!isAdminRoute" />
+    <!-- <Footer v-if="!isAdminRoute" /> -->
   </div>
 </template>
 

@@ -1144,7 +1144,7 @@ export default {
 
 <style>
 /* Скрываем футер на странице API документации */
-footer, .bg-green-100:has(svg), .bg-blue-100:has(svg), .bg-yellow-100:has(svg), .bg-red-100:has(svg) {
+.bg-green-100:has(svg), .bg-blue-100:has(svg), .bg-yellow-100:has(svg), .bg-red-100:has(svg) {
   display: none !important;
 }
 </style> 
