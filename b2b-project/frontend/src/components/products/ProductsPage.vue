@@ -1437,7 +1437,7 @@ async function saveImportedProducts() {
   importSaving.value = true;
   importError.value = '';
 
-  try {
+  try { 
     const response = await apiRequest('/products/import-with-receipt', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
