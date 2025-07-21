@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\ProductSklad;
 use App\Models\ProductImage;
+use App\Models\ReceiptPosition;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 
@@ -314,7 +315,8 @@ class ProductController extends Controller
                     $query->orderBy('created_at', 'asc')->limit(1);
                 },
                 'categoryRelation',
-                'subcategoryRelation'
+                'subcategoryRelation',
+                'warehouse'
             ]);
 
         // Поиск по названию, коду, артикулу
@@ -414,6 +416,19 @@ class ProductController extends Controller
             $product->category_name = $product->category_name;
             $product->subcategory_name = $product->subcategory_name;
             
+            // Добавляем название склада
+            $product->warehouse_name = $product->warehouse ? $product->warehouse->name : null;
+            
+            // Получаем последние данные из receipt_positions для количества и цены
+            $latestReceiptPosition = \App\Models\ReceiptPosition::where('product_id', $product->id)
+                ->orderBy('created_at', 'desc')
+                ->first();
+            
+            if ($latestReceiptPosition) {
+                $product->quantity = (float) $latestReceiptPosition->quantity;
+                $product->price = (float) $latestReceiptPosition->price;
+            }
+            
             return $product;
         });
 
@@ -440,7 +455,7 @@ class ProductController extends Controller
             ->where('user_id', $user->id)
             ->with(['images' => function($query) {
                 $query->orderBy('created_at', 'asc');
-            }, 'categoryRelation', 'subcategoryRelation'])
+            }, 'categoryRelation', 'subcategoryRelation', 'warehouse'])
             ->first();
 
         if (!$product) {
@@ -476,6 +491,19 @@ class ProductController extends Controller
         // Добавляем названия категорий
         $product->category_name = $product->category_name;
         $product->subcategory_name = $product->subcategory_name;
+        
+        // Добавляем название склада
+        $product->warehouse_name = $product->warehouse ? $product->warehouse->name : null;
+        
+        // Получаем последние данные из receipt_positions для количества и цены
+        $latestReceiptPosition = \App\Models\ReceiptPosition::where('product_id', $product->id)
+            ->orderBy('created_at', 'desc')
+            ->first();
+        
+        if ($latestReceiptPosition) {
+            $product->quantity = (float) $latestReceiptPosition->quantity;
+            $product->price = (float) $latestReceiptPosition->price;
+        }
 
         return response()->json([
             'success' => true,

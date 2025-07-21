@@ -40,10 +40,16 @@
               <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
             </div>
           </button>
-          <button class="flex-1 bg-white border border-gray-300 px-3 py-1.5 rounded font-medium text-sm relative group" title="Экспорт товаров в файл">
-            Экспорт
+          <button 
+            @click="exportProducts"
+            :disabled="exportLoading"
+            class="flex-1 bg-white border border-gray-300 px-3 py-1.5 rounded font-medium text-sm relative group hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center" 
+            :title="exportLoading ? 'Выполняется экспорт...' : 'Экспорт товаров в файл'"
+          >
+            <Loader2 v-if="exportLoading" class="w-4 h-4 animate-spin mr-1" />
+            {{ exportLoading ? 'Экспорт...' : 'Экспорт' }}
             <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
-              Экспорт товаров в файл
+              {{ exportLoading ? 'Выполняется экспорт...' : 'Экспорт товаров в файл' }}
               <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
             </div>
           </button>
@@ -643,6 +649,9 @@ const importLoading = ref(false)
 const importSaving = ref(false)
 const importError = ref('')
 
+// Состояния для экспорта товаров
+const exportLoading = ref(false)
+
 const filter = reactive({
   category: null,
   subcategory: null,
@@ -1238,6 +1247,108 @@ async function saveImportedProducts() {
     importError.value = 'Ошибка импорта товаров'
   } finally {
     importSaving.value = false
+  }
+}
+
+// Экспорт товаров в Excel
+async function exportProducts() {
+  exportLoading.value = true
+  
+  try {
+    // Получаем все товары для экспорта (без пагинации)
+    const params = new URLSearchParams({
+      per_page: '10000' // Получаем все товары
+    })
+    
+    // Добавляем поисковый запрос
+    if (searchQuery.value.trim()) {
+      params.append('search', searchQuery.value.trim())
+    }
+    
+    // Добавляем параметры фильтра
+    const filterParams = createFilterParams()
+    if (filterParams) {
+      Object.keys(filterParams).forEach(key => {
+        const value = filterParams[key]
+        if (value !== null && value !== undefined && value !== '') {
+          params.append(key, value.toString())
+        }
+      })
+    }
+    
+    const response = await apiRequest(`/products?${params.toString()}`)
+    
+    if (response.ok) {
+      const allProducts = response.data.data.data || []
+      
+      // Подготавливаем данные для экспорта (только обязательные поля)
+      const exportData = allProducts.map(product => {
+        // Форматируем количество - убираем лишние нули после запятой
+        const formatQuantity = (qty) => {
+          if (qty === null || qty === undefined || qty === '') return '-'
+          const num = parseFloat(qty)
+          return isNaN(num) ? '-' : num.toString()
+        }
+        
+        // Форматируем цену - убираем лишние нули после запятой
+        const formatPrice = (price) => {
+          if (price === null || price === undefined || price === '') return '-'
+          const num = parseFloat(price)
+          return isNaN(num) ? '-' : num.toString()
+        }
+        
+        return {
+          'Название': product.name || '-',
+          'Категория': product.category_name || product.category || '-',
+          'Подкатегория': product.subcategory_name || product.subcategory || '-',
+          'Склад': product.warehouse_name || product.warehouse || '-',
+          'Количество': formatQuantity(product.quantity || product.latest_quantity),
+          'Единица измерения': product.unit || '-',
+          'Стоимость': formatPrice(product.price || product.latest_price),
+          'Артикул': product.article || '-'
+        }
+      })
+      
+      // Создаем рабочую книгу Excel
+      const workbook = XLSX.utils.book_new()
+      const worksheet = XLSX.utils.json_to_sheet(exportData)
+      
+      // Устанавливаем ширину столбцов
+      const columnWidths = [
+        { wch: 30 }, // Название
+        { wch: 20 }, // Категория
+        { wch: 20 }, // Подкатегория
+        { wch: 15 }, // Склад
+        { wch: 12 }, // Количество
+        { wch: 15 }, // Единица измерения
+        { wch: 12 }, // Стоимость
+        { wch: 15 }  // Артикул
+      ]
+      worksheet['!cols'] = columnWidths
+      
+      // Добавляем лист в книгу
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Товары')
+      
+      // Генерируем имя файла с текущей датой
+      const now = new Date()
+      const dateStr = now.toISOString().split('T')[0]
+      const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '-')
+      const fileName = `товары_${dateStr}_${timeStr}.xlsx`
+      
+      // Скачиваем файл
+      XLSX.writeFile(workbook, fileName)
+      
+      toastr.success(`Экспортировано ${exportData.length} товаров`)
+      
+    } else {
+      toastr.error('Ошибка загрузки товаров для экспорта')
+    }
+    
+  } catch (error) {
+    console.error('Ошибка экспорта:', error)
+    toastr.error('Ошибка экспорта товаров')
+  } finally {
+    exportLoading.value = false
   }
 }
 
