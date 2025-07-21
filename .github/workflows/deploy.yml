@@ -31,7 +31,7 @@ jobs:
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
+          php-version: '8.4'
           extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, fileinfo, tokenizer
 
       - name: Install backend dependencies
@@ -91,7 +91,7 @@ jobs:
             
             # Restart services if needed
             systemctl reload nginx || true
-            systemctl reload php8.2-fpm || true
+            systemctl reload php8.4-fpm || true
 
       - name: Deploy completed
         run: echo "✅ Deployment completed successfully!" 

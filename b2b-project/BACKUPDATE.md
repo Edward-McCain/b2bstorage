@@ -1,5 +1,5 @@
 
-Работай только с /var/www/b2bstorage-backend!
+Работай только с /var/www/b2bstorage-backend! on VPS
 
 
 # запуск на локалке фронт и бэк:
