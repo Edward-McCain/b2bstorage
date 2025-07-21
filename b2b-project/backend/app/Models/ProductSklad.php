@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\ReceiptPosition;
 
 class ProductSklad extends Model
 {
@@ -83,5 +84,13 @@ class ProductSklad extends Model
     public function subcategory()
     {
         return $this->belongsTo(Subcategory::class, 'subcategory', 'subcategory_id');
+    }
+
+    /**
+     * Связь с позициями оприходования
+     */
+    public function receiptPositions()
+    {
+        return $this->hasMany(ReceiptPosition::class, 'product_id');
     }
 } 

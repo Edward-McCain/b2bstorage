@@ -316,7 +316,8 @@ class ProductController extends Controller
                 },
                 'categoryRelation',
                 'subcategoryRelation',
-                'warehouse'
+                'warehouse',
+                'receiptPositions'
             ]);
 
         // Поиск по названию, коду, артикулу
@@ -343,9 +344,11 @@ class ProductController extends Controller
             $query->where('country', $request->country);
         }
 
-        // Фильтрация по поставщику
-        if ($request->has('supplier') && $request->supplier) {
-            $query->where('supplier', 'ilike', "%{$request->supplier}%");
+        // Фильтрация по количеству
+        if ($request->has('quantity') && $request->quantity) {
+            $query->whereHas('receiptPositions', function($q) use ($request) {
+                $q->where('quantity', $request->quantity);
+            });
         }
 
         // Фильтрация по артикулу

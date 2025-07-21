@@ -113,7 +113,7 @@
                   <th class="px-4 py-3 font-semibold text-left text-gray-900">Код</th>
                   <th class="px-4 py-3 font-semibold text-left text-gray-900">Артикул</th>
                   <th class="px-4 py-3 font-semibold text-left text-gray-900">Категория</th>
-                  <th class="px-4 py-3 font-semibold text-left text-gray-900">Поставщик</th>
+                  <th class="px-4 py-3 font-semibold text-left text-gray-900">Количество</th>
                   <th class="px-4 py-3 font-semibold text-left text-gray-900">Действия</th>
                 </tr>
               </thead>
@@ -144,7 +144,7 @@
                     <div class="text-gray-900">{{ product.category_name || product.category || '-' }}</div>
                     <div v-if="product.subcategory_name || product.subcategory" class="text-gray-500 text-xs">{{ product.subcategory_name || product.subcategory }}</div>
                   </td>
-                  <td class="px-4 py-3 text-gray-900">{{ product.supplier || '-' }}</td>
+                  <td class="px-4 py-3 text-gray-900">{{ product.quantity || '-' }}</td>
                   <td class="px-4 py-3">
                     <div class="flex items-center space-x-2">
                       <router-link 
@@ -343,8 +343,8 @@
               />
             </div>
             <div>
-              <label class="block text-xs text-gray-700 mb-1">Поставщик</label>
-              <input v-model="filter.supplier" type="text" placeholder="Поставщик" class="border rounded px-3 py-2 text-sm w-full" />
+              <label class="block text-xs text-gray-700 mb-1">Количество</label>
+              <input v-model="filter.quantity" type="number" step="0.001" placeholder="Количество" class="border rounded px-3 py-2 text-sm w-full" />
             </div>
             <div>
               <label class="block text-xs text-gray-700 mb-1">Артикул</label>
@@ -656,7 +656,7 @@ const filter = reactive({
   category: null,
   subcategory: null,
   country: null,
-  supplier: '',
+  quantity: '',
   article: '',
   code: '',
   external_code: '',
@@ -1033,7 +1033,7 @@ function resetFilter() {
   selectedBarcodeType.value = null
   
   // Очищаем текстовые поля
-  filter.supplier = ''
+  filter.quantity = ''
   filter.article = ''
   filter.code = ''
   filter.external_code = ''
