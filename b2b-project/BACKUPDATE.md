@@ -1,3 +1,7 @@
+
+Работай только с /var/www/b2bstorage-backend!
+
+
 # запуск на локалке фронт и бэк:
 
 cd b2b-project/backend
