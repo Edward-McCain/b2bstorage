@@ -1,8 +1,9 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import Header from './components/Header.vue'
 import Footer from './components/Footer.vue'
+import { currencyService } from './services/currency.js'
 
 const route = useRoute()
 
@@ -10,6 +11,20 @@ const route = useRoute()
 const isAdminRoute = computed(() => {
   return route.path.startsWith('/admin')
 })
+
+// Автозагрузка валют при инициализации приложения
+// onMounted(async () => {
+//   // Проверяем, авторизован ли пользователь
+//   const token = localStorage.getItem('auth_token')
+//   if (token) {
+//     try {
+//       // Делаем запрос к API валют - если таблица пуста, данные автоматически загрузятся
+//       await currencyService.getRates()
+//     } catch (error) {
+//       console.error('Ошибка при инициализации валют:', error)
+//     }
+//   }
+// })
 </script>
 
 <template>

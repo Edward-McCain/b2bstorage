@@ -6,7 +6,7 @@ export const currencyService = {
    */
   async getRates() {
     try {
-      const response = await apiRequest('GET', '/currencies')
+      const response = await apiRequest('/currencies', { method: 'GET' })
       return response.data
     } catch (error) {
       console.error('Error fetching currency rates:', error)
@@ -19,7 +19,7 @@ export const currencyService = {
    */
   async fetchAndSaveRates() {
     try {
-      const response = await apiRequest('GET', '/currencies/fetch')
+      const response = await apiRequest('/currencies/fetch', { method: 'GET' })
       return response
     } catch (error) {
       console.error('Error fetching and saving currency rates:', error)
@@ -32,7 +32,7 @@ export const currencyService = {
    */
   async getRateByType(currencyType) {
     try {
-      const response = await apiRequest('GET', `/currencies/type/${currencyType}`)
+      const response = await apiRequest(`/currencies/type/${currencyType}`, { method: 'GET' })
       return response.data
     } catch (error) {
       console.error('Error fetching currency rate:', error)
@@ -45,10 +45,13 @@ export const currencyService = {
    */
   async convert(amount, fromCurrency, toCurrency) {
     try {
-      const response = await apiRequest('POST', '/currencies/convert', {
-        amount,
-        from_currency: fromCurrency,
-        to_currency: toCurrency
+      const response = await apiRequest('/currencies/convert', {
+        method: 'POST',
+        body: JSON.stringify({
+          amount,
+          from_currency: fromCurrency,
+          to_currency: toCurrency
+        })
       })
       return response.data
     } catch (error) {
@@ -62,7 +65,7 @@ export const currencyService = {
    */
   async getUserCurrency() {
     try {
-      const response = await apiRequest('GET', '/user/currency')
+      const response = await apiRequest('/user/currency', { method: 'GET' })
       return response.data.currency
     } catch (error) {
       console.error('Error getting user currency:', error)
@@ -75,7 +78,10 @@ export const currencyService = {
    */
   async updateUserCurrency(currency) {
     try {
-      const response = await apiRequest('PUT', '/user/currency', { currency })
+      const response = await apiRequest('/user/currency', {
+        method: 'PUT',
+        body: JSON.stringify({ currency })
+      })
       return response.data
     } catch (error) {
       console.error('Error updating user currency:', error)

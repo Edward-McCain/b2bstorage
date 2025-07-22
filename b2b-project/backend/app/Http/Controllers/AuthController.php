@@ -203,9 +203,7 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => [
-                'user' => $user
-            ]
+            'data' => $user
         ]);
     }
 
@@ -352,6 +350,7 @@ class AuthController extends Controller
             'country' => 'sometimes|string|max:255',
             'city' => 'sometimes|string|max:255',
             'timezone' => 'sometimes|string|max:255',
+            'currency' => 'sometimes|string|max:10|in:AUD,CAD,CHF,CNY,EUR,GBP,HKD,JPY,NZD,RUB,USD,UZS',
         ]);
 
         if ($validator->fails()) {
@@ -391,6 +390,10 @@ class AuthController extends Controller
         
         if ($request->has('timezone')) {
             $updateData['timezone'] = $request->timezone;
+        }
+        
+        if ($request->has('currency')) {
+            $updateData['currency'] = $request->currency;
         }
 
         $user->update($updateData);
@@ -524,6 +527,7 @@ class AuthController extends Controller
                     'country' => $user->country,
                     'city' => $user->city,
                     'timezone' => $user->timezone,
+                    'currency' => $user->currency,
                     'avatar_url' => $user->avatar_url,
                 ],
                 'company' => [

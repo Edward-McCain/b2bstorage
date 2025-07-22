@@ -246,6 +246,23 @@
                     class="w-full text-sm multiselect-custom"
                   />
                 </div>
+
+                <!-- Валюта -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Валюта</label>
+                  <Multiselect
+                    v-model="personalData.currency"
+                    :options="currencyOptions"
+                    label="label"
+                    value="value"
+                    :object="false"
+                    placeholder="Выберите валюту"
+                    searchable
+                    :search-placeholder="'Поиск валюты'"
+                    :max-height="400"
+                    class="w-full text-sm multiselect-custom"
+                  />
+                </div>
               </div>
 
               <div class="flex justify-end">
@@ -457,7 +474,8 @@ const personalData = reactive({
   email: '',
   country: null,
   city: '',
-  timezone: null
+  timezone: null,
+  currency: 'USD'
 })
 
 const companyData = reactive({
@@ -518,6 +536,24 @@ const timezoneOptions = computed(() => {
     label: timezone.label,
     value: timezone.value
   }))
+})
+
+// Опции валют для Multiselect
+const currencyOptions = computed(() => {
+  return [
+    { label: 'AUD - Australian Dollar', value: 'AUD' },
+    { label: 'CAD - Canadian Dollar', value: 'CAD' },
+    { label: 'CHF - Swiss Franc', value: 'CHF' },
+    { label: 'CNY - Chinese Yuan', value: 'CNY' },
+    { label: 'EUR - Euro', value: 'EUR' },
+    { label: 'GBP - British Pound Sterling', value: 'GBP' },
+    { label: 'HKD - Hong Kong Dollar', value: 'HKD' },
+    { label: 'JPY - Japanese Yen', value: 'JPY' },
+    { label: 'NZD - New Zealand Dollar', value: 'NZD' },
+    { label: 'RUB - Russian Ruble', value: 'RUB' },
+    { label: 'USD - United States Dollar', value: 'USD' },
+    { label: 'UZS - Uzbekistani Som', value: 'UZS' },
+  ]
 })
 
 // Состояние автоопределения
@@ -695,6 +731,14 @@ const loadUserSettings = async () => {
         console.log('Часовой пояс не найден в данных')
         personalData.timezone = null
       }
+
+      // Находим опцию валюты для select
+      console.log('Загружаем валюту из данных:', personal.currency)
+      if (personal.currency) {
+        personalData.currency = personal.currency
+      } else {
+        personalData.currency = 'USD' // Устанавливаем по умолчанию, если не найдена
+      }
       
       console.log('Заполненные личные данные:', {
         firstName: personalData.firstName,
@@ -703,7 +747,8 @@ const loadUserSettings = async () => {
         email: personalData.email,
         country: personalData.country ? personalData.country.label : null,
         city: personalData.city,
-        timezone: personalData.timezone ? personalData.timezone.value : null
+        timezone: personalData.timezone ? personalData.timezone.value : null,
+        currency: personalData.currency
       })
       
       // Заполняем данные компании
@@ -847,12 +892,38 @@ const savePersonalData = async () => {
         email: personalData.email,
         country: personalData.country ? personalData.country.label : null,
         city: personalData.city,
-        timezone: personalData.timezone ? personalData.timezone.value : null
+        timezone: personalData.timezone ? personalData.timezone.value : null,
+        currency: personalData.currency
       })
     })
     
     if (response.ok && response.data.success) {
       console.log('Личные данные сохранены:', response.data)
+      
+      // Обновляем данные пользователя в localStorage
+      const userData = localStorage.getItem('user')
+      if (userData) {
+        const user = JSON.parse(userData)
+        user.first_name = personalData.firstName
+        user.position = personalData.position
+        user.phone_number = personalData.phone
+        user.email = personalData.email
+        user.country = personalData.country ? personalData.country.label : null
+        user.city = personalData.city
+        user.timezone = personalData.timezone ? personalData.timezone.value : null
+        user.currency = personalData.currency
+        localStorage.setItem('user', JSON.stringify(user))
+        
+        // Уведомляем Header о необходимости обновления
+        window.dispatchEvent(new CustomEvent('user-data-updated', { 
+          detail: { user: user } 
+        }))
+      }
+      
+      // Показываем уведомление об успешном сохранении
+      if (window.toastr) {
+        window.toastr.success('Личные данные успешно сохранены')
+      }
     } else {
       console.error('Ошибка сохранения личных данных:', response.data.message)
     }
@@ -987,6 +1058,11 @@ onMounted(async () => {
     if (defaultTimezone) {
       personalData.timezone = defaultTimezone
     }
+  }
+
+  // Устанавливаем валюту по умолчанию, если не выбрана
+  if (!personalData.currency) {
+    personalData.currency = 'USD'
   }
   
   // Автоматически определяем местоположение только если данные пустые

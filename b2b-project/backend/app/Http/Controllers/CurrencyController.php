@@ -32,10 +32,13 @@ class CurrencyController extends Controller
                 Currency::updateOrCreate(
                     ['currency_id' => $currencyData['currency_id']],
                     [
+                        'id' => $currencyData['id'],
                         'full_name' => $currencyData['full_name'],
                         'currency_type' => $currencyData['currency_type'],
                         'rate' => $currencyData['rate'],
                         'date' => $currencyData['date'],
+                        'created_at' => $currencyData['created_at'],
+                        'updated_at' => $currencyData['updated_at'],
                     ]
                 );
             }
@@ -63,15 +66,36 @@ class CurrencyController extends Controller
     {
         try {
             $currencies = Currency::getLatestRates();
-            
+
+            // Если таблица пуста — загружаем из внешнего API
+            if ($currencies->isEmpty()) {
+                $response = \Illuminate\Support\Facades\Http::get('https://b2bmarket.uz/api/api/currency');
+                if ($response->ok()) {
+                    foreach ($response->json() as $currency) {
+                        \App\Models\Currency::updateOrCreate(
+                            ['currency_id' => $currency['currency_id']],
+                            [
+                                'id' => $currency['id'],
+                                'full_name' => $currency['full_name'],
+                                'currency_type' => $currency['currency_type'],
+                                'rate' => $currency['rate'],
+                                'date' => $currency['date'],
+                                'created_at' => $currency['created_at'],
+                                'updated_at' => $currency['updated_at'],
+                            ]
+                        );
+                    }
+                    $currencies = Currency::getLatestRates();
+                }
+            }
+
             return response()->json([
                 'success' => true,
                 'data' => $currencies
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Error getting currency rates: ' . $e->getMessage());
-            
+            \Illuminate\Support\Facades\Log::error('Error getting currency rates: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Error getting currency rates: ' . $e->getMessage()

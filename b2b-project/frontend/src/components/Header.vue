@@ -32,11 +32,21 @@ onMounted(() => {
   if (token && userData) {
     isAuthenticated.value = true
     user.value = JSON.parse(userData)
+    
+    // Обновляем данные пользователя из API для получения актуальной валюты
+    updateUserData()
   }
   
   // Добавляем глобальный обработчик события обновления аватара
   window.addEventListener('avatar-updated', (event) => {
     handleAvatarUpdated(event.detail)
+  })
+  
+  // Добавляем обработчик события обновления данных пользователя
+  window.addEventListener('user-data-updated', (event) => {
+    console.log('Header: Получено событие обновления данных пользователя')
+    user.value = event.detail.user
+    console.log('Header: Обновлена валюта:', user.value.currency)
   })
   
   // Закрытие меню при клике вне его
@@ -123,12 +133,24 @@ const openSupport = () => {
   userMenuOpen.value = false
 }
 
-const handleCurrencyChanged = (newCurrency) => {
+const handleCurrencyChanged = async (newCurrency) => {
   console.log('Currency changed to:', newCurrency)
+  
   // Обновляем данные пользователя в компоненте
   if (user.value) {
     user.value.currency = newCurrency
   }
+  
+  // Обновляем localStorage
+  const userData = localStorage.getItem('user')
+  if (userData) {
+    const userObj = JSON.parse(userData)
+    userObj.currency = newCurrency
+    localStorage.setItem('user', JSON.stringify(userObj))
+  }
+  
+  // Можно добавить дополнительную логику для обновления интерфейса
+  // например, перезагрузка данных с новой валютой
 }
 
 const toggleProductsMenu = () => {
@@ -178,6 +200,40 @@ const handleAvatarUpdated = (newAvatarUrl) => {
     console.log('Header: localStorage обновлен')
   } else {
     console.log('Header: user.value не найден')
+  }
+}
+
+// Функция для обновления данных пользователя из API
+const updateUserData = async () => {
+  try {
+    const token = localStorage.getItem('auth_token')
+    const response = await fetch('http://127.0.0.1:8000/api/me', {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    })
+
+    if (response.ok) {
+      const result = await response.json()
+      console.log('Header: Полный ответ API:', result)
+      
+      if (result.success && result.data) {
+        user.value = result.data
+        localStorage.setItem('user', JSON.stringify(result.data))
+        console.log('Header: Данные пользователя обновлены')
+        console.log('Header: Имя:', result.data.first_name)
+        console.log('Header: Валюта:', result.data.currency)
+      } else {
+        console.error('Header: Неверная структура ответа:', result)
+      }
+    } else {
+      console.error('Header: Ошибка HTTP:', response.status)
+    }
+  } catch (error) {
+    console.error('Header: Ошибка запроса:', error)
   }
 }
 </script>
@@ -604,7 +660,13 @@ const handleAvatarUpdated = (newAvatarUrl) => {
               aria-expanded="false"
               aria-haspopup="true"
             >
-              <span class="text-sm text-gray-700">{{ user?.first_name || (user?.first_name === '' ? 'Пользователь' : user?.first_name) }}</span>
+              <div>
+                <span class="text-sm text-gray-700">{{ user?.first_name || (user?.first_name === '' ? 'Пользователь' : user?.first_name) }}</span>
+                <!-- Текущая валюта пользователя -->
+                <div class="text-right text-blue-700">
+                  <span class="font-bold text-sm">{{ user?.currency || 'USD' }}</span>
+                </div>
+              </div>
               <!-- Аватар -->
               <div v-if="avatarUrl" class="h-8 w-8 rounded-full overflow-hidden">
                 <img 
@@ -629,14 +691,6 @@ const handleAvatarUpdated = (newAvatarUrl) => {
               tabindex="-1"
             >
               <div class="py-1" role="none">
-                <!-- Выбор валюты -->
-                <div class="px-4 py-2 border-b border-gray-100 hidden">
-                  <CurrencySelector 
-                    :current-currency="user?.currency || 'USD'"
-                    @currency-changed="handleCurrencyChanged"
-                  />
-                </div>
-                
                 <!-- Админ панель (только для администраторов) -->
                 <button
                   v-if="isAdmin"
@@ -920,8 +974,9 @@ const handleAvatarUpdated = (newAvatarUrl) => {
           </div> -->
 
           <!-- Выбор валюты -->
-          <div class="border-t border-gray-200 pt-4 hidden">
+          <div class="border-t border-gray-200 pt-4" style="display: none;">
             <div class="px-4 py-2">
+              <h3 class="text-sm font-semibold text-gray-900 mb-2">Валюта</h3>
               <CurrencySelector 
                 :current-currency="user?.currency || 'USD'"
                 @currency-changed="handleCurrencyChanged"
