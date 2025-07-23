@@ -251,14 +251,22 @@
         </div>
       </form>
     </div>
+
+    <!-- Модальное окно для случая отсутствия складов -->
+    <NoWarehousesModal 
+      :is-visible="showNoWarehousesModal"
+      @close="closeNoWarehousesModal"
+    />
   </div>
 </template>
 
 <script setup>
 import ProductsMenu from './ProductsMenu.vue'
+import NoWarehousesModal from '../NoWarehousesModal.vue'
 import { useRouter } from 'vue-router'
 import { ref, computed, onMounted } from 'vue'
 import { apiRequest } from '@/config/api'
+import { useWarehouseCheck } from '@/composables/useWarehouseCheck'
 import Multiselect from '@vueform/multiselect'
 import '@vueform/multiselect/themes/default.css'
 import toastr from 'toastr'
@@ -299,9 +307,19 @@ const fileInput = ref(null)
 const userData = ref(null)
 const productSearch = ref('')
 
-// Переменные для складов
-const warehouses = ref([])
-const loadingWarehouses = ref(true)
+// Используем композабл для проверки складов
+const {
+  warehouses,
+  loadingWarehouses,
+  showNoWarehousesModal,
+  hasWarehouses,
+  warehouseOptions,
+  loadWarehouses,
+  checkWarehousesAndShowModal,
+  closeNoWarehousesModal
+} = useWarehouseCheck()
+
+// Переменные для формы создания склада
 const showWarehouseForm = ref(false)
 const warehouseForm = ref({
   name: '',
@@ -325,13 +343,7 @@ const productOptions = computed(() => {
   }))
 })
 
-const warehouseOptions = computed(() => {
-  if (!Array.isArray(warehouses.value)) return []
-  return warehouses.value.map(w => ({
-    label: w.name,
-    value: w.id
-  }))
-})
+
 
 const total = computed(() => {
   let sum = 0
@@ -402,22 +414,7 @@ function onProductSearch(query) {
   loadProducts(query)
 }
 
-async function loadWarehouses() {
-  try {
-    loadingWarehouses.value = true
-    const response = await apiRequest('/warehouses', { method: 'GET' })
-    if (response.ok && response.data.success) {
-      warehouses.value = response.data.data || []
-    } else {
-      warehouses.value = []
-    }
-  } catch (error) {
-    console.error('Ошибка загрузки складов:', error)
-    warehouses.value = []
-  } finally {
-    loadingWarehouses.value = false
-  }
-}
+
 
 function handleWarehouseClick() {
   if (warehouses.value.length === 0) {
@@ -466,7 +463,7 @@ async function createWarehouse() {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   const today = new Date()
   const year = today.getFullYear()
   const month = String(today.getMonth() + 1).padStart(2, '0')
@@ -474,10 +471,11 @@ onMounted(() => {
   const hours = String(today.getHours()).padStart(2, '0')
   const minutes = String(today.getMinutes()).padStart(2, '0')
   form.value.date = `${year}-${month}-${day}T${hours}:${minutes}`
-  loadUserData().then(() => {
-    loadProducts()
-    loadWarehouses()
-  })
+  
+  await loadUserData()
+  loadProducts()
+  // Проверяем наличие складов и показываем модальное окно если их нет
+  await checkWarehousesAndShowModal()
 })
 
 function validate() {

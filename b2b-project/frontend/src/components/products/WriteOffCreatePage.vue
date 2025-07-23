@@ -257,14 +257,22 @@
         </div>
       </form>
     </div>
+
+    <!-- Модальное окно для случая отсутствия складов -->
+    <NoWarehousesModal 
+      :is-visible="showNoWarehousesModal"
+      @close="closeNoWarehousesModal"
+    />
   </div>
 </template>
 
 <script setup>
 import ProductsMenu from './ProductsMenu.vue'
+import NoWarehousesModal from '../NoWarehousesModal.vue'
 import { useRouter } from 'vue-router'
 import { ref, computed, onMounted, watch } from 'vue'
 import { apiRequest } from '@/config/api'
+import { useWarehouseCheck } from '@/composables/useWarehouseCheck'
 import Multiselect from '@vueform/multiselect'
 import '@vueform/multiselect/themes/default.css'
 import toastr from 'toastr'
@@ -301,9 +309,19 @@ const userData = ref(null)
 const uploadedFiles = ref([])
 const fileInput = ref(null)
 
-// Переменные для складов
-const warehouses = ref([])
-const loadingWarehouses = ref(true)
+// Используем композабл для проверки складов
+const {
+  warehouses,
+  loadingWarehouses,
+  showNoWarehousesModal,
+  hasWarehouses,
+  warehouseOptions,
+  loadWarehouses,
+  checkWarehousesAndShowModal,
+  closeNoWarehousesModal
+} = useWarehouseCheck()
+
+// Переменные для формы создания склада
 const showWarehouseForm = ref(false)
 const warehouseForm = ref({
   name: '',
@@ -323,13 +341,7 @@ const statusOptions = [
   { label: 'Проведено', value: 'posted' }
 ]
 
-const warehouseOptions = computed(() => {
-  if (!Array.isArray(warehouses.value)) return []
-  return warehouses.value.map(w => ({
-    label: w.name,
-    value: w.id
-  }))
-})
+
 
 const total = computed(() => {
   let sum = 0
@@ -372,22 +384,7 @@ async function loadUserData() {
   }
 }
 
-async function loadWarehouses() {
-  try {
-    loadingWarehouses.value = true
-    const response = await apiRequest('/warehouses', { method: 'GET' })
-    if (response.ok && response.data.success) {
-      warehouses.value = response.data.data || []
-    } else {
-      warehouses.value = []
-    }
-  } catch (error) {
-    console.error('Ошибка загрузки складов:', error)
-    warehouses.value = []
-  } finally {
-    loadingWarehouses.value = false
-  }
-}
+
 
 function handleWarehouseClick() {
   if (warehouses.value.length === 0) {
@@ -613,7 +610,9 @@ async function handleSubmit() {
 }
 
 onMounted(async () => {
-  await Promise.all([loadUserData(), loadWarehouses()])
+  await loadUserData()
+  // Проверяем наличие складов и показываем модальное окно если их нет
+  await checkWarehousesAndShowModal()
 })
 
 // Автоматическая загрузка товаров при выборе склада

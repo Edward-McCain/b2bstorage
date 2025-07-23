@@ -279,6 +279,12 @@
         </form>
       </div>
     </div>
+
+    <!-- Модальное окно для случая отсутствия складов -->
+    <NoWarehousesModal 
+      :is-visible="showNoWarehousesModal"
+      @close="closeNoWarehousesModal"
+    />
   </div>
 </template>
 
@@ -287,6 +293,8 @@ import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import api from '@/config/api'
 import ProductsMenu from './ProductsMenu.vue'
+import NoWarehousesModal from '../NoWarehousesModal.vue'
+import { useWarehouseCheck } from '@/composables/useWarehouseCheck'
 import Multiselect from '@vueform/multiselect'
 import '@vueform/multiselect/themes/default.css'
 import { Loader2 } from 'lucide-vue-next'
@@ -295,13 +303,23 @@ const router = useRouter()
 const route = useRoute()
 const loading = ref(false)
 const creatingTransfer = ref(false)
-const loadingWarehouses = ref(false)
 const loadingProducts = ref(false)
 const loadingSearch = ref(false)
-const warehouses = ref([])
 const availableProducts = ref([])
 const productSearch = ref('')
 const originalProducts = ref([]) // Сохраняем оригинальный список товаров
+
+// Используем композабл для проверки складов
+const {
+  warehouses,
+  loadingWarehouses,
+  showNoWarehousesModal,
+  hasWarehouses,
+  warehouseOptions,
+  loadWarehouses,
+  checkWarehousesAndShowModal,
+  closeNoWarehousesModal
+} = useWarehouseCheck()
 
 const form = reactive({
   from_warehouse_id: '',
@@ -312,12 +330,6 @@ const form = reactive({
 })
 
 // Вычисляемые свойства для селектов складов
-const warehouseOptions = computed(() => {
-  return warehouses.value.map(warehouse => ({
-    label: warehouse.name,
-    value: warehouse.id
-  }))
-})
 
 const availableToWarehouseOptions = computed(() => {
   return warehouses.value
@@ -349,21 +361,7 @@ const isFormValid = computed(() => {
   return warehousesSelected && warehousesDifferent && productsSelected
 })
 
-const loadWarehouses = async () => {
-  try {
-    loadingWarehouses.value = true
-    const response = await api.get('/warehouses')
-    warehouses.value = response.data.data || []
-    
-    // После загрузки складов устанавливаем склад из URL параметра
-    setWarehouseFromUrl()
-  } catch (error) {
-    console.error('Ошибка загрузки складов:', error)
-    warehouses.value = []
-  } finally {
-    loadingWarehouses.value = false
-  }
-}
+
 
 // Установка склада из URL параметра
 const setWarehouseFromUrl = () => {
@@ -502,7 +500,12 @@ const saveTransfer = async () => {
   }
 }
 
-onMounted(() => {
-  loadWarehouses()
+onMounted(async () => {
+  // Проверяем наличие складов и показываем модальное окно если их нет
+  const hasWarehouses = await checkWarehousesAndShowModal()
+  if (hasWarehouses) {
+    // Устанавливаем склад из URL параметра если есть склады
+    setWarehouseFromUrl()
+  }
 })
 </script> 

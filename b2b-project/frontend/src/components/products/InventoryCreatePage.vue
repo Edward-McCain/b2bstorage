@@ -228,13 +228,21 @@
         </div>
       </form>
     </div>
+
+    <!-- Модальное окно для случая отсутствия складов -->
+    <NoWarehousesModal 
+      :is-visible="showNoWarehousesModal"
+      @close="closeNoWarehousesModal"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
 import ProductsMenu from './ProductsMenu.vue'
+import NoWarehousesModal from '../NoWarehousesModal.vue'
 import { apiRequest } from '@/config/api'
+import { useWarehouseCheck } from '@/composables/useWarehouseCheck'
 import { useRouter } from 'vue-router'
 import { Trash2, Loader2 } from 'lucide-vue-next'
 import toastr from 'toastr'
@@ -258,9 +266,19 @@ const form = ref({
 const errors = ref({})
 const saving = ref(false)
 
-// Склады
-const warehouses = ref([])
-const loadingWarehouses = ref(false)
+// Используем композабл для проверки складов
+const {
+  warehouses,
+  loadingWarehouses,
+  showNoWarehousesModal,
+  hasWarehouses,
+  warehouseOptions,
+  loadWarehouses,
+  checkWarehousesAndShowModal,
+  closeNoWarehousesModal
+} = useWarehouseCheck()
+
+// Переменные для формы создания склада
 const showWarehouseForm = ref(false)
 const warehouseForm = ref({
   name: '',
@@ -283,12 +301,6 @@ const uploadedFiles = ref([])
 const uploading = ref(false)
 
 // Опции для фильтров
-const warehouseOptions = computed(() => {
-  return warehouses.value.map(w => ({
-    label: w.name,
-    value: w.id
-  }))
-})
 
 // productOptions больше не нужны для инвентаризации
 
@@ -343,22 +355,7 @@ function closeWarehouseForm() {
   warehouseServerError.value = ''
 }
 
-async function loadWarehouses() {
-  try {
-    loadingWarehouses.value = true
-    const response = await apiRequest('/warehouses', { method: 'GET' })
-    if (response.ok && response.data.success) {
-      warehouses.value = response.data.data || []
-    } else {
-      warehouses.value = []
-    }
-  } catch (error) {
-    console.error('Ошибка загрузки складов:', error)
-    warehouses.value = []
-  } finally {
-    loadingWarehouses.value = false
-  }
-}
+
 
 // Функции loadProducts и onProductSearch больше не нужны для инвентаризации
 
@@ -547,7 +544,8 @@ watch(() => form.value.warehouse, async (newWarehouseId) => {
 })
 
 onMounted(async () => {
-  await loadWarehouses()
+  // Проверяем наличие складов и показываем модальное окно если их нет
+  await checkWarehousesAndShowModal()
 })
 </script>
 

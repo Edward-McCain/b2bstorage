@@ -417,6 +417,12 @@
         </div>
       </div>
     </div>
+
+    <!-- Модальное окно для случая отсутствия складов -->
+    <NoWarehousesModal 
+      :is-visible="showNoWarehousesModal"
+      @close="closeNoWarehousesModal"
+    />
   </div>
 </template>
 
@@ -426,7 +432,9 @@ import { useRouter } from 'vue-router'
 import Multiselect from '@vueform/multiselect'
 import '@vueform/multiselect/themes/default.css'
 import { apiRequest, getCategoriesWithCache } from '@/config/api'
+import { useWarehouseCheck } from '@/composables/useWarehouseCheck'
 import ImageDropzone from './ImageDropzone.vue'
+import NoWarehousesModal from '../NoWarehousesModal.vue'
 import countriesData from '@/data/countries.json'
 import toastr from 'toastr'
 
@@ -505,12 +513,20 @@ const isUploadingImage = ref(false)
 /** @type {import('vue').Ref<string>} */
 const newAltText = ref('')
 
-/** @type {import('vue').Ref<Array>} */
-const warehouses = ref([])
+// Используем композабл для проверки складов
+const {
+  warehouses,
+  loadingWarehouses,
+  showNoWarehousesModal,
+  hasWarehouses,
+  warehouseOptions,
+  loadWarehouses,
+  checkWarehousesAndShowModal,
+  closeNoWarehousesModal
+} = useWarehouseCheck()
+
 /** @type {import('vue').Ref<Object|null>} */
 const selectedWarehouse = ref(null)
-/** @type {import('vue').Ref<boolean>} */
-const loadingWarehouses = ref(false)
 /** @type {import('vue').Ref<string>} */
 const warehouseError = ref('')
 
@@ -607,21 +623,7 @@ async function handleDeleteImage(imgId) {
   } catch (e) {}
 }
 
-async function fetchWarehouses() {
-  loadingWarehouses.value = true
-  try {
-    const response = await apiRequest('/warehouses')
-    if (response.ok && response.data.success) {
-      warehouses.value = response.data.data || []
-    } else {
-      warehouseError.value = 'Ошибка загрузки складов'
-    }
-  } catch (e) {
-    warehouseError.value = 'Ошибка загрузки складов'
-  } finally {
-    loadingWarehouses.value = false
-  }
-}
+
 
 function goToCreateWarehouse() {
   router.push('/warehouses/create')
@@ -637,8 +639,8 @@ onMounted(async () => {
     loadingCategories.value = false
   }
   
-  // Загружаем склады
-  await fetchWarehouses()
+  // Проверяем наличие складов и показываем модальное окно если их нет
+  await checkWarehousesAndShowModal()
   
   // Добавляем обработчики для предотвращения случайного закрытия
   window.addEventListener('beforeunload', handleBeforeUnload)
@@ -810,15 +812,7 @@ const subcategoryOptions = computed(() =>
     : []
 )
 
-const warehouseOptions = computed(() =>
-  Array.isArray(warehouses.value)
-    ? warehouses.value.map(w => ({
-        label: w.name,
-        value: w.id,
-        raw: w
-      }))
-    : []
-)
+
 
 const countries = computed(() =>
   countriesData.map(country => ({

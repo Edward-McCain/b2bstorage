@@ -132,7 +132,7 @@ class WriteOffController extends Controller
         $request->validate([
             'number' => 'required|string|max:50',
             'date' => 'required|date',
-            'organization' => 'required|string|max:255',
+            'organization' => 'nullable|string|max:255',
             'project' => 'nullable|string|max:255',
             'warehouse' => 'required|integer',
             'status' => 'nullable|string|max:50',
@@ -252,7 +252,7 @@ class WriteOffController extends Controller
         $request->validate([
             'number' => 'required|string|max:50',
             'date' => 'required|date',
-            'organization' => 'required|string|max:255',
+            'organization' => 'nullable|string|max:255',
             'project' => 'nullable|string|max:255',
             'warehouse' => 'required|integer',
             'status' => 'nullable|string|max:50',

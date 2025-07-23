@@ -114,7 +114,7 @@
               <tr class="bg-gray-50">
                 <th class="px-3 py-2 text-left font-semibold text-gray-700">№</th>
                 <th class="px-3 py-2 text-left font-semibold text-gray-700">Дата</th>
-                <th class="px-3 py-2 text-left font-semibold text-gray-700">Организация</th>
+                <!-- <th class="px-3 py-2 text-left font-semibold text-gray-700">Организация</th> -->
                 <th class="px-3 py-2 text-left font-semibold text-gray-700">Склад</th>
                 <th class="px-3 py-2 text-left font-semibold text-gray-700">Статус</th>
                 <th class="px-3 py-2 text-left font-semibold text-gray-700">Сумма</th>
@@ -126,7 +126,7 @@
               <tr v-for="writeOff in writeOffs" :key="writeOff.id" class="hover:bg-gray-50">
                 <td class="px-3 py-2">{{ writeOff.number }}</td>
                 <td class="px-3 py-2">{{ formatDate(writeOff.date) }}</td>
-                <td class="px-3 py-2">{{ writeOff.organization }}</td>
+                <!-- <td class="px-3 py-2">{{ writeOff.organization }}</td> -->
                 <td class="px-3 py-2">
                   <span v-if="writeOff.warehouse_name && writeOff.warehouse_name.length > 0" class="relative group cursor-pointer">
                     {{ writeOff.warehouse_name }}
