@@ -663,7 +663,7 @@ const updateUserData = async () => {
               <div>
                 <span class="text-sm text-gray-700">{{ user?.first_name || (user?.first_name === '' ? 'Пользователь' : user?.first_name) }}</span>
                 <!-- Текущая валюта пользователя -->
-                <div class="text-right text-blue-700">
+                <div class="text-right text-blue-700" style="margin-top: -4px;">
                   <span class="font-bold text-sm">{{ user?.currency || 'USD' }}</span>
                 </div>
               </div>

@@ -116,27 +116,27 @@
           <!-- <h3 class="text-lg font-medium text-gray-900 mb-4">Сводка по остаткам</h3> -->
           <div class="grid grid-cols-2 md:grid-cols-6 gap-4">
             <div class="text-center">
-              <div class="text-2xl font-bold text-blue-600">{{ summary.total_products }}</div>
+              <div class="text-2xl font-bold text-blue-600" style="font-size: 20px;">{{ summary.total_products }}</div>
               <div class="text-sm text-gray-600">Товаров</div>
             </div>
             <div class="text-center">
-              <div class="text-2xl font-bold text-green-600">{{ summary.total_warehouses }}</div>
+              <div class="text-2xl font-bold text-green-600" style="font-size: 20px;">{{ summary.total_warehouses }}</div>
               <div class="text-sm text-gray-600">Складов</div>
             </div>
             <div class="text-center">
-              <div class="text-2xl font-bold text-purple-600">{{ summary.total_quantity }}</div>
+              <div class="text-2xl font-bold text-purple-600" style="font-size: 20px;">{{ summary.total_quantity }}</div>
               <div class="text-sm text-gray-600">Общее количество</div>
             </div>
             <div class="text-center">
-              <div class="text-2xl font-bold text-indigo-600">{{ formatCurrency(summary.total_value) }}</div>
+              <div class="text-2xl font-bold text-indigo-600" style="font-size: 20px;">{{ formatCurrency(summary.total_value) }}</div>
               <div class="text-sm text-gray-600">Общая стоимость</div>
             </div>
             <div class="text-center">
-              <div class="text-2xl font-bold text-orange-600">{{ summary.low_stock_items }}</div>
+              <div class="text-2xl font-bold text-orange-600" style="font-size: 20px;">{{ summary.low_stock_items }}</div>
               <div class="text-sm text-gray-600">Низкий остаток</div>
             </div>
             <div class="text-center">
-              <div class="text-2xl font-bold text-red-600">{{ summary.out_of_stock_items }}</div>
+              <div class="text-2xl font-bold text-red-600" style="font-size: 20px;">{{ summary.out_of_stock_items }}</div>
               <div class="text-sm text-gray-600">Нет в наличии</div>
             </div>
           </div>
