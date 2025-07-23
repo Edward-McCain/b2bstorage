@@ -8,11 +8,11 @@ use App\Models\ProductImage;
 use App\Models\ReceiptPosition;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 use Illuminate\Support\Facades\Auth;
 use App\Models\ProductBalance;
 use App\Models\ProductOperation;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class ProductController extends Controller
@@ -490,7 +490,6 @@ class ProductController extends Controller
     public function destroy($id)
     {
         $user = Auth::user();
-        
         if (!$user) {
             return response()->json(['error' => 'Пользователь не авторизован'], 401);
         }
@@ -503,16 +502,60 @@ class ProductController extends Controller
             return response()->json(['error' => 'Товар не найден'], 404);
         }
 
-        // Удаляем изображения товара
-        $product->images()->delete();
-        
-        // Удаляем товар
-        $product->delete();
+        DB::beginTransaction();
+        try {
+            // Удаляем товар (каскад удалит все связанные записи)
+            $product->delete();
+            DB::table('products')->where('id', $id)->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Товар успешно удален'
-        ]);
+            // Проверка: остались ли связанные записи (на всякий случай)
+            $tables = [
+                'product_images',
+                'receipt_positions',
+                'write_off_positions',
+                'inventory_items',
+                'product_transfer_positions',
+                'product_operations',
+                'product_balances',
+            ];
+            $leftovers = [];
+            foreach ($tables as $table) {
+                $count = DB::table($table)->where('product_id', $id)->count();
+                if ($count > 0) {
+                    $leftovers[$table] = $count;
+                }
+            }
+
+            if (!empty($leftovers)) {
+                Log::warning('Не все связанные записи удалены при каскадном удалении товара', [
+                    'product_id' => $id,
+                    'leftovers' => $leftovers
+                ]);
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Не удалось удалить все связанные записи (каскад не сработал)',
+                    'details' => $leftovers
+                ], 500);
+            }
+
+            DB::commit();
+            return response()->json([
+                'success' => true,
+                'message' => 'Товар и все связанные данные успешно удалены'
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Ошибка при удалении товара', [
+                'product_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+            return response()->json([
+                'success' => false,
+                'error' => 'Ошибка при удалении товара',
+                'details' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

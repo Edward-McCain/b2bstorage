@@ -1,0 +1,63 @@
+                                                                List of relations
+ Schema |               Name                |   Type   |  Owner  | Persistence | Access method |    Size    |            Description             
+--------+-----------------------------------+----------+---------+-------------+---------------+------------+------------------------------------
+ public | cache                             | table    | b2buser | permanent   | heap          | 16 kB      | 
+ public | cache_locks                       | table    | b2buser | permanent   | heap          | 8192 bytes | 
+ public | categories                        | table    | b2buser | permanent   | heap          | 48 kB      | 
+ public | currencies                        | table    | b2buser | permanent   | heap          | 8192 bytes | 
+ public | currencies_id_seq                 | sequence | b2buser | permanent   |               | 8192 bytes | 
+ public | failed_jobs                       | table    | b2buser | permanent   | heap          | 8192 bytes | 
+ public | failed_jobs_id_seq                | sequence | b2buser | permanent   |               | 8192 bytes | 
+ public | inventories                       | table    | b2buser | permanent   | heap          | 16 kB      | Таблица инвентаризаций
+ public | inventories_id_seq                | sequence | b2buser | permanent   |               | 8192 bytes | 
+ public | inventory_files                   | table    | b2buser | permanent   | heap          | 16 kB      | Таблица файлов инвентаризации
+ public | inventory_files_id_seq            | sequence | b2buser | permanent   |               | 8192 bytes | 
+ public | inventory_items                   | table    | b2buser | permanent   | heap          | 16 kB      | Таблица товаров инвентаризации
+ public | inventory_items_id_seq            | sequence | b2buser | permanent   |               | 8192 bytes | 
+ public | job_batches                       | table    | b2buser | permanent   | heap          | 8192 bytes | 
+ public | jobs                              | table    | b2buser | permanent   | heap          | 8192 bytes | 
+ public | jobs_id_seq                       | sequence | b2buser | permanent   |               | 8192 bytes | 
+ public | migrations                        | table    | b2buser | permanent   | heap          | 8192 bytes | 
+ public | migrations_id_seq                 | sequence | b2buser | permanent   |               | 8192 bytes | 
+ public | modifications                     | table    | b2buser | permanent   | heap          | 8192 bytes | 
+ public | modifications_id_seq              | sequence | b2buser | permanent   |               | 8192 bytes | 
+ public | password_reset_tokens             | table    | b2buser | permanent   | heap          | 8192 bytes | 
+ public | personal_access_tokens            | table    | b2buser | permanent   | heap          | 56 kB      | 
+ public | personal_access_tokens_id_seq     | sequence | b2buser | permanent   |               | 8192 bytes | 
+ public | product_balances                  | table    | b2buser | permanent   | heap          | 8192 bytes | 
+ public | product_balances_id_seq           | sequence | b2buser | permanent   |               | 8192 bytes | 
+ public | product_balances_view             | view     | b2buser | permanent   |               | 0 bytes    | 
+ public | product_images                    | table    | b2buser | permanent   | heap          | 16 kB      | 
+ public | product_images_id_seq             | sequence | b2buser | permanent   |               | 8192 bytes | 
+ public | product_operations                | table    | b2buser | permanent   | heap          | 16 kB      | 
+ public | product_operations_id_seq         | sequence | b2buser | permanent   |               | 8192 bytes | 
+ public | product_transfer_positions        | table    | b2buser | permanent   | heap          | 16 kB      | Позиции перемещений товаров
+ public | product_transfer_positions_id_seq | sequence | b2buser | permanent   |               | 8192 bytes | 
+ public | product_transfers                 | table    | b2buser | permanent   | heap          | 16 kB      | Перемещения товаров между складами
+ public | product_transfers_id_seq          | sequence | b2buser | permanent   |               | 8192 bytes | 
+ public | products                          | table    | b2buser | permanent   | heap          | 8192 bytes | 
+ public | products_id_seq                   | sequence | b2buser | permanent   |               | 8192 bytes | 
+ public | products_sklad                    | table    | b2buser | permanent   | heap          | 16 kB      | 
+ public | products_sklad_id_seq             | sequence | b2buser | permanent   |               | 8192 bytes | 
+ public | receipt_files                     | table    | b2buser | permanent   | heap          | 16 kB      | 
+ public | receipt_files_id_seq              | sequence | b2buser | permanent   |               | 8192 bytes | 
+ public | receipt_positions                 | table    | b2buser | permanent   | heap          | 16 kB      | 
+ public | receipt_positions_id_seq          | sequence | b2buser | permanent   |               | 8192 bytes | 
+ public | receipt_tasks                     | table    | b2buser | permanent   | heap          | 8192 bytes | 
+ public | receipt_tasks_id_seq              | sequence | b2buser | permanent   |               | 8192 bytes | 
+ public | receipts                          | table    | b2buser | permanent   | heap          | 16 kB      | 
+ public | receipts_id_seq                   | sequence | b2buser | permanent   |               | 8192 bytes | 
+ public | sessions                          | table    | b2buser | permanent   | heap          | 368 kB     | 
+ public | subcategories                     | table    | b2buser | permanent   | heap          | 160 kB     | 
+ public | users                             | table    | b2buser | permanent   | heap          | 56 kB      | 
+ public | users_id_seq                      | sequence | b2buser | permanent   |               | 8192 bytes | 
+ public | warehouses                        | table    | b2buser | permanent   | heap          | 16 kB      | 
+ public | warehouses_id_seq                 | sequence | b2buser | permanent   |               | 8192 bytes | 
+ public | write_off_files                   | table    | b2buser | permanent   | heap          | 16 kB      | 
+ public | write_off_files_id_seq            | sequence | b2buser | permanent   |               | 8192 bytes | 
+ public | write_off_positions               | table    | b2buser | permanent   | heap          | 16 kB      | 
+ public | write_off_positions_id_seq        | sequence | b2buser | permanent   |               | 8192 bytes | 
+ public | write_offs                        | table    | b2buser | permanent   | heap          | 16 kB      | 
+ public | write_offs_id_seq                 | sequence | b2buser | permanent   |               | 8192 bytes | 
+(58 rows)
+
