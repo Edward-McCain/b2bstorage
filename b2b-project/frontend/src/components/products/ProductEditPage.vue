@@ -771,27 +771,54 @@ async function loadProduct() {
       
       // Устанавливаем категорию и подкатегорию
       if (productData.category) {
-        selectedCategory.value = categoryOptions.value.find(c => c.value === productData.category) || null
-        
-        // Загружаем подкатегории напрямую, без watch
-        if (productData.category) {
-          loadingSubcategories.value = true
-          try {
-            const response = await apiRequest(`/subcategories?category_id=${encodeURIComponent(productData.category)}`)
-            if (response.ok && response.data.success) {
-              subcategories.value = response.data.data || []
-            } else {
+        if (categoryOptions.value.length > 0) {
+          selectedCategory.value = categoryOptions.value.find(c => c.value === productData.category) || null
+          // Загружаем подкатегории напрямую, без watch
+          if (productData.category) {
+            loadingSubcategories.value = true
+            try {
+              const response = await apiRequest(`/subcategories?category_id=${encodeURIComponent(productData.category)}`)
+              if (response.ok && response.data.success) {
+                subcategories.value = response.data.data || []
+              } else {
+                subcategoryError.value = 'Ошибка загрузки подкатегорий'
+              }
+            } catch (e) {
               subcategoryError.value = 'Ошибка загрузки подкатегорий'
+            } finally {
+              loadingSubcategories.value = false
             }
-          } catch (e) {
-            subcategoryError.value = 'Ошибка загрузки подкатегорий'
-          } finally {
-            loadingSubcategories.value = false
           }
-        }
-        
-        if (productData.subcategory) {
-          selectedSubcategory.value = subcategoryOptions.value.find(s => s.value === productData.subcategory) || null
+          if (productData.subcategory) {
+            selectedSubcategory.value = subcategoryOptions.value.find(s => s.value === productData.subcategory) || null
+          }
+        } else {
+          // Категории ещё не загружены — ждём их появления
+          const unwatch = watch(categoryOptions, (opts) => {
+            if (opts.length > 0) {
+              selectedCategory.value = opts.find(c => c.value === productData.category) || null
+              // Загружаем подкатегории напрямую
+              loadingSubcategories.value = true
+              apiRequest(`/subcategories?category_id=${encodeURIComponent(productData.category)}`)
+                .then(response => {
+                  if (response.ok && response.data.success) {
+                    subcategories.value = response.data.data || []
+                  } else {
+                    subcategoryError.value = 'Ошибка загрузки подкатегорий'
+                  }
+                })
+                .catch(() => {
+                  subcategoryError.value = 'Ошибка загрузки подкатегорий'
+                })
+                .finally(() => {
+                  loadingSubcategories.value = false
+                  if (productData.subcategory) {
+                    selectedSubcategory.value = subcategoryOptions.value.find(s => s.value === productData.subcategory) || null
+                  }
+                  unwatch()
+                })
+            }
+          })
         }
       }
       
