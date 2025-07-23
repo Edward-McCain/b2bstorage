@@ -157,25 +157,25 @@
           <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
               <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500">
                   Товар
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500">
                   Склад
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500">
                   Остаток
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500">
                   Цена
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Стоимость
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500">
+                  Итого
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500">
                   Статус
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500">
                   Действия
                 </th>
               </tr>
@@ -304,6 +304,7 @@ export default {
     const pagination = ref(null)
     const loading = ref(false)
     const loadingSummary = ref(false)
+    const currency = ref('UZS') // по умолчанию UZS
 
     const filters = reactive({
       warehouse_id: '',
@@ -356,6 +357,7 @@ export default {
       try {
         const response = await api.post('/balances/summary', filters)
         summary.value = response.data.summary
+        currency.value = response.data.currency || 'UZS'
       } catch (error) {
         console.error('Ошибка загрузки сводки:', error)
       } finally {
@@ -378,10 +380,10 @@ export default {
     }
 
     const formatCurrency = (amount) => {
-      if (!amount) return '0 ₽'
+      if (!amount) return '0'
       return new Intl.NumberFormat('ru-RU', {
         style: 'currency',
-        currency: 'RUB'
+        currency: currency.value
       }).format(amount)
     }
 
@@ -430,7 +432,8 @@ export default {
       formatCurrency,
       getQuantityClass,
       getStatusClass,
-      getStatusText
+      getStatusText,
+      currency
     }
   }
 }

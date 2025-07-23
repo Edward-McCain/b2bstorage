@@ -290,8 +290,12 @@ class ProductBalanceController extends Controller
             ->take(10)
             ->values();
 
+        $user = Auth::user();
+        $currency = $user && $user->currency ? $user->currency : 'UZS';
+
         return response()->json([
             'summary' => $summary,
+            'currency' => $currency,
             'top_products' => $topProducts,
             'top_warehouses' => $topWarehouses
         ]);
