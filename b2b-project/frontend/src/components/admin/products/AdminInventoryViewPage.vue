@@ -131,30 +131,58 @@
                   <th class="px-3 py-2 text-center font-semibold text-gray-700">Фактический остаток</th>
                   <th class="px-3 py-2 text-center font-semibold text-gray-700">Разница</th>
                   <th class="px-3 py-2 text-center font-semibold text-gray-700">Статус</th>
+                  <th class="px-3 py-2 text-center font-semibold text-gray-700">Детали</th>
                 </tr>
               </thead>
               <tbody class="bg-white divide-y divide-gray-200">
-                <tr v-for="item in inventory.items" :key="item.id" class="hover:bg-gray-50">
-                  <td class="px-3 py-2 text-gray-900">
-                    <div>
-                      <div class="font-medium">{{ item.product_name }}</div>
-                      <div class="text-xs text-gray-500">{{ item.product_sku }}</div>
-                    </div>
-                  </td>
-                  <td class="px-3 py-2 text-center text-gray-900">{{ item.product_sku || '-' }}</td>
-                  <td class="px-3 py-2 text-center text-gray-900">{{ formatNumber(item.calculated_quantity) }}</td>
-                  <td class="px-3 py-2 text-center text-gray-900">{{ formatNumber(item.actual_quantity) }}</td>
-                  <td class="px-3 py-2 text-center">
-                    <span :class="getDifferenceClass(item)">
-                      {{ formatNumber(item.difference_quantity) }}
-                    </span>
-                  </td>
-                  <td class="px-3 py-2 text-center">
-                    <span :class="getExcessShortageClass(item)">
-                      {{ getExcessShortageText(item) }}
-                    </span>
-                  </td>
-                </tr>
+                <template v-for="item in inventory.items" :key="item.id">
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-3 py-2 text-gray-900">
+                      <div>
+                        <div class="font-medium">{{ item.product_name }}</div>
+                        <div class="text-xs text-gray-500">{{ item.product_sku }}</div>
+                      </div>
+                    </td>
+                    <td class="px-3 py-2 text-center text-gray-900">{{ item.product_sku || '-' }}</td>
+                    <td class="px-3 py-2 text-center text-gray-900">{{ formatNumber(item.calculated_quantity) }}</td>
+                    <td class="px-3 py-2 text-center text-gray-900">{{ formatNumber(item.actual_quantity) }}</td>
+                    <td class="px-3 py-2 text-center">
+                      <span :class="getDifferenceClass(item)">
+                        {{ formatNumber(item.difference_quantity) }}
+                      </span>
+                    </td>
+                    <td class="px-3 py-2 text-center">
+                      <span :class="getExcessShortageClass(item)">
+                        {{ getExcessShortageText(item) }}
+                      </span>
+                    </td>
+                    <td class="px-3 py-2 text-center">
+                      <div v-if="hasDiscrepancy(item) && item.photo" class="flex items-center justify-center gap-2">
+                        <button 
+                          @click="viewFullPhoto(item.photo)"
+                          class="p-0 rounded transition-colors hover:opacity-80 cursor-pointer border border-gray-200 hover:border-blue-400"
+                          title="Просмотреть фото"
+                        >
+                          <img 
+                            :src="item.photo" 
+                            alt="Фото товара" 
+                            class="w-6 h-6 rounded object-cover"
+                          />
+                        </button>
+                      </div>
+                      <span v-else class="text-gray-400 text-xs">—</span>
+                    </td>
+                  </tr>
+                  <!-- Комментарий под строкой -->
+                  <tr v-if="item.notes && item.notes.trim() !== ''" :key="item.id + '-comment'" class="bg-green-50">
+                    <td colspan="7" class="px-6 py-2 text-sm text-gray-800 border-t border-b border-green-100">
+                      <div class="flex items-start gap-2">
+                        <svg class="w-4 h-4 mt-0.5 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2m2-4h4m-4 0a2 2 0 1 0 4 0m-4 0a2 2 0 1 1 4 0"/></svg>
+                        <span>{{ item.notes }}</span>
+                      </div>
+                    </td>
+                  </tr>
+                </template>
               </tbody>
             </table>
           </div>
@@ -183,6 +211,34 @@
         <p class="text-gray-500">Запрашиваемая инвентаризация не существует или была удалена.</p>
       </div>
     </div>
+    
+    <!-- Модальное окно для просмотра комментария -->
+    <div v-if="showCommentDialogVisible" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-semibold">Комментарий</h3>
+          <button 
+            @click="closeCommentDialog"
+            class="text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+        <div class="text-gray-700 mb-4">
+          {{ currentComment }}
+        </div>
+        <div class="flex justify-end">
+          <button 
+            @click="closeCommentDialog"
+            class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+          >
+            Закрыть
+          </button>
+        </div>
+      </div>
+    </div>
   </AdminLayout>
 </template>
 
@@ -191,7 +247,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AdminLayout from '../AdminLayout.vue'
 import { apiRequest } from '@/config/api'
-import { Loader2, AlertCircle } from 'lucide-vue-next'
+import { Loader2, AlertCircle, MessageSquare } from 'lucide-vue-next'
 
 // Устанавливаем заголовок страницы
 document.title = 'B2B SKLAD - Админ - Просмотр инвентаризации'
@@ -201,6 +257,10 @@ const router = useRouter()
 
 const inventory = ref(null)
 const loading = ref(true)
+
+// Модальное окно для комментария
+const showCommentDialogVisible = ref(false)
+const currentComment = ref('')
 
 // Вычисляемые свойства для статистики
 const normalCount = computed(() => {
@@ -242,6 +302,29 @@ function getStatusText(status) {
     'cancelled': 'Отменена'
   }
   return statusMap[status] || status
+}
+
+// Функция проверки наличия расхождения у товара
+function hasDiscrepancy(item) {
+  const diff = (item.actual_quantity || 0) - (item.calculated_quantity || 0)
+  return diff !== 0
+}
+
+// Функция для просмотра полного фото
+function viewFullPhoto(photoUrl) {
+  window.open(photoUrl, '_blank')
+}
+
+// Функция для показа модального окна с комментарием
+function showCommentModal(comment) {
+  currentComment.value = comment
+  showCommentDialogVisible.value = true
+}
+
+// Функция для закрытия модального окна комментария
+function closeCommentDialog() {
+  showCommentDialogVisible.value = false
+  currentComment.value = ''
 }
 
 function getDifferenceClass(item) {

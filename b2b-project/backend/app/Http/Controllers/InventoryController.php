@@ -269,6 +269,11 @@ class InventoryController extends Controller
                 } else {
                     $item->excess_shortage = 'normal';
                 }
+                
+                // Обрабатываем фото и комментарии
+                // Убеждаемся что поля доступны во фронтенде
+                $item->photo = $item->photo ?? null;
+                $item->notes = $item->notes ?? null;
             });
             
             // Обрабатываем файлы
@@ -431,10 +436,15 @@ class InventoryController extends Controller
                     $item->excess_shortage = 'shortage';
                 } else {
                     $item->excess_shortage = 'normal';
-                }
+                                }
+                
+                // Обрабатываем фото и комментарии
+                // Убеждаемся что поля доступны во фронтенде
+                $item->photo = $item->photo ?? null;
+                $item->notes = $item->notes ?? null;
             });
             
-            // Обрабатываем файлы
+            // Обрабатываем файлы  
             $inventory->files->each(function ($file) {
                 if ($file->file_path) {
                     if (str_starts_with($file->file_path, 'http')) {

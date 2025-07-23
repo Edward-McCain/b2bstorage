@@ -254,7 +254,7 @@
                         <!-- Dropdown для действий с фото -->
                         <div 
                           v-if="photoDropdownOpen === index"
-                          class="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 w-40"
+                          class="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 w-40" style="margin-left: -100px;"
                         >
                           <button 
                             type="button"
