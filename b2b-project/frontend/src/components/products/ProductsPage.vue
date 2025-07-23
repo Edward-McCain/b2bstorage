@@ -1251,7 +1251,7 @@ async function handleFileUpload(event) {
     const headers = jsonData[0]
     
     // Проверяем обязательные колонки
-    const requiredColumns = ['Название', 'Начальный остаток', 'Стоимость']
+    const requiredColumns = ['Название', 'Стоимость']
     const missingColumns = requiredColumns.filter(col => !headers.includes(col))
     
     if (missingColumns.length > 0) {
@@ -1270,7 +1270,7 @@ async function handleFileUpload(event) {
       })
       
       // Проверяем обязательные поля
-      if (!product['Название'] || !product['Начальный остаток'] || !product['Стоимость']) {
+      if (!product['Название'] || !product['Стоимость']) {
         continue // Пропускаем строки без обязательных полей
       }
       
@@ -1286,7 +1286,11 @@ async function handleFileUpload(event) {
         code: product['Код']?.toString() || '',
         external_code: product['Внешний код']?.toString() || '',
         unit: product['Единица измерения']?.toString() || product['Ед. изм.']?.toString() || product['Единица']?.toString() || '',
-                    start_count: product['Начальный остаток'] ? parseInt(product['Начальный остаток']) : 0,
+                    start_count: (product['Начальный остаток'] !== undefined && product['Начальный остаток'] !== '')
+                        ? parseInt(product['Начальный остаток'])
+                        : (product['Количество'] !== undefined && product['Количество'] !== '')
+                            ? parseInt(product['Количество'])
+                            : 0,
         price: product['Стоимость'] ? parseFloat(product['Стоимость']) : 0,
         weight: product['Вес (кг)'] ? parseFloat(product['Вес (кг)']) : null,
         volume: product['Объем (л)'] ? parseFloat(product['Объем (л)']) : null,
