@@ -178,7 +178,7 @@
                   <div class="flex items-center gap-2">
                     <div class="flex-1">
                       <div class="font-medium">{{ product.name }}</div>
-                      <div class="text-xs text-gray-500">{{ product.supplier || 'N/A' }}</div>
+                      <!-- <div class="text-xs text-gray-500">{{ product.supplier || 'N/A' }}</div> -->
                       <!-- Индикаторы фото и комментария -->
                       <div v-if="hasDiscrepancy(product) && (product.tempPhoto || product.tempNotes)" class="flex items-center gap-1 mt-1">
                         <span v-if="product.tempPhoto" class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs bg-blue-100 text-blue-700">
@@ -264,14 +264,14 @@
                     </div>
                     <button 
                       @click="handleCommentEdit(product, index)" 
-                      :disabled="!hasDiscrepancy(product)"
+                      :disabled="!hasDiscrepancy(product) && !product.tempNotes"
                       :class="[
                         'p-1 rounded transition-colors',
-                        hasDiscrepancy(product) 
+                        (hasDiscrepancy(product) || product.tempNotes)
                           ? (product.tempNotes ? 'text-green-800 bg-green-100 hover:bg-green-200' : 'text-green-600 hover:text-green-800 hover:bg-green-50') + ' cursor-pointer'
                           : 'text-gray-300 cursor-not-allowed'
                       ]"
-                      :title="hasDiscrepancy(product) ? (product.tempNotes ? 'Редактировать комментарий' : 'Добавить комментарий') : 'Доступно только при расхождениях'"
+                      :title="(hasDiscrepancy(product) || product.tempNotes) ? (product.tempNotes ? 'Редактировать комментарий' : 'Добавить комментарий') : 'Доступно только при расхождениях'"
                     >
                       <MessageSquare class="w-4 h-4" />
                     </button>
@@ -328,6 +328,7 @@
       :initial-comment="currentProduct?.tempNotes || ''"
       @close="handleCommentModalClose"
       @save="handleCommentSave"
+      @delete="handleCommentDelete"
     />
   </div>
 </template>
@@ -523,7 +524,8 @@ function hasDiscrepancy(product) {
 
 // Функция для редактирования комментария товара
 function handleCommentEdit(product, index) {
-  if (!hasDiscrepancy(product)) return
+  // Разрешаем редактирование если есть расхождения ИЛИ уже есть комментарий
+  if (!hasDiscrepancy(product) && !product.tempNotes) return
   
   currentProduct.value = product
   currentProductIndex.value = index
@@ -543,6 +545,16 @@ function handleCommentSave(comment) {
     // Сохраняем комментарий во временном хранилище
     currentProduct.value.tempNotes = comment
     toastr.success('Комментарий сохранен')
+  }
+  handleCommentModalClose()
+}
+
+// Функция для удаления комментария
+function handleCommentDelete() {
+  if (currentProduct.value) {
+    // Удаляем комментарий из временного хранилища
+    currentProduct.value.tempNotes = ''
+    toastr.success('Комментарий удален')
   }
   handleCommentModalClose()
 }

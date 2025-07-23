@@ -279,14 +279,14 @@
                     </div>
                     <button 
                       @click="handleCommentEdit(position, index)" 
-                      :disabled="!hasDiscrepancy(position)"
+                      :disabled="!hasDiscrepancy(position) && !position.tempNotes && !position.notes"
                       :class="[
                         'p-1 rounded transition-colors',
-                        hasDiscrepancy(position) 
+                        (hasDiscrepancy(position) || position.tempNotes || position.notes)
                           ? ((position.tempNotes || position.notes) ? 'text-green-800 bg-green-100 hover:bg-green-200' : 'text-green-600 hover:text-green-800 hover:bg-green-50') + ' cursor-pointer'
                           : 'text-gray-300 cursor-not-allowed'
                       ]"
-                      :title="hasDiscrepancy(position) ? ((position.tempNotes || position.notes) ? 'Редактировать комментарий' : 'Добавить комментарий') : 'Доступно только при расхождениях'"
+                      :title="(hasDiscrepancy(position) || position.tempNotes || position.notes) ? ((position.tempNotes || position.notes) ? 'Редактировать комментарий' : 'Добавить комментарий') : 'Доступно только при расхождениях'"
                     >
                       <MessageSquare class="w-4 h-4" />
                     </button>
@@ -337,6 +337,7 @@
       :initial-comment="currentPosition?.tempNotes || currentPosition?.notes || ''"
       @close="handleCommentModalClose"
       @save="handleCommentSave"
+      @delete="handleCommentDelete"
     />
   </div>
 </template>
@@ -603,7 +604,8 @@ function hasDiscrepancy(position) {
 
 // Функция для редактирования комментария позиции
 function handleCommentEdit(position, index) {
-  if (!hasDiscrepancy(position)) return
+  // Разрешаем редактирование если есть расхождения ИЛИ уже есть комментарий
+  if (!hasDiscrepancy(position) && !position.tempNotes && !position.notes) return
   
   currentPosition.value = position
   currentPositionIndex.value = index
@@ -623,6 +625,16 @@ function handleCommentSave(comment) {
     // Сохраняем комментарий во временном хранилище
     currentPosition.value.tempNotes = comment
     toastr.success('Комментарий сохранен')
+  }
+  handleCommentModalClose()
+}
+
+// Функция для удаления комментария
+function handleCommentDelete() {
+  if (currentPosition.value) {
+    // Удаляем комментарий из временного хранилища
+    currentPosition.value.tempNotes = ''
+    toastr.success('Комментарий удален')
   }
   handleCommentModalClose()
 }
