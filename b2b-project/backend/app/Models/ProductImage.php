@@ -12,4 +12,12 @@ class ProductImage extends Model
     protected $fillable = [
         'product_id', 'image_url', 'alt_text'
     ];
+    
+    /**
+     * Получить товар, к которому принадлежит изображение
+     */
+    public function product()
+    {
+        return $this->belongsTo(\App\Models\ProductSklad::class, 'product_id');
+    }
 } 

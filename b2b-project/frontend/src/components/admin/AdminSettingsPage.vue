@@ -323,7 +323,7 @@ const activeSection = ref('general')
 const settings = ref({
   siteName: 'B2B Storage',
   siteDescription: 'Система управления складом и товарами',
-  defaultCurrency: 'RUB',
+  defaultCurrency: 'UZS',
   defaultTimezone: 'UTC+5',
   sessionTimeout: 30,
   maxLoginAttempts: 5,

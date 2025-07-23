@@ -11,7 +11,21 @@ class ProductSklad extends Model
     use HasFactory;
     protected $table = 'products_sklad';
     protected $fillable = [
-        'user_id', 'name', 'description', 'category', 'subcategory', 'country', 'supplier', 'article', 'code', 'external_code', 'unit', 'warehouse_id', 'weight', 'volume', 'vat', 'min_stock', 'stock_type', 'packing', 'accounting_type', 'traceable', 'marking', 'product_type', 'barcode_type', 'barcode', 'cash_register_tax', 'cash_register_type'
+        'user_id', 'name', 'description', 'category', 'subcategory', 'country', 'supplier', 'article', 'code', 'external_code', 'unit', 'warehouse_id', 'weight', 'volume', 'vat', 'min_stock', 'stock_type', 'packing', 'accounting_type', 'traceable', 'marking', 'product_type', 'barcode_type', 'barcode', 'cash_register_tax', 'cash_register_type', 'start_count', 'price'
+    ];
+
+    /**
+     * Атрибуты, которые должны быть приведены к определенным типам
+     */
+    protected $casts = [
+        'start_count' => 'integer',
+        'price' => 'decimal:2',
+        'weight' => 'decimal:3',
+        'volume' => 'decimal:3',
+        'min_stock' => 'decimal:3',
+        'traceable' => 'boolean',
+        'warehouse_id' => 'integer',
+        'user_id' => 'integer'
     ];
 
     /**
@@ -92,5 +106,13 @@ class ProductSklad extends Model
     public function receiptPositions()
     {
         return $this->hasMany(ReceiptPosition::class, 'product_id');
+    }
+
+    /**
+     * Связь с остатками на складах
+     */
+    public function balances()
+    {
+        return $this->hasMany(ProductBalance::class, 'product_id');
     }
 } 

@@ -431,7 +431,7 @@
     </div>
 
     <!-- Модалка закрытия -->
-    <div v-if="showCloseModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+    <div v-if="showCloseModal" class="fixed inset-0 z-50 flex items-center justify-center bg-white/90">
       <div class="bg-white rounded-lg shadow-2xl p-8 max-w-sm w-full text-sm">
         <div class="text-base font-semibold mb-4">Выйти без сохранения?</div>
         <div class="mb-6 text-gray-600">Изменения не будут сохранены. Вы уверены, что хотите выйти?</div>
@@ -600,14 +600,14 @@ async function handleImageUpload(event) {
 }
 
 async function handleDeleteImage(imgId) {
-  try {
-    const response = await apiRequest(`/products/images/${imgId}`, { method: 'DELETE' })
-    if (response.ok) {
-      images.value = images.value.filter(img => img.id !== imgId)
-    }
-  } catch (e) {
-    console.error('Error deleting image:', e)
-  }
+  console.log('handleDeleteImage called in ProductEditPage with ID:', imgId)
+  console.log('Images array before deletion:', images.value.map(img => img.id))
+  
+  // Удаляем изображение из массива (API запрос уже выполнен в ImageDropzone)
+  images.value = images.value.filter(img => img.id !== imgId)
+  
+  console.log('Images array after deletion:', images.value.map(img => img.id))
+  console.log('Image removed from parent component array:', imgId)
 }
 
 

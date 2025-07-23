@@ -55,7 +55,19 @@ class ProductController extends Controller
             'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:8192',
             'alt_text' => 'nullable|string|max:255',
         ]);
-        $product = ProductSklad::findOrFail($id);
+        
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['error' => 'Пользователь не авторизован'], 401);
+        }
+        
+        $product = ProductSklad::where('id', $id)
+            ->where('user_id', $user->id)
+            ->first();
+            
+        if (!$product) {
+            return response()->json(['error' => 'Товар не найден или доступ запрещен'], 404);
+        }
         $file = $request->file('image');
         $filename = uniqid('product_', true) . '.webp';
         $path = 'uploads/products/' . $filename;
@@ -80,7 +92,12 @@ class ProductController extends Controller
             'image_url' => $path,
             'alt_text' => $request->alt_text ?? '',
         ]);
-        return response()->json(['image' => $img], 201);
+        
+        // Преобразуем URL изображения в полный URL
+        $images = collect([$img]);
+        $transformedImages = $this->transformImageUrls($images);
+        
+        return response()->json(['image' => $transformedImages->first()], 201);
     }
 
     /**
@@ -134,7 +151,7 @@ class ProductController extends Controller
             'code' => 'nullable|string|max:255',
             'external_code' => 'nullable|string|max:255',
             'unit' => 'nullable|string|max:255',
-            'quantity' => 'required|numeric|min:0',
+            'start_count' => 'required|integer|min:0',
             'price' => 'nullable|numeric|min:0',
             'weight' => 'nullable|numeric',
             'volume' => 'nullable|numeric',
@@ -147,6 +164,7 @@ class ProductController extends Controller
             'barcode' => 'nullable|string|max:255',
             'cash_register_tax' => 'nullable|string|max:255',
             'cash_register_type' => 'nullable|string|max:255',
+            'warehouse_id' => 'required|integer',
         ]);
 
         // Обновляем товар
@@ -172,83 +190,31 @@ class ProductController extends Controller
             'barcode' => $request->barcode,
             'cash_register_tax' => $request->cash_register_tax,
             'cash_register_type' => $request->cash_register_type,
-            'quantity' => $request->quantity,
+            'start_count' => $request->start_count,
             'price' => $request->price,
+            'warehouse_id' => $request->warehouse_id,
         ]);
 
-        // Если изменились количество или цена, обновляем последнюю запись в receipt_positions
-        $latestReceiptPosition = \App\Models\ReceiptPosition::where('product_id', $id)
-            ->orderBy('created_at', 'desc')
-            ->first();
-
-        if ($latestReceiptPosition) {
-            $updated = false;
-            
-            // Обновляем количество, если оно изменилось
-            if ($latestReceiptPosition->quantity != $request->quantity) {
-                $latestReceiptPosition->quantity = $request->quantity;
-                $updated = true;
-            }
-            
-            // Обновляем цену, если она изменилась
-            if ($latestReceiptPosition->price != $request->price) {
-                $latestReceiptPosition->price = $request->price;
-                $updated = true;
-            }
-            
-            // Пересчитываем сумму
-            if ($updated) {
-                $latestReceiptPosition->amount = $request->quantity * $request->price;
-                $latestReceiptPosition->save();
-            }
-        }
-
-        // Создаем автоматическое оприходование
+        // Обновляем остатки товара на основе начального остатка
         try {
-            $receipt = \App\Models\Receipt::create([
-                'number' => 'AUTO-' . time(),
-                'date' => now(),
-                'status' => 'posted',
-                'is_posted' => true,
-                'organization' => 'Автоматическое оприходование',
-                'warehouse' => $request->warehouse_id,
-                'user_id' => $user->id,
-                'created_by' => $user->user_name ?? $user->first_name ?? 'System'
-            ]);
+            ProductBalance::updateOrCreate(
+                [
+                    'product_id' => $product->id,
+                    'warehouse_id' => $request->warehouse_id
+                ],
+                [
+                    'quantity' => $request->start_count
+                ]
+            );
 
-            // Создаем позицию оприходования
-            $price = $request->price ?? 0;
-            $amount = $price * $request->quantity;
-            
-            \App\Models\ReceiptPosition::create([
-                'receipt_id' => $receipt->id,
+            Log::info('Остатки товара обновлены', [
                 'product_id' => $product->id,
-                'name' => $product->name,
-                'article' => $product->article,
-                'code' => $product->code,
-                'quantity' => $request->quantity,
-                'price' => $price,
-                'amount' => $amount,
-                'balance' => $request->quantity
-            ]);
-
-            // Обновляем общую сумму оприходования
-            $receipt->update(['total' => $amount]);
-
-            Log::info('Автоматическое оприходование создано', [
-                'product_id' => $product->id,
-                'receipt_id' => $receipt->id,
-                'quantity' => $request->quantity,
                 'warehouse_id' => $request->warehouse_id,
-                'price' => $price,
-                'amount' => $amount
+                'start_count' => $request->start_count
             ]);
-
-            // Обновляем остатки товаров при проведении оприходования
-            $this->updateProductBalances($receipt);
 
         } catch (\Exception $e) {
-            Log::error('Ошибка создания автоматического оприходования', [
+            Log::error('Ошибка обновления остатков товара', [
                 'product_id' => $product->id,
                 'error' => $e->getMessage()
             ]);
@@ -268,7 +234,21 @@ class ProductController extends Controller
      */
     public function deleteImage($id)
     {
-        $image = ProductImage::findOrFail($id);
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['error' => 'Пользователь не авторизован'], 401);
+        }
+        
+        $image = ProductImage::with('product')
+            ->whereHas('product', function($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })
+            ->find($id);
+            
+        if (!$image) {
+            return response()->json(['error' => 'Изображение не найдено или доступ запрещен'], 404);
+        }
+        
         // Удалить файл
         if ($image->image_url && Storage::disk('public')->exists($image->image_url)) {
             Storage::disk('public')->delete($image->image_url);
@@ -316,9 +296,11 @@ class ProductController extends Controller
                 },
                 'categoryRelation',
                 'subcategoryRelation',
-                'warehouse',
-                'receiptPositions'
-            ]);
+                'warehouse'
+            ])
+            ->leftJoin('product_balances', 'products_sklad.id', '=', 'product_balances.product_id')
+            ->selectRaw('products_sklad.*, COALESCE(SUM(product_balances.quantity), 0) as total_quantity')
+            ->groupBy('products_sklad.id');
 
         // Поиск по названию, коду, артикулу
         if ($search) {
@@ -346,9 +328,7 @@ class ProductController extends Controller
 
         // Фильтрация по количеству
         if ($request->has('quantity') && $request->quantity) {
-            $query->whereHas('receiptPositions', function($q) use ($request) {
-                $q->where('quantity', $request->quantity);
-            });
+            $query->havingRaw('COALESCE(SUM(product_balances.quantity), 0) = ?', [$request->quantity]);
         }
 
         // Фильтрация по артикулу
@@ -422,15 +402,11 @@ class ProductController extends Controller
             // Добавляем название склада
             $product->warehouse_name = $product->warehouse ? $product->warehouse->name : null;
             
-            // Получаем последние данные из receipt_positions для количества и цены
-            $latestReceiptPosition = \App\Models\ReceiptPosition::where('product_id', $product->id)
-                ->orderBy('created_at', 'desc')
-                ->first();
+            // Количество уже получено из JOIN запроса
+            $product->quantity = (float) $product->total_quantity;
             
-            if ($latestReceiptPosition) {
-                $product->quantity = (float) $latestReceiptPosition->quantity;
-                $product->price = (float) $latestReceiptPosition->price;
-            }
+            // Берем цену из самого товара
+            $product->price = (float) ($product->price ?? 0);
             
             return $product;
         });
@@ -458,33 +434,25 @@ class ProductController extends Controller
             ->where('user_id', $user->id)
             ->with(['images' => function($query) {
                 $query->orderBy('created_at', 'asc');
-            }, 'categoryRelation', 'subcategoryRelation', 'warehouse'])
+            }, 'categoryRelation', 'subcategoryRelation', 'warehouse', 'balances.warehouse'])
             ->first();
 
         if (!$product) {
             return response()->json(['error' => 'Товар не найден'], 404);
         }
 
-        // Получаем последние данные из receipt_positions для этого товара
-        $latestReceiptPosition = \App\Models\ReceiptPosition::where('product_id', $id)
-            ->orderBy('created_at', 'desc')
-            ->first();
-
-        // Если есть данные из receipt_positions, используем их для дополнения информации о товаре
-        if ($latestReceiptPosition) {
-            // Дополняем данные товара информацией из последней позиции оприходования
-            $product->latest_quantity = $latestReceiptPosition->quantity;
-            $product->latest_price = $latestReceiptPosition->price;
-            $product->latest_amount = $latestReceiptPosition->amount;
-            $product->latest_balance = $latestReceiptPosition->balance;
-            $product->latest_code = $latestReceiptPosition->code;
-            $product->latest_article = $latestReceiptPosition->article;
-            $product->latest_barcode = $latestReceiptPosition->barcode;
-            $product->latest_country = $latestReceiptPosition->country;
-            $product->latest_gtd = $latestReceiptPosition->gtd;
-            $product->latest_rnpt = $latestReceiptPosition->rnpt;
-            $product->latest_reason = $latestReceiptPosition->reason;
-        }
+        // Получаем суммарное количество товара со всех складов из product_balances
+        $totalQuantity = $product->balances->sum('quantity');
+        $product->current_quantity = (float) $totalQuantity;
+        
+        // Получаем детализацию по складам
+        $product->warehouse_balances = $product->balances->map(function($balance) {
+            return [
+                'warehouse_id' => $balance->warehouse_id,
+                'quantity' => (float) $balance->quantity,
+                'warehouse_name' => $balance->warehouse ? $balance->warehouse->name : null
+            ];
+        });
 
         // Преобразуем URL изображений и добавляем названия категорий
         if ($product->images && $product->images->count() > 0) {
@@ -602,7 +570,7 @@ class ProductController extends Controller
 
         DB::beginTransaction();
         try {
-            // 1. Массовое создание товаров
+            // 1. Массовое создание товаров с начальными остатками
             $createdProducts = [];
             foreach ($products as $prod) {
                 $product = \App\Models\ProductSklad::create([
@@ -628,6 +596,7 @@ class ProductController extends Controller
                     'barcode' => $prod['barcode'] ?? null,
                     'cash_register_tax' => $prod['cash_register_tax'] ?? null,
                     'cash_register_type' => $prod['cash_register_type'] ?? null,
+                    'start_count' => $prod['start_count'] ?? 0, // Используем start_count вместо quantity
                 ]);
                 $createdProducts[] = [
                     'model' => $product,
@@ -635,43 +604,7 @@ class ProductController extends Controller
                 ];
             }
 
-            // 2. Создать приход (receipts)
-            $receipt = \App\Models\Receipt::create([
-                'number' => now()->format('Y-m-d_H:i:s'),
-                'date' => now(),
-                'warehouse' => $warehouseId,
-                'user_id' => $user->id,
-                'status' => 'posted',
-                'is_posted' => true,
-                'created_by' => $user->id,
-                'organization' => $user->organization ?? '',
-            ]);
-
-            // 3. Массовое создание позиций прихода
-            $totalAmount = 0;
-            foreach ($createdProducts as $item) {
-                $quantity = $item['input']['quantity'] ?? 0;
-                $price = $item['input']['price'] ?? 0;
-                $amount = $quantity * $price;
-                $totalAmount += $amount;
-
-                \App\Models\ReceiptPosition::create([
-                    'receipt_id' => $receipt->id,
-                    'product_id' => $item['model']->id,
-                    'name' => $item['model']->name,
-                    'quantity' => $quantity,
-                    'price' => $price,
-                    'amount' => $amount,
-                    'article' => $item['model']->article,
-                    'code' => $item['model']->code,
-                    'barcode' => $item['model']->barcode,
-                    'country' => $item['model']->country,
-                ]);
-            }
-            // 4. Обновить total в receipt
-            $receipt->update(['total' => $totalAmount]);
-
-            // 4. Массовое создание/обновление остатков
+            // 2. Массовое создание/обновление остатков на основе начальных остатков
             foreach ($createdProducts as $item) {
                 \App\Models\ProductBalance::updateOrCreate(
                     [
@@ -679,13 +612,13 @@ class ProductController extends Controller
                         'warehouse_id' => $warehouseId
                     ],
                     [
-                        'quantity' => $item['input']['quantity'] ?? 0
+                        'quantity' => $item['input']['start_count'] ?? 0 // Используем start_count
                     ]
                 );
             }
 
             DB::commit();
-            return response()->json(['success' => true, 'receipt_id' => $receipt->id]);
+            return response()->json(['success' => true, 'created_products_count' => count($createdProducts)]);
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json(['success' => false, 'error' => $e->getMessage()], 500);

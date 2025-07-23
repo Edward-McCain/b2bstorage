@@ -5,7 +5,7 @@
       <div class="flex flex-col gap-3 sm:inline-flex sm:flex-row sm:items-center w-full">
         <input v-model="product.name" @blur="handleNameBlur" type="text" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" placeholder="Наименование товара *" />
         <div class="flex gap-2 mt-3 sm:mt-0">
-          <button @click="handleSave" :disabled="!product.name || !selectedCategory || !selectedSubcategory || !selectedWarehouse || !product.unit || !product.quantity || !productId || isSavingDraft || isSavingProduct" class="bg-lime-500 hover:bg-lime-600 text-white font-semibold px-6 py-2 rounded-lg shadow transition text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+          <button @click="handleSave" :disabled="!product.name || !selectedCategory || !selectedSubcategory || !selectedWarehouse || !product.unit || !product.start_count || !productId || isSavingDraft || isSavingProduct" class="bg-lime-500 hover:bg-lime-600 text-white font-semibold px-6 py-2 rounded-lg shadow transition text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
             <svg v-if="isSavingDraft || isSavingProduct" class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
@@ -142,8 +142,8 @@
           <!-- Количество единиц товара, единица измерения и стоимость -->
           <div class="flex gap-2">
             <div class="flex-1">
-              <label class="block text-xs text-gray-700 mb-1">Количество единиц товара <span class="text-red-500">*</span></label>
-              <input v-model="product.quantity" type="number" min="0" step="1" placeholder="0" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" />
+              <label class="block text-xs text-gray-700 mb-1">Начальный остаток <span class="text-red-500">*</span></label>
+              <input v-model.number="product.start_count" type="number" min="0" step="1" placeholder="0" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" />
             </div>
             <div class="flex-1">
               <label class="block text-xs text-gray-700 mb-1">Ед-ца измерения <span class="text-red-500">*</span></label>
@@ -499,7 +499,7 @@ const product = reactive({
   barcode: '',
   cash_register_tax: '',
   cash_register_type: '',
-  quantity: null,
+  start_count: null,
   warehouse: null,
   price: null
 })
@@ -615,12 +615,14 @@ async function handleImageUpload(event) {
 }
 
 async function handleDeleteImage(imgId) {
-  try {
-    const response = await apiRequest(`/products/images/${imgId}`, { method: 'DELETE' })
-    if (response.ok) {
-      images.value = images.value.filter(img => img.id !== imgId)
-    }
-  } catch (e) {}
+  console.log('handleDeleteImage called in ProductCreatePage with ID:', imgId)
+  console.log('Images array before deletion:', images.value.map(img => img.id))
+  
+  // Удаляем изображение из массива (API запрос уже выполнен в ImageDropzone)
+  images.value = images.value.filter(img => img.id !== imgId)
+  
+  console.log('Images array after deletion:', images.value.map(img => img.id))
+  console.log('Image removed from parent component array:', imgId)
 }
 
 
@@ -776,8 +778,8 @@ watch(() => product.cash_register_type, () => {
   if (product.cash_register_type) hasUnsavedChanges.value = true
 })
 
-watch(() => product.quantity, () => {
-  if (product.quantity) hasUnsavedChanges.value = true
+watch(() => product.start_count, () => {
+  if (product.start_count) hasUnsavedChanges.value = true
 })
 
 watch(() => product.warehouse, () => {
@@ -874,7 +876,7 @@ async function handleSave() {
       barcode: product.barcode,
       cash_register_tax: product.cash_register_tax,
       cash_register_type: product.cash_register_type,
-      quantity: product.quantity,
+      start_count: product.start_count,
       warehouse_id: selectedWarehouse.value?.value || product.warehouse,
       price: product.price
     }

@@ -115,7 +115,7 @@
                   <th class="px-4 py-3 font-semibold text-left text-gray-900">Код</th>
                   <th class="px-4 py-3 font-semibold text-left text-gray-900">Артикул</th>
                   <th class="px-4 py-3 font-semibold text-left text-gray-900">Категория</th>
-                  <th class="px-4 py-3 font-semibold text-left text-gray-900">Количество</th>
+                  <th class="px-4 py-3 font-semibold text-left text-gray-900">Остаток</th>
                   <th class="px-4 py-3 font-semibold text-left text-gray-900">Действия</th>
                 </tr>
               </thead>
@@ -345,8 +345,8 @@
               />
             </div>
             <div>
-              <label class="block text-xs text-gray-700 mb-1">Количество</label>
-              <input v-model="filter.quantity" type="number" step="0.001" placeholder="Количество" class="border rounded px-3 py-2 text-sm w-full" />
+                              <label class="block text-xs text-gray-700 mb-1">Остаток</label>
+                <input v-model="filter.quantity" type="number" step="0.001" placeholder="Остаток" class="border rounded px-3 py-2 text-sm w-full" />
             </div>
             <div>
               <label class="block text-xs text-gray-700 mb-1">Артикул</label>
@@ -555,7 +555,7 @@
             </div>
             <p class="text-sm text-gray-500">Поддерживаются файлы .xlsx и .xls</p>
             <div class="text-xs text-gray-600 mt-4 space-y-2">
-              <p><strong>Обязательные поля:</strong> Наименование, Количество, Стоимость</p>
+              <p><strong>Обязательные поля:</strong> Наименование, Начальный остаток, Стоимость</p>
               <p><strong>Дополнительные поля:</strong> Категория, Подкатегория, Артикул, Единица измерения.</p>
               <p class="text-gray-500">Поддерживаемые названия колонок:</p>
               <p class="text-gray-500 text-xs">• Категория: "Категория", "Категория товара"</p>
@@ -673,8 +673,8 @@
                   <td class="px-3 py-2 text-sm text-gray-900">
                     <div class="space-y-2">
                       <div>
-                        <label class="block text-xs text-gray-600 mb-1">Количество</label>
-                        <input v-model="product.quantity" type="number" step="0.001" class="w-full text-sm border border-gray-300 rounded px-2 py-1" placeholder="Количество" />
+                        <label class="block text-xs text-gray-600 mb-1">Начальный остаток</label>
+                        <input v-model.number="product.start_count" type="number" step="1" min="0" class="w-full text-sm border border-gray-300 rounded px-2 py-1" placeholder="Начальный остаток" />
                       </div>
                       <div>
                         <label class="block text-xs text-gray-600 mb-1">Единица измерения</label>
@@ -1251,7 +1251,7 @@ async function handleFileUpload(event) {
     const headers = jsonData[0]
     
     // Проверяем обязательные колонки
-    const requiredColumns = ['Название', 'Количество', 'Стоимость']
+    const requiredColumns = ['Название', 'Начальный остаток', 'Стоимость']
     const missingColumns = requiredColumns.filter(col => !headers.includes(col))
     
     if (missingColumns.length > 0) {
@@ -1270,7 +1270,7 @@ async function handleFileUpload(event) {
       })
       
       // Проверяем обязательные поля
-      if (!product['Название'] || !product['Количество'] || !product['Стоимость']) {
+      if (!product['Название'] || !product['Начальный остаток'] || !product['Стоимость']) {
         continue // Пропускаем строки без обязательных полей
       }
       
@@ -1286,7 +1286,7 @@ async function handleFileUpload(event) {
         code: product['Код']?.toString() || '',
         external_code: product['Внешний код']?.toString() || '',
         unit: product['Единица измерения']?.toString() || product['Ед. изм.']?.toString() || product['Единица']?.toString() || '',
-        quantity: product['Количество'] ? parseFloat(product['Количество']) : 0,
+                    start_count: product['Начальный остаток'] ? parseInt(product['Начальный остаток']) : 0,
         price: product['Стоимость'] ? parseFloat(product['Стоимость']) : 0,
         weight: product['Вес (кг)'] ? parseFloat(product['Вес (кг)']) : null,
         volume: product['Объем (л)'] ? parseFloat(product['Объем (л)']) : null,
@@ -1464,7 +1464,7 @@ async function saveImportedProducts() {
           barcode: product.barcode,
           cash_register_tax: product.cash_register_tax,
           cash_register_type: product.cash_register_type,
-          quantity: product.quantity,
+          start_count: product.start_count,
           price: product.price,
         }))
       })
@@ -1520,7 +1520,7 @@ async function exportProducts() {
       
       // Подготавливаем данные для экспорта (только обязательные поля)
       const exportData = allProducts.map(product => {
-        // Форматируем количество - убираем лишние нули после запятой
+        // Форматируем остаток - убираем лишние нули после запятой
         const formatQuantity = (qty) => {
           if (qty === null || qty === undefined || qty === '') return '-'
           const num = parseFloat(qty)
@@ -1539,9 +1539,9 @@ async function exportProducts() {
           'Категория': product.category_name || product.category || '-',
           'Подкатегория': product.subcategory_name || product.subcategory || '-',
           'Склад': product.warehouse_name || product.warehouse || '-',
-          'Количество': formatQuantity(product.quantity || product.latest_quantity),
+          'Остаток': formatQuantity(product.quantity),
           'Единица измерения': product.unit || '-',
-          'Стоимость': formatPrice(product.price || product.latest_price),
+                      'Стоимость': formatPrice(product.price),
           'Артикул': product.article || '-'
         }
       })
@@ -1556,7 +1556,7 @@ async function exportProducts() {
         { wch: 20 }, // Категория
         { wch: 20 }, // Подкатегория
         { wch: 15 }, // Склад
-        { wch: 12 }, // Количество
+        { wch: 12 }, // Остаток
         { wch: 15 }, // Единица измерения
         { wch: 12 }, // Стоимость
         { wch: 15 }  // Артикул

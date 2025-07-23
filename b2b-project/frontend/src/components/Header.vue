@@ -978,7 +978,7 @@ const updateUserData = async () => {
             <div class="px-4 py-2">
               <h3 class="text-sm font-semibold text-gray-900 mb-2">Валюта</h3>
               <CurrencySelector 
-                :current-currency="user?.currency || 'USD'"
+                :current-currency="user?.currency || 'UZS'"
                 @currency-changed="handleCurrencyChanged"
               />
             </div>

@@ -475,7 +475,7 @@ const personalData = reactive({
   country: null,
   city: '',
   timezone: null,
-  currency: 'USD'
+  currency: 'UZS'
 })
 
 const companyData = reactive({
@@ -737,7 +737,7 @@ const loadUserSettings = async () => {
       if (personal.currency) {
         personalData.currency = personal.currency
       } else {
-        personalData.currency = 'USD' // Устанавливаем по умолчанию, если не найдена
+        personalData.currency = 'UZS' // Устанавливаем по умолчанию, если не найдена
       }
       
       console.log('Заполненные личные данные:', {
@@ -1062,7 +1062,7 @@ onMounted(async () => {
 
   // Устанавливаем валюту по умолчанию, если не выбрана
   if (!personalData.currency) {
-    personalData.currency = 'USD'
+    personalData.currency = 'UZS'
   }
   
   // Автоматически определяем местоположение только если данные пустые

@@ -56,7 +56,7 @@ class AuthController extends Controller
                 'last_logged_in' => now()->toISOString(),
                 'language' => 'ru',
                 'messages_language' => 'ru',
-                'currency' => 'RUB',
+                'currency' => 'UZS',
                 'balance' => 0,
                 'ref_balance' => 0,
                 'demo_balance' => 0,
@@ -301,7 +301,7 @@ class AuthController extends Controller
             $path = 'uploads/avatars/' . $filename;
             
             // Save to storage
-            \Storage::disk('public')->put($path, $imageData);
+            Storage::disk('public')->put($path, $imageData);
             
             // Get public URL - используем относительный путь для универсальности
             $avatarUrl = '/storage/uploads/avatars/' . $filename;

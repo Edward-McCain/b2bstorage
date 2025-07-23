@@ -62,7 +62,7 @@
               />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Мин. количество</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Мин. остаток</label>
               <input
                 v-model.number="filters.min_quantity"
                 type="number"
@@ -71,7 +71,7 @@
               />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Макс. количество</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Макс. остаток</label>
               <input
                 v-model.number="filters.max_quantity"
                 type="number"
@@ -133,7 +133,7 @@
                   Склад
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Количество
+                  Остаток
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Цена

@@ -190,11 +190,8 @@ class AdminController extends Controller
             $productsWithData = collect($products->items())->map(function ($balance) {
                 $product = $balance->product;
                 
-                // Получаем цену товара из receipt_positions
-                $price = DB::table('receipt_positions')
-                    ->where('product_id', $product->id)
-                    ->orderBy('created_at', 'desc')
-                    ->value('price') ?? 0;
+                // Получаем цену товара из самого товара
+                $price = (float) ($product->price ?? 0);
                 
                 // Получаем изображение товара
                 $imageUrl = null;
@@ -323,11 +320,8 @@ class AdminController extends Controller
             $productsWithData = collect($products->items())->map(function ($balance) {
                 $product = $balance->product;
                 
-                // Получаем цену товара из receipt_positions
-                $price = DB::table('receipt_positions')
-                    ->where('product_id', $product->id)
-                    ->orderBy('created_at', 'desc')
-                    ->value('price') ?? 0;
+                // Получаем цену товара из самого товара
+                $price = (float) ($product->price ?? 0);
                 
                 // Получаем изображение товара
                 $imageUrl = null;
@@ -1561,19 +1555,21 @@ class AdminController extends Controller
             $perPage = $request->get('per_page', 15);
             $balances = $query->orderBy('quantity', 'desc')->paginate($perPage);
 
-            // Получаем цены из последних оприходований для каждого товара
+            // Получаем цены товаров
             $balances->getCollection()->transform(function ($balance) {
-                $lastReceiptPosition = DB::table('receipt_positions')
-                    ->where('product_id', $balance->product_id)
-                    ->whereNotNull('price')
-                    ->where('price', '>', 0)
-                    ->orderBy('created_at', 'desc')
-                    ->first();
-
-                if ($lastReceiptPosition) {
-                    $balance->product->price = $lastReceiptPosition->price;
+                // Сначала пытаемся получить цену из самого товара
+                if ($balance->product && $balance->product->price > 0) {
+                    $balance->product->price = (float) $balance->product->price;
                 } else {
-                    $balance->product->price = 0;
+                    // Если цены нет в товаре, проверяем последнее оприходование (для совместимости)
+                    $lastReceiptPosition = DB::table('receipt_positions')
+                        ->where('product_id', $balance->product_id)
+                        ->whereNotNull('price')
+                        ->where('price', '>', 0)
+                        ->orderBy('created_at', 'desc')
+                        ->first();
+
+                    $balance->product->price = $lastReceiptPosition ? (float) $lastReceiptPosition->price : 0;
                 }
 
                 // Преобразуем URL изображений

@@ -24,7 +24,7 @@ import { currencyService } from '../services/currency.js'
 const props = defineProps({
   currentCurrency: {
     type: String,
-    default: 'USD'
+    default: 'UZS'
   }
 })
 

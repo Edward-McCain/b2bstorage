@@ -445,17 +445,24 @@ class ProductBalanceController extends Controller
     }
 
     /**
-     * Получить последнюю цену товара из оприходований
+     * Получить цену товара
      */
     private function getProductPrice($productId)
     {
+        // Сначала пытаемся получить цену из самого товара
+        $product = \App\Models\ProductSklad::find($productId);
+        if ($product && $product->price > 0) {
+            return (float) $product->price;
+        }
+
+        // Если цены нет в товаре, проверяем последнее оприходование (для совместимости)
         $lastReceiptPosition = ReceiptPosition::where('product_id', $productId)
             ->whereNotNull('price')
             ->where('price', '>', 0)
             ->orderBy('created_at', 'desc')
             ->first();
 
-        return $lastReceiptPosition ? $lastReceiptPosition->price : 0;
+        return $lastReceiptPosition ? (float) $lastReceiptPosition->price : 0;
     }
 
     /**
