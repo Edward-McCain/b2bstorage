@@ -699,7 +699,12 @@ async function loadProduct() {
       product.barcode = productData.barcode || ''
       product.cash_register_tax = productData.cash_register_tax || ''
       product.cash_register_type = productData.cash_register_type || ''
-      product.quantity = productData.quantity || 0
+      // Приоритетно используем current_quantity, если он есть
+      if (productData.current_quantity !== undefined) {
+        product.quantity = productData.current_quantity
+      } else {
+        product.quantity = productData.quantity || 0
+      }
       product.price = productData.price || 0
       
       // Сохраняем данные из receipt_positions для отображения
@@ -715,10 +720,7 @@ async function loadProduct() {
         }
       }
       
-      // Используем данные из receipt_positions для количества и цены
-      if (productData.latest_quantity !== undefined) {
-        product.quantity = productData.latest_quantity
-      }
+      // Используем данные из receipt_positions для цены
       if (productData.latest_price !== undefined) {
         product.price = productData.latest_price
       }
