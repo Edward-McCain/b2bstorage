@@ -112,11 +112,13 @@ class InventoryController extends Controller
                 'description' => 'nullable|string',
                 'warehouse' => 'required|exists:warehouses,id',
                 'status' => 'required|in:draft,in_progress,completed,cancelled',
+                'auto_create_operations' => 'nullable|boolean',
                 'positions' => 'array',
                 'positions.*.product_id' => 'required|exists:products_sklad,id',
-                'positions.*.calculated_quantity' => 'required|numeric|min:0',
-                'positions.*.actual_quantity' => 'required|numeric|min:0',
+                'positions.*.calculated_quantity' => 'required|integer|min:0',
+                'positions.*.actual_quantity' => 'required|integer|min:0',
                 'positions.*.notes' => 'nullable|string',
+                'positions.*.photo' => 'nullable|string|max:500',
                 'inventory_files' => 'array',
                 'inventory_files.*.filename' => 'nullable|string|max:255',
                 'inventory_files.*.file_url' => 'nullable|string|max:500',
@@ -134,12 +136,18 @@ class InventoryController extends Controller
 
             DB::beginTransaction();
 
+            // Определяем статус инвентаризации
+            $status = $request->status;
+            if ($request->auto_create_operations === true) {
+                $status = 'completed'; // При автоматических операциях статус завершен
+            }
+
             // Создаем инвентаризацию
             $inventory = Inventory::create([
                 'name' => $request->name,
                 'description' => $request->description,
                 'warehouse_id' => $request->warehouse,
-                'status' => $request->status,
+                'status' => $status,
                 'created_by' => Auth::id(),
                 'notes' => $request->notes
             ]);
@@ -152,7 +160,8 @@ class InventoryController extends Controller
                         'product_id' => $position['product_id'],
                         'calculated_quantity' => $position['calculated_quantity'],
                         'actual_quantity' => $position['actual_quantity'],
-                        'notes' => $position['notes'] ?? null
+                        'notes' => $position['notes'] ?? null,
+                        'photo' => $position['photo'] ?? null
                     ]);
                 }
             }
@@ -169,6 +178,16 @@ class InventoryController extends Controller
                         'uploaded_by' => Auth::id(),
                     ]);
                 }
+            }
+
+            // Создаем автоматические операции если включено
+            if ($request->auto_create_operations) {
+                $this->createAutoOperations($inventory);
+            }
+
+            // Создаем автоматические операции если включено
+            if ($request->auto_create_operations) {
+                $this->createAutoOperations($inventory);
             }
 
             DB::commit();
@@ -287,11 +306,13 @@ class InventoryController extends Controller
                 'description' => 'nullable|string',
                 'warehouse' => 'required|exists:warehouses,id',
                 'status' => 'required|in:draft,in_progress,completed,cancelled',
+                'auto_create_operations' => 'nullable|boolean',
                 'positions' => 'array',
                 'positions.*.product_id' => 'required|exists:products_sklad,id',
-                'positions.*.calculated_quantity' => 'required|numeric|min:0',
-                'positions.*.actual_quantity' => 'required|numeric|min:0',
+                'positions.*.calculated_quantity' => 'required|integer|min:0',
+                'positions.*.actual_quantity' => 'required|integer|min:0',
                 'positions.*.notes' => 'nullable|string',
+                'positions.*.photo' => 'nullable|string|max:500',
                 'inventory_files' => 'array',
                 'inventory_files.*.filename' => 'nullable|string|max:255',
                 'inventory_files.*.file_url' => 'nullable|string|max:500',
@@ -309,12 +330,18 @@ class InventoryController extends Controller
 
             DB::beginTransaction();
 
+            // Определяем статус инвентаризации
+            $status = $request->status;
+            if ($request->auto_create_operations === true) {
+                $status = 'completed'; // При автоматических операциях статус завершен
+            }
+
             // Обновляем инвентаризацию
             $inventory->update([
                 'name' => $request->name,
                 'description' => $request->description,
                 'warehouse_id' => $request->warehouse,
-                'status' => $request->status,
+                'status' => $status,
                 'notes' => $request->notes
             ]);
 
@@ -330,7 +357,8 @@ class InventoryController extends Controller
                         'product_id' => $position['product_id'],
                         'calculated_quantity' => $position['calculated_quantity'],
                         'actual_quantity' => $position['actual_quantity'],
-                        'notes' => $position['notes'] ?? null
+                        'notes' => $position['notes'] ?? null,
+                        'photo' => $position['photo'] ?? null
                     ]);
                 }
             }
@@ -585,6 +613,244 @@ class InventoryController extends Controller
                 'success' => false,
                 'message' => 'Ошибка при экспорте: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * Создать автоматические операции по расхождениям инвентаризации
+     */
+    private function createAutoOperations(Inventory $inventory): void
+    {
+        // Загружаем товары с расчетом разниц
+        $inventory->load('items.product');
+        
+        $excessItems = [];
+        $shortageItems = [];
+        
+        foreach ($inventory->items as $item) {
+            $difference = $item->actual_quantity - $item->calculated_quantity;
+            
+            if ($difference > 0) {
+                $excessItems[] = $item;
+            } elseif ($difference < 0) {
+                $shortageItems[] = $item;
+            }
+        }
+        
+        // Создаем оприходование для избытков
+        if (!empty($excessItems)) {
+            $this->createReceiptForExcess($inventory, $excessItems);
+        }
+        
+        // Создаем списание для недостач
+        if (!empty($shortageItems)) {
+            $this->createWriteOffForShortage($inventory, $shortageItems);
+        }
+    }
+
+    /**
+     * Создать автоматическое оприходование для избытков
+     */
+    private function createReceiptForExcess(Inventory $inventory, array $excessItems): void
+    {
+        $receiptData = [
+            'number' => "ИНВ-ИЗБ-{$inventory->id}-" . date('dmY'),
+            'date' => now()->format('Y-m-d H:i:s'),
+            'organization' => 'Автоматическое оприходование по инвентаризации: ' . $inventory->name,
+            'project' => 'Инвентаризация',
+            'warehouse' => $inventory->warehouse_id,
+            'status' => 'posted',
+            'is_posted' => true,
+            'comment' => "Автоматическое оприходование по инвентаризации №{$inventory->id}",
+            'positions' => []
+        ];
+        
+        $totalAmount = 0;
+        
+        foreach ($excessItems as $item) {
+            $excessQuantity = $item->actual_quantity - $item->calculated_quantity;
+            $price = $item->product->price ?? 0;
+            $amount = $excessQuantity * $price;
+            $totalAmount += $amount;
+            
+            $receiptData['positions'][] = [
+                'product_id' => $item->product_id,
+                'name' => $item->product->name ?? '',
+                'article' => $item->product->article ?? '',
+                'quantity' => $excessQuantity,
+                'price' => $price,
+                'amount' => $amount,
+                'reason' => "Избыток по инвентаризации №{$inventory->id}"
+            ];
+        }
+        
+        // Создаем оприходование
+        $receipt = \App\Models\Receipt::create([
+            'number' => $receiptData['number'],
+            'date' => $receiptData['date'],
+            'status' => $receiptData['status'],
+            'is_posted' => $receiptData['is_posted'],
+            'organization' => $receiptData['organization'],
+            'project' => $receiptData['project'],
+            'warehouse' => $receiptData['warehouse'],
+            'comment' => $receiptData['comment'],
+            'total' => $totalAmount,
+            'user_id' => Auth::id(),
+            'created_by' => Auth::user()->first_name ?? 'Система'
+        ]);
+        
+        // Создаем позиции оприходования
+        foreach ($receiptData['positions'] as $position) {
+            \App\Models\ReceiptPosition::create([
+                'receipt_id' => $receipt->id,
+                'product_id' => $position['product_id'],
+                'name' => $position['name'],
+                'article' => $position['article'],
+                'quantity' => $position['quantity'],
+                'price' => $position['price'],
+                'amount' => $position['amount'],
+                'reason' => $position['reason']
+            ]);
+        }
+        
+        // Обновляем остатки товаров
+        $this->updateProductBalancesForReceipt($receipt);
+    }
+
+    /**
+     * Создать автоматическое списание для недостач
+     */
+    private function createWriteOffForShortage(Inventory $inventory, array $shortageItems): void
+    {
+        $writeOffData = [
+            'number' => "ИНВ-СПИ-{$inventory->id}-" . date('dmY'),
+            'date' => now()->format('Y-m-d H:i:s'),
+            'organization' => 'Автоматическое списание по инвентаризации: ' . $inventory->name,
+            'project' => 'Инвентаризация',
+            'warehouse' => $inventory->warehouse_id,
+            'status' => 'posted',
+            'is_posted' => true,
+            'comment' => "Автоматическое списание по инвентаризации №{$inventory->id}",
+            'positions' => []
+        ];
+        
+        $totalAmount = 0;
+        
+        foreach ($shortageItems as $item) {
+            $shortageQuantity = abs($item->actual_quantity - $item->calculated_quantity);
+            $price = $item->product->price ?? 0;
+            $amount = $shortageQuantity * $price;
+            $totalAmount += $amount;
+            
+            $writeOffData['positions'][] = [
+                'product_id' => $item->product_id,
+                'name' => $item->product->name ?? '',
+                'article' => $item->product->article ?? '',
+                'quantity' => $shortageQuantity,
+                'price' => $price,
+                'amount' => $amount,
+                'reason' => "Недостача по инвентаризации №{$inventory->id}"
+            ];
+        }
+        
+        // Создаем списание
+        $writeOff = \App\Models\WriteOff::create([
+            'number' => $writeOffData['number'],
+            'date' => $writeOffData['date'],
+            'organization' => $writeOffData['organization'],
+            'project' => $writeOffData['project'],
+            'warehouse' => $writeOffData['warehouse'],
+            'status' => $writeOffData['status'],
+            'is_posted' => $writeOffData['is_posted'],
+            'comment' => $writeOffData['comment'],
+            'total' => $totalAmount,
+            'user_id' => Auth::id(),
+            'created_by' => Auth::user()->first_name ?? 'Система'
+        ]);
+        
+        // Создаем позиции списания
+        foreach ($writeOffData['positions'] as $position) {
+            \App\Models\WriteOffPosition::create([
+                'write_off_id' => $writeOff->id,
+                'product_id' => $position['product_id'],
+                'name' => $position['name'],
+                'article' => $position['article'],
+                'quantity' => $position['quantity'],
+                'price' => $position['price'],
+                'amount' => $position['amount'],
+                'reason' => $position['reason']
+            ]);
+        }
+        
+        // Обновляем остатки товаров
+        $this->updateProductBalancesForWriteOff($writeOff);
+    }
+
+    /**
+     * Обновить остатки товаров для оприходования
+     */
+    private function updateProductBalancesForReceipt(\App\Models\Receipt $receipt): void
+    {
+        $positions = $receipt->positions;
+        
+        foreach ($positions as $position) {
+            if ($position->product_id) {
+                $product = \App\Models\ProductSklad::find($position->product_id);
+                
+                if ($product) {
+                    // Увеличиваем остаток на складе
+                    \App\Models\ProductBalance::incrementBalance(
+                        $product->id,
+                        $receipt->warehouse,
+                        $position->quantity
+                    );
+                    
+                    // Создаем запись операции
+                    \App\Models\ProductOperation::createOperation([
+                        'product_id' => $product->id,
+                        'warehouse_id' => $receipt->warehouse,
+                        'operation_type' => \App\Models\ProductOperation::TYPE_RECEIPT,
+                        'quantity' => (int)$position->quantity,
+                        'reference_type' => 'inventory_receipt',
+                        'reference_id' => $receipt->id,
+                        'notes' => "Автоматическое оприходование по инвентаризации №{$receipt->number}"
+                    ]);
+                }
+            }
+        }
+    }
+
+    /**
+     * Обновить остатки товаров для списания
+     */
+    private function updateProductBalancesForWriteOff(\App\Models\WriteOff $writeOff): void
+    {
+        $positions = $writeOff->positions;
+        
+        foreach ($positions as $position) {
+            if ($position->product_id) {
+                $product = \App\Models\ProductSklad::find($position->product_id);
+                
+                if ($product) {
+                    // Уменьшаем остаток на складе
+                    \App\Models\ProductBalance::decrementBalance(
+                        $product->id,
+                        $writeOff->warehouse,
+                        $position->quantity
+                    );
+                    
+                    // Создаем запись операции
+                    \App\Models\ProductOperation::createOperation([
+                        'product_id' => $product->id,
+                        'warehouse_id' => $writeOff->warehouse,
+                        'operation_type' => \App\Models\ProductOperation::TYPE_WRITE_OFF,
+                        'quantity' => -(int)$position->quantity, // Отрицательное количество для списания
+                        'reference_type' => 'inventory_write_off',
+                        'reference_id' => $writeOff->id,
+                        'notes' => "Автоматическое списание по инвентаризации №{$writeOff->number}"
+                    ]);
+                }
+            }
         }
     }
 } 

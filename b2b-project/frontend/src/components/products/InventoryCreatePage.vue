@@ -175,9 +175,30 @@
             <tbody>
               <tr v-for="(product, index) in warehouseProducts" :key="product.id" class="hover:bg-gray-50">
                 <td class="px-3 py-2">
-                  <div>
-                    <div class="font-medium">{{ product.name }}</div>
-                    <div class="text-xs text-gray-500">{{ product.supplier || 'N/A' }}</div>
+                  <div class="flex items-center gap-2">
+                    <div class="flex-1">
+                      <div class="font-medium">{{ product.name }}</div>
+                      <div class="text-xs text-gray-500">{{ product.supplier || 'N/A' }}</div>
+                      <!-- Индикаторы фото и комментария -->
+                      <div v-if="hasDiscrepancy(product) && (product.tempPhoto || product.tempNotes)" class="flex items-center gap-1 mt-1">
+                        <span v-if="product.tempPhoto" class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs bg-blue-100 text-blue-700">
+                          📷 Фото
+                        </span>
+                        <span v-if="product.tempNotes" class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs bg-green-100 text-green-700">
+                          💬 Комментарий
+                        </span>
+                      </div>
+                    </div>
+                    <!-- Превью фото -->
+                    <div v-if="product.tempPhoto" class="flex-shrink-0">
+                      <img 
+                        :src="product.tempPhoto" 
+                        alt="Фото товара" 
+                        class="w-8 h-8 rounded object-cover border border-gray-200"
+                        @click="viewFullPhoto(product.tempPhoto)"
+                        style="cursor: pointer;"
+                      />
+                    </div>
                   </div>
                 </td>
                 <td class="px-3 py-2 text-center">
@@ -188,9 +209,10 @@
                 </td>
                 <td class="px-3 py-2 text-center">
                   <input 
-                    v-model.number="product.actual_quantity" 
-                    type="number" 
-                    step="0.001"
+                    v-model="product.actual_quantity" 
+                    type="text" 
+                    @input="validateIntegerInput($event, product)"
+                    @keypress="onlyNumbers"
                     class="w-20 text-center border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                     placeholder="0"
                   />
@@ -206,13 +228,54 @@
                   </span>
                 </td>
                 <td class="px-3 py-2 text-center">
-                  <button @click="removeWarehouseProduct(index)" class="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50 transition-colors">
-                    <Trash2 class="w-4 h-4" />
-                  </button>
+                  <div class="flex justify-center gap-1">
+                    <button 
+                      @click="handlePhotoUpload(product, index)" 
+                      :disabled="!hasDiscrepancy(product)"
+                      :class="[
+                        'p-1 rounded transition-colors',
+                        hasDiscrepancy(product) 
+                          ? (product.tempPhoto ? 'text-blue-800 bg-blue-100 hover:bg-blue-200' : 'text-blue-600 hover:text-blue-800 hover:bg-blue-50') + ' cursor-pointer'
+                          : 'text-gray-300 cursor-not-allowed'
+                      ]"
+                      :title="hasDiscrepancy(product) ? (product.tempPhoto ? 'Изменить фото' : 'Прикрепить фото') : 'Доступно только при расхождениях'"
+                    >
+                      <Camera class="w-4 h-4" />
+                    </button>
+                    <button 
+                      @click="handleCommentEdit(product, index)" 
+                      :disabled="!hasDiscrepancy(product)"
+                      :class="[
+                        'p-1 rounded transition-colors',
+                        hasDiscrepancy(product) 
+                          ? (product.tempNotes ? 'text-green-800 bg-green-100 hover:bg-green-200' : 'text-green-600 hover:text-green-800 hover:bg-green-50') + ' cursor-pointer'
+                          : 'text-gray-300 cursor-not-allowed'
+                      ]"
+                      :title="hasDiscrepancy(product) ? (product.tempNotes ? 'Редактировать комментарий' : 'Добавить комментарий') : 'Доступно только при расхождениях'"
+                    >
+                      <MessageSquare class="w-4 h-4" />
+                    </button>
+                  </div>
                 </td>
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <!-- Toggle для автоматических операций -->
+        <div v-if="hasDiscrepancies" class="flex items-center gap-2 mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <input 
+            id="auto-operations" 
+            type="checkbox" 
+            v-model="autoCreateOperations"
+            class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+          />
+          <label for="auto-operations" class="text-sm text-gray-700 cursor-pointer">
+            Создать автоматически оприходование и списание по расхождениям
+          </label>
+          <div class="text-xs text-gray-500 ml-2">
+            (При включении этой опции автоматически создадутся документы для корректировки остатков)
+          </div>
         </div>
 
         <!-- Кнопки действий -->
@@ -234,6 +297,18 @@
       :is-visible="showNoWarehousesModal"
       @close="closeNoWarehousesModal"
     />
+
+    <!-- Модальное окно для комментариев -->
+    <CommentModal
+      :is-visible="showCommentModal"
+      :product-name="currentProduct?.name || ''"
+      :product-article="currentProduct?.article || currentProduct?.code || ''"
+      :difference-text="currentProduct ? getCommentDifferenceText(currentProduct) : ''"
+      :difference-class="currentProduct ? getDifferenceClass(currentProduct) : ''"
+      :initial-comment="currentProduct?.tempNotes || ''"
+      @close="handleCommentModalClose"
+      @save="handleCommentSave"
+    />
   </div>
 </template>
 
@@ -241,10 +316,11 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import ProductsMenu from './ProductsMenu.vue'
 import NoWarehousesModal from '../NoWarehousesModal.vue'
+import CommentModal from '../CommentModal.vue'
 import { apiRequest } from '@/config/api'
 import { useWarehouseCheck } from '@/composables/useWarehouseCheck'
 import { useRouter } from 'vue-router'
-import { Trash2, Loader2 } from 'lucide-vue-next'
+import { Camera, MessageSquare, Loader2 } from 'lucide-vue-next'
 import toastr from 'toastr'
 import Multiselect from '@vueform/multiselect'
 import '@vueform/multiselect/themes/default.css'
@@ -262,6 +338,9 @@ const form = ref({
   status: 'draft',
   date: new Date().toISOString().slice(0, 16)
 })
+
+// Переменная для автоматического создания операций
+const autoCreateOperations = ref(false)
 
 const errors = ref({})
 const saving = ref(false)
@@ -299,6 +378,11 @@ const selectedWarehouseName = ref('')
 // Файлы
 const uploadedFiles = ref([])
 const uploading = ref(false)
+
+// Модальное окно комментариев
+const showCommentModal = ref(false)
+const currentProduct = ref(null)
+const currentProductIndex = ref(-1)
 
 // Опции для фильтров
 
@@ -406,8 +490,134 @@ async function loadWarehouseProducts() {
   }
 }
 
-function removeWarehouseProduct(index) {
-  warehouseProducts.value.splice(index, 1)
+// Функция проверки наличия расхождения у товара
+function hasDiscrepancy(product) {
+  const diff = (product.actual_quantity || 0) - (product.calculated_balance || 0)
+  return diff !== 0
+}
+
+
+
+// Функция для редактирования комментария товара
+function handleCommentEdit(product, index) {
+  if (!hasDiscrepancy(product)) return
+  
+  currentProduct.value = product
+  currentProductIndex.value = index
+  showCommentModal.value = true
+}
+
+// Функция для закрытия модального окна комментариев
+function handleCommentModalClose() {
+  showCommentModal.value = false
+  currentProduct.value = null
+  currentProductIndex.value = -1
+}
+
+// Функция для сохранения комментария
+function handleCommentSave(comment) {
+  if (currentProduct.value) {
+    // Сохраняем комментарий во временном хранилище
+    currentProduct.value.tempNotes = comment
+    toastr.success('Комментарий сохранен')
+  }
+  handleCommentModalClose()
+}
+
+// Функция для получения текста разницы в комментарии
+function getCommentDifferenceText(product) {
+  const diff = (product.actual_quantity || 0) - (product.calculated_balance || 0)
+  if (diff > 0) return `Избыток: +${diff}`
+  if (diff < 0) return `Недостача: ${diff}`
+  return 'Без расхождений'
+}
+
+// Функция для просмотра полного фото
+function viewFullPhoto(photoUrl) {
+  window.open(photoUrl, '_blank')
+}
+
+// Обновленная функция загрузки фото с возможностью замены
+function handlePhotoUpload(product, index) {
+  if (!hasDiscrepancy(product)) return
+  
+  // Если уже есть фото, показываем опции
+  if (product.tempPhoto) {
+    const action = confirm('У товара уже есть фото. Выберите действие:\nOK - Заменить фото\nОтмена - Удалить фото')
+    if (action) {
+      // Заменить фото
+      selectAndUploadPhoto(product, index)
+    } else {
+      // Удалить фото
+      product.tempPhoto = null
+      toastr.success('Фото удалено')
+    }
+  } else {
+    // Загрузить новое фото
+    selectAndUploadPhoto(product, index)
+  }
+}
+
+// Функция выбора и загрузки фото
+function selectAndUploadPhoto(product, index) {
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.accept = 'image/*'
+  input.onchange = async (event) => {
+    const file = event.target.files[0]
+    if (file) {
+      await uploadProductPhoto(product, file, index)
+    }
+  }
+  input.click()
+}
+
+// Функция валидации ввода только цифр
+function onlyNumbers(event) {
+  const charCode = event.which ? event.which : event.keyCode
+  // Разрешаем только цифры (48-57), Backspace (8), Delete (46), Tab (9), Enter (13), стрелки (37-40)
+  if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+    event.preventDefault()
+  }
+}
+
+// Функция валидации целого числа в инпуте
+function validateIntegerInput(event, product) {
+  let value = event.target.value
+  
+  // Убираем все нецифровые символы
+  value = value.replace(/[^0-9]/g, '')
+  
+  // Обновляем значение в инпуте
+  event.target.value = value
+  
+  // Обновляем модель с числовым значением
+  product.actual_quantity = value === '' ? 0 : parseInt(value, 10)
+}
+
+// Функция загрузки фото товара
+async function uploadProductPhoto(product, file, index) {
+  try {
+    const formData = new FormData()
+    formData.append('photo', file)
+    
+    const response = await apiRequest('/inventory-files/upload-item-photo', {
+      method: 'POST',
+      body: formData,
+      headers: {}
+    })
+    
+    if (response.ok && response.data.success) {
+      // Сохраняем URL фото во временном хранилище товара
+      product.tempPhoto = response.data.data.photo_url
+      toastr.success('Фото загружено успешно')
+    } else {
+      toastr.error('Ошибка загрузки фото')
+    }
+  } catch (error) {
+    console.error('Ошибка загрузки фото:', error)
+    toastr.error('Ошибка загрузки фото')
+  }
 }
 
 // Функция addProduct больше не нужна для инвентаризации
@@ -442,6 +652,14 @@ function getExcessShortageClass(product) {
   if (diff < 0) return 'text-red-600'
   return 'text-gray-600'
 }
+
+// Вычисляемое свойство для проверки наличия расхождений
+const hasDiscrepancies = computed(() => {
+  return warehouseProducts.value.some(product => {
+    const diff = (product.actual_quantity || 0) - (product.calculated_balance || 0)
+    return diff !== 0
+  })
+})
 
 async function handleFileUpload(event) {
   const files = Array.from(event.target.files)
@@ -497,11 +715,13 @@ async function handleSubmit() {
       product_id: product.id,
       calculated_quantity: product.calculated_balance,
       actual_quantity: product.actual_quantity || 0,
-      notes: ''
+      notes: product.tempNotes || '',
+      photo: product.tempPhoto || null
     }))
 
     const submitData = {
       ...form.value,
+      auto_create_operations: autoCreateOperations.value,
       positions: positions,
       inventory_files: uploadedFiles.value.map(f => ({
         filename: f.filename,

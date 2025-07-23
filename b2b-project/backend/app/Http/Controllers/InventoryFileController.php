@@ -196,4 +196,66 @@ class InventoryFileController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Загрузить фото для товара инвентаризации
+     */
+    public function uploadItemPhoto(Request $request): JsonResponse
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'photo' => 'required|image|mimes:jpeg,jpg,png,gif,webp|max:5120', // Максимум 5MB
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Ошибка валидации',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $photo = $request->file('photo');
+            $originalName = $photo->getClientOriginalName();
+            $extension = $photo->getClientOriginalExtension();
+            $filename = 'inventory_item_' . uniqid() . '_' . time() . '.' . $extension;
+            
+            // Сохраняем фото
+            $path = $photo->storeAs('inventory-items-photos', $filename, 'public');
+            
+            // Получаем полный URL фото
+            $photoUrl = request()->getSchemeAndHttpHost() . '/storage/' . $path;
+            
+            Log::info('Фото товара инвентаризации загружено', [
+                'filename' => $filename,
+                'original_name' => $originalName,
+                'photo_url' => $photoUrl,
+                'size' => $photo->getSize()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Фото загружено успешно',
+                'data' => [
+                    'filename' => $filename,
+                    'original_filename' => $originalName,
+                    'photo_url' => $photoUrl,
+                    'file_size' => $photo->getSize(),
+                    'uploaded_by' => Auth::id(),
+                    'uploaded_at' => now()->toDateTimeString()
+                ]
+            ], 201);
+
+        } catch (\Exception $e) {
+            Log::error('Ошибка загрузки фото товара инвентаризации', [
+                'error' => $e->getMessage(),
+                'user_id' => Auth::id()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Ошибка при загрузке фото: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 } 

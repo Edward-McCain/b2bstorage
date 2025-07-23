@@ -188,9 +188,30 @@
             <tbody>
               <tr v-for="(position, index) in positions" :key="index" class="hover:bg-gray-50">
                 <td class="px-3 py-2">
-                  <div>
-                    <div class="font-medium">{{ position.product_name }}</div>
-                    <div class="text-xs text-gray-500">{{ position.product_sku }}</div>
+                  <div class="flex items-center gap-2">
+                    <div class="flex-1">
+                      <div class="font-medium">{{ position.product_name }}</div>
+                      <div class="text-xs text-gray-500">{{ position.product_sku }}</div>
+                      <!-- Индикаторы фото и комментария -->
+                      <div v-if="hasDiscrepancy(position) && ((position.tempPhoto || position.photo) || (position.tempNotes || position.notes))" class="flex items-center gap-1 mt-1">
+                        <span v-if="position.tempPhoto || position.photo" class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs bg-blue-100 text-blue-700">
+                          📷 Фото
+                        </span>
+                        <span v-if="position.tempNotes || position.notes" class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs bg-green-100 text-green-700">
+                          💬 Комментарий
+                        </span>
+                      </div>
+                    </div>
+                    <!-- Превью фото -->
+                    <div v-if="position.tempPhoto || position.photo" class="flex-shrink-0">
+                      <img 
+                        :src="position.tempPhoto || position.photo" 
+                        alt="Фото позиции" 
+                        class="w-8 h-8 rounded object-cover border border-gray-200"
+                        @click="viewFullPhoto(position.tempPhoto || position.photo)"
+                        style="cursor: pointer;"
+                      />
+                    </div>
                   </div>
                 </td>
                 <td class="px-3 py-2 text-center">
@@ -203,10 +224,12 @@
                 </td>
                 <td class="px-3 py-2 text-center">
                   <input 
-                    v-model.number="position.actual_quantity" 
-                    type="number" 
-                    step="0.001"
+                    v-model="position.actual_quantity" 
+                    type="text" 
+                    @input="validateIntegerInput($event, position)"
+                    @keypress="onlyNumbers"
                     class="w-20 text-center border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    placeholder="0"
                   />
                 </td>
                 <td class="px-3 py-2 text-center">
@@ -220,13 +243,54 @@
                   </span>
                 </td>
                 <td class="px-3 py-2 text-center">
-                  <button @click="removePosition(index)" class="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50 transition-colors">
-                    <Trash2 class="w-4 h-4" />
-                  </button>
+                  <div class="flex justify-center gap-1">
+                    <button 
+                      @click="handlePhotoUpload(position, index)" 
+                      :disabled="!hasDiscrepancy(position)"
+                      :class="[
+                        'p-1 rounded transition-colors',
+                        hasDiscrepancy(position) 
+                          ? ((position.tempPhoto || position.photo) ? 'text-blue-800 bg-blue-100 hover:bg-blue-200' : 'text-blue-600 hover:text-blue-800 hover:bg-blue-50') + ' cursor-pointer'
+                          : 'text-gray-300 cursor-not-allowed'
+                      ]"
+                      :title="hasDiscrepancy(position) ? ((position.tempPhoto || position.photo) ? 'Изменить фото' : 'Прикрепить фото') : 'Доступно только при расхождениях'"
+                    >
+                      <Camera class="w-4 h-4" />
+                    </button>
+                    <button 
+                      @click="handleCommentEdit(position, index)" 
+                      :disabled="!hasDiscrepancy(position)"
+                      :class="[
+                        'p-1 rounded transition-colors',
+                        hasDiscrepancy(position) 
+                          ? ((position.tempNotes || position.notes) ? 'text-green-800 bg-green-100 hover:bg-green-200' : 'text-green-600 hover:text-green-800 hover:bg-green-50') + ' cursor-pointer'
+                          : 'text-gray-300 cursor-not-allowed'
+                      ]"
+                      :title="hasDiscrepancy(position) ? ((position.tempNotes || position.notes) ? 'Редактировать комментарий' : 'Добавить комментарий') : 'Доступно только при расхождениях'"
+                    >
+                      <MessageSquare class="w-4 h-4" />
+                    </button>
+                  </div>
                 </td>
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <!-- Toggle для автоматических операций -->
+        <div v-if="hasDiscrepancies" class="flex items-center gap-2 mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <input 
+            id="auto-operations" 
+            type="checkbox" 
+            v-model="autoCreateOperations"
+            class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+          />
+          <label for="auto-operations" class="text-sm text-gray-700 cursor-pointer">
+            Создать автоматически оприходование и списание по расхождениям
+          </label>
+          <div class="text-xs text-gray-500 ml-2">
+            (При включении этой опции автоматически создадутся документы для корректировки остатков)
+          </div>
         </div>
 
         <!-- Кнопки действий -->
@@ -242,15 +306,28 @@
         </div>
       </form>
     </div>
+
+    <!-- Модальное окно для комментариев -->
+    <CommentModal
+      :is-visible="showCommentModal"
+      :product-name="currentPosition?.product_name || ''"
+      :product-article="currentPosition?.product_sku || ''"
+      :difference-text="currentPosition ? getCommentDifferenceText(currentPosition) : ''"
+      :difference-class="currentPosition ? getDifferenceClass(currentPosition) : ''"
+      :initial-comment="currentPosition?.tempNotes || currentPosition?.notes || ''"
+      @close="handleCommentModalClose"
+      @save="handleCommentSave"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import ProductsMenu from './ProductsMenu.vue'
+import CommentModal from '../CommentModal.vue'
 import { apiRequest } from '@/config/api'
 import { useRouter, useRoute } from 'vue-router'
-import { Trash2, Loader2 } from 'lucide-vue-next'
+import { Camera, MessageSquare, Loader2 } from 'lucide-vue-next'
 import toastr from 'toastr'
 import Multiselect from '@vueform/multiselect'
 import '@vueform/multiselect/themes/default.css'
@@ -273,6 +350,9 @@ const form = ref({
   status: 'draft',
   date: new Date().toISOString().slice(0, 16)
 })
+
+// Переменная для автоматического создания операций
+const autoCreateOperations = ref(false)
 
 const errors = ref({})
 const saving = ref(false)
@@ -298,6 +378,11 @@ const positions = ref([])
 // Файлы
 const uploadedFiles = ref([])
 const uploading = ref(false)
+
+// Модальное окно комментариев
+const showCommentModal = ref(false)
+const currentPosition = ref(null)
+const currentPositionIndex = ref(-1)
 
 // Опции для фильтров
 const warehouseOptions = computed(() => {
@@ -485,8 +570,134 @@ function addProduct() {
   selectedProduct.value = null
 }
 
-function removePosition(index) {
-  positions.value.splice(index, 1)
+// Функция проверки наличия расхождения у позиции
+function hasDiscrepancy(position) {
+  const diff = (position.actual_quantity || 0) - (position.calculated_quantity || 0)
+  return diff !== 0
+}
+
+
+
+// Функция для редактирования комментария позиции
+function handleCommentEdit(position, index) {
+  if (!hasDiscrepancy(position)) return
+  
+  currentPosition.value = position
+  currentPositionIndex.value = index
+  showCommentModal.value = true
+}
+
+// Функция для закрытия модального окна комментариев
+function handleCommentModalClose() {
+  showCommentModal.value = false
+  currentPosition.value = null
+  currentPositionIndex.value = -1
+}
+
+// Функция для сохранения комментария
+function handleCommentSave(comment) {
+  if (currentPosition.value) {
+    // Сохраняем комментарий во временном хранилище
+    currentPosition.value.tempNotes = comment
+    toastr.success('Комментарий сохранен')
+  }
+  handleCommentModalClose()
+}
+
+// Функция для получения текста разницы в комментарии
+function getCommentDifferenceText(position) {
+  const diff = (position.actual_quantity || 0) - (position.calculated_quantity || 0)
+  if (diff > 0) return `Избыток: +${diff}`
+  if (diff < 0) return `Недостача: ${diff}`
+  return 'Без расхождений'
+}
+
+// Функция для просмотра полного фото
+function viewFullPhoto(photoUrl) {
+  window.open(photoUrl, '_blank')
+}
+
+// Обновленная функция загрузки фото с возможностью замены
+function handlePhotoUpload(position, index) {
+  if (!hasDiscrepancy(position)) return
+  
+  // Если уже есть фото, показываем опции
+  if (position.tempPhoto || position.photo) {
+    const action = confirm('У позиции уже есть фото. Выберите действие:\nOK - Заменить фото\nОтмена - Удалить фото')
+    if (action) {
+      // Заменить фото
+      selectAndUploadPositionPhoto(position, index)
+    } else {
+      // Удалить фото
+      position.tempPhoto = null
+      toastr.success('Фото удалено')
+    }
+  } else {
+    // Загрузить новое фото
+    selectAndUploadPositionPhoto(position, index)
+  }
+}
+
+// Функция выбора и загрузки фото позиции
+function selectAndUploadPositionPhoto(position, index) {
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.accept = 'image/*'
+  input.onchange = async (event) => {
+    const file = event.target.files[0]
+    if (file) {
+      await uploadPositionPhoto(position, file, index)
+    }
+  }
+  input.click()
+}
+
+// Функция валидации ввода только цифр
+function onlyNumbers(event) {
+  const charCode = event.which ? event.which : event.keyCode
+  // Разрешаем только цифры (48-57), Backspace (8), Delete (46), Tab (9), Enter (13), стрелки (37-40)
+  if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+    event.preventDefault()
+  }
+}
+
+// Функция валидации целого числа в инпуте
+function validateIntegerInput(event, position) {
+  let value = event.target.value
+  
+  // Убираем все нецифровые символы
+  value = value.replace(/[^0-9]/g, '')
+  
+  // Обновляем значение в инпуте
+  event.target.value = value
+  
+  // Обновляем модель с числовым значением
+  position.actual_quantity = value === '' ? 0 : parseInt(value, 10)
+}
+
+// Функция загрузки фото позиции
+async function uploadPositionPhoto(position, file, index) {
+  try {
+    const formData = new FormData()
+    formData.append('photo', file)
+    
+    const response = await apiRequest('/inventory-files/upload-item-photo', {
+      method: 'POST',
+      body: formData,
+      headers: {}
+    })
+    
+    if (response.ok && response.data.success) {
+      // Сохраняем URL фото во временном хранилище позиции
+      position.tempPhoto = response.data.data.photo_url
+      toastr.success('Фото загружено успешно')
+    } else {
+      toastr.error('Ошибка загрузки фото')
+    }
+  } catch (error) {
+    console.error('Ошибка загрузки фото:', error)
+    toastr.error('Ошибка загрузки фото')
+  }
 }
 
 function calculateDifference(position) {
@@ -515,6 +726,14 @@ function getExcessShortageClass(position) {
   if (diff < 0) return 'text-red-600'
   return 'text-gray-600'
 }
+
+// Вычисляемое свойство для проверки наличия расхождений
+const hasDiscrepancies = computed(() => {
+  return positions.value.some(position => {
+    const diff = (position.actual_quantity || 0) - (position.calculated_quantity || 0)
+    return diff !== 0
+  })
+})
 
 async function handleFileUpload(event) {
   const files = Array.from(event.target.files)
@@ -563,9 +782,17 @@ async function handleSubmit() {
   saving.value = true
 
   try {
+    // Обновляем позиции с временными данными
+    const updatedPositions = positions.value.map(position => ({
+      ...position,
+      notes: position.tempNotes || position.notes || '',
+      photo: position.tempPhoto || position.photo || null
+    }))
+
     const submitData = {
       ...form.value,
-      positions: positions.value,
+      auto_create_operations: autoCreateOperations.value,
+      positions: updatedPositions,
       files: uploadedFiles.value.map(f => f.id)
     }
 

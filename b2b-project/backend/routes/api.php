@@ -82,6 +82,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Inventory file routes
     Route::post('/inventory-files/upload', [InventoryFileController::class, 'upload']);
     Route::post('/inventory-files/upload-draft', [InventoryFileController::class, 'uploadDraft']);
+    Route::post('/inventory-files/upload-item-photo', [InventoryFileController::class, 'uploadItemPhoto']);
     Route::get('/inventory-files/{id}', [InventoryFileController::class, 'show']);
     Route::delete('/inventory-files/{id}', [InventoryFileController::class, 'destroy']);
     // Warehouse routes

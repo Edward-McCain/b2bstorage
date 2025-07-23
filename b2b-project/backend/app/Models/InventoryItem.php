@@ -12,7 +12,8 @@ class InventoryItem extends Model
         'product_id',
         'calculated_quantity',
         'actual_quantity',
-        'notes'
+        'notes',
+        'photo'
     ];
 
     protected $casts = [
