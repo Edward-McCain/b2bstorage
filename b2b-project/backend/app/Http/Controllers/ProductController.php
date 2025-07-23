@@ -164,11 +164,11 @@ class ProductController extends Controller
             'barcode' => 'nullable|string|max:255',
             'cash_register_tax' => 'nullable|string|max:255',
             'cash_register_type' => 'nullable|string|max:255',
-            'warehouse_id' => 'required|integer',
+            // 'warehouse_id' => 'required|integer', // warehouse_id больше не обязателен
         ]);
 
         // Обновляем товар
-        $product->update([
+        $updateData = [
             'name' => $request->name,
             'description' => $request->description,
             'category' => $request->category_id,
@@ -192,15 +192,19 @@ class ProductController extends Controller
             'cash_register_type' => $request->cash_register_type,
             'start_count' => $request->start_count,
             'price' => $request->price,
-            'warehouse_id' => $request->warehouse_id,
-        ]);
+        ];
+        if ($request->has('warehouse_id') && $request->warehouse_id) {
+            $updateData['warehouse_id'] = $request->warehouse_id;
+        }
+        $product->update($updateData);
 
         // Обновляем остатки товара на основе начального остатка
         try {
+            $warehouseId = $request->has('warehouse_id') && $request->warehouse_id ? $request->warehouse_id : $product->warehouse_id;
             ProductBalance::updateOrCreate(
                 [
                     'product_id' => $product->id,
-                    'warehouse_id' => $request->warehouse_id
+                    'warehouse_id' => $warehouseId
                 ],
                 [
                     'quantity' => $request->start_count
@@ -209,7 +213,7 @@ class ProductController extends Controller
 
             Log::info('Остатки товара обновлены', [
                 'product_id' => $product->id,
-                'warehouse_id' => $request->warehouse_id,
+                'warehouse_id' => $warehouseId,
                 'start_count' => $request->start_count
             ]);
 

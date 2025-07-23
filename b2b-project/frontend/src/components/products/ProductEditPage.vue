@@ -5,7 +5,7 @@
       <div class="flex flex-col gap-3 sm:inline-flex sm:flex-row sm:items-center w-full">
         <input v-model="product.name" @blur="handleNameBlur" type="text" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" placeholder="Наименование товара *" />
         <div class="flex gap-2 mt-3 sm:mt-0">
-          <button @click="handleSave" :disabled="!product.name || !selectedCategory || !selectedSubcategory || !selectedWarehouse || !product.unit || !product.quantity || isSavingProduct" class="bg-lime-500 hover:bg-lime-600 text-white font-semibold px-6 py-2 rounded-lg shadow transition text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+          <button @click="handleSave" :disabled="!product.name || !selectedCategory || !selectedSubcategory || !product.unit || !product.quantity || isSavingProduct" class="bg-lime-500 hover:bg-lime-600 text-white font-semibold px-6 py-2 rounded-lg shadow transition text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
             <svg v-if="isSavingProduct" class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
@@ -100,7 +100,7 @@
           <div class="w-full hidden">
             <label class="block text-xs text-gray-700 mb-1">Склад товара</label>
             <div class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-gray-50 text-gray-600">
-              {{ selectedWarehouse ? selectedWarehouse.label : 'Не выбран' }}
+              Склад выбран при создании товара
             </div>
           </div>
           <!-- Количество единиц товара, единица измерения и стоимость -->
@@ -1035,31 +1035,30 @@ async function handleSave() {
 
   try {
     // Подготавливаем данные для отправки
-    const productData = {
-      id: productId.value,
-      name: product.name,
-      description: product.description,
-      category_id: product.category,
-      subcategory_id: product.subcategory,
-      country: product.country ? product.country.value : null,
-      supplier: product.supplier,
-      article: product.article,
-      code: product.code,
-      external_code: product.external_code,
-      unit: product.unit ? product.unit.value : null,
-      weight: product.weight,
-      volume: product.volume,
-      vat: product.vat,
-      packing: product.packing ? product.packing.value : null,
-      accounting_type: product.accounting_type ? product.accounting_type.value : null,
-      product_type: product.product_type ? product.product_type.value : null,
-      barcode_type: product.barcode_type ? product.barcode_type.value : null,
-      barcode: product.barcode,
-      cash_register_tax: product.cash_register_tax,
-      cash_register_type: product.cash_register_type,
-      quantity: product.quantity,
-      price: product.price
-    }
+    const productData = {}
+    if (productId.value) productData.id = productId.value
+    if (product.name) productData.name = product.name
+    if (product.description) productData.description = product.description
+    if (product.category) productData.category_id = product.category
+    if (product.subcategory) productData.subcategory_id = product.subcategory
+    if (product.country && typeof product.country === 'object' && product.country.value) productData.country = product.country.value
+    if (product.supplier) productData.supplier = product.supplier
+    if (product.article) productData.article = product.article
+    if (product.code) productData.code = product.code
+    if (product.external_code) productData.external_code = product.external_code
+    if (product.unit && typeof product.unit === 'object' && product.unit.value) productData.unit = product.unit.value
+    if (product.weight !== null && product.weight !== undefined && product.weight !== '') productData.weight = product.weight
+    if (product.volume !== null && product.volume !== undefined && product.volume !== '') productData.volume = product.volume
+    if (product.vat) productData.vat = product.vat
+    if (product.accounting_type && typeof product.accounting_type === 'object' && product.accounting_type.value) productData.accounting_type = product.accounting_type.value
+    if (product.product_type && typeof product.product_type === 'object' && product.product_type.value) productData.product_type = product.product_type.value
+    if (product.barcode_type && typeof product.barcode_type === 'object' && product.barcode_type.value) productData.barcode_type = product.barcode_type.value
+    if (product.barcode) productData.barcode = product.barcode
+    if (product.cash_register_tax) productData.cash_register_tax = product.cash_register_tax
+    if (product.cash_register_type) productData.cash_register_type = product.cash_register_type
+    if (product.quantity !== null && product.quantity !== undefined && product.quantity !== '') productData.start_count = product.quantity
+    if (product.price !== null && product.price !== undefined && product.price !== '') productData.price = product.price
+    // warehouse_id не отправляем при редактировании
 
     // Отправляем запрос на сохранение
     const response = await apiRequest(`/products/${productId.value}`, {
