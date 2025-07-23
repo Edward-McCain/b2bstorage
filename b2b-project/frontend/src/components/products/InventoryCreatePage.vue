@@ -189,16 +189,7 @@
                         </span>
                       </div>
                     </div>
-                    <!-- Превью фото -->
-                    <div v-if="product.tempPhoto" class="flex-shrink-0">
-                      <img 
-                        :src="product.tempPhoto" 
-                        alt="Фото товара" 
-                        class="w-8 h-8 rounded object-cover border border-gray-200"
-                        @click="viewFullPhoto(product.tempPhoto)"
-                        style="cursor: pointer;"
-                      />
-                    </div>
+
                   </div>
                 </td>
                 <td class="px-3 py-2 text-center">
@@ -229,19 +220,48 @@
                 </td>
                 <td class="px-3 py-2 text-center">
                   <div class="flex justify-center gap-1">
-                    <button 
-                      @click="handlePhotoUpload(product, index)" 
-                      :disabled="!hasDiscrepancy(product)"
-                      :class="[
-                        'p-1 rounded transition-colors',
-                        hasDiscrepancy(product) 
-                          ? (product.tempPhoto ? 'text-blue-800 bg-blue-100 hover:bg-blue-200' : 'text-blue-600 hover:text-blue-800 hover:bg-blue-50') + ' cursor-pointer'
-                          : 'text-gray-300 cursor-not-allowed'
-                      ]"
-                      :title="hasDiscrepancy(product) ? (product.tempPhoto ? 'Изменить фото' : 'Прикрепить фото') : 'Доступно только при расхождениях'"
-                    >
-                      <Camera class="w-4 h-4" />
-                    </button>
+                    <!-- Кнопка/изображение для фото -->
+                    <div class="relative">
+                      <!-- Loader во время загрузки -->
+                      <button 
+                        v-if="photoUploading[product.id]"
+                        disabled
+                        class="p-1 rounded transition-colors text-blue-600 cursor-not-allowed"
+                        title="Загрузка фото..."
+                      >
+                        <Loader2 class="w-4 h-4 animate-spin" />
+                      </button>
+                      
+                      <!-- Превью изображения если есть фото -->
+                      <button 
+                        v-else-if="product.tempPhoto && hasDiscrepancy(product)"
+                        @click="handlePhotoReplace(product, index)"
+                        class="p-0 rounded transition-colors hover:opacity-80 cursor-pointer border border-gray-200 hover:border-blue-400"
+                        title="Изменить фото"
+                      >
+                        <img 
+                          :src="product.tempPhoto" 
+                          alt="Фото товара" 
+                          class="w-6 h-6 rounded object-cover"
+                        />
+                      </button>
+                      
+                      <!-- Иконка Camera если нет фото -->
+                      <button 
+                        v-else
+                        @click="handlePhotoUpload(product, index)" 
+                        :disabled="!hasDiscrepancy(product)"
+                        :class="[
+                          'p-1 rounded transition-colors',
+                          hasDiscrepancy(product) 
+                            ? 'text-blue-600 hover:text-blue-800 hover:bg-blue-50 cursor-pointer'
+                            : 'text-gray-300 cursor-not-allowed'
+                        ]"
+                        :title="hasDiscrepancy(product) ? 'Прикрепить фото' : 'Доступно только при расхождениях'"
+                      >
+                        <Camera class="w-4 h-4" />
+                      </button>
+                    </div>
                     <button 
                       @click="handleCommentEdit(product, index)" 
                       :disabled="!hasDiscrepancy(product)"
@@ -383,6 +403,9 @@ const uploading = ref(false)
 const showCommentModal = ref(false)
 const currentProduct = ref(null)
 const currentProductIndex = ref(-1)
+
+// Состояние загрузки фото для каждого товара
+const photoUploading = ref({})
 
 // Опции для фильтров
 
@@ -537,24 +560,24 @@ function viewFullPhoto(photoUrl) {
   window.open(photoUrl, '_blank')
 }
 
-// Обновленная функция загрузки фото с возможностью замены
+// Функция загрузки фото (первый раз)
 function handlePhotoUpload(product, index) {
   if (!hasDiscrepancy(product)) return
+  selectAndUploadPhoto(product, index)
+}
+
+// Функция замены фото (когда кликаем на превью)
+function handlePhotoReplace(product, index) {
+  if (!hasDiscrepancy(product)) return
   
-  // Если уже есть фото, показываем опции
-  if (product.tempPhoto) {
-    const action = confirm('У товара уже есть фото. Выберите действие:\nOK - Заменить фото\nОтмена - Удалить фото')
-    if (action) {
-      // Заменить фото
-      selectAndUploadPhoto(product, index)
-    } else {
-      // Удалить фото
-      product.tempPhoto = null
-      toastr.success('Фото удалено')
-    }
-  } else {
-    // Загрузить новое фото
+  const action = confirm('Выберите действие:\nOK - Заменить фото\nОтмена - Удалить фото')
+  if (action) {
+    // Заменить фото
     selectAndUploadPhoto(product, index)
+  } else {
+    // Удалить фото
+    product.tempPhoto = null
+    toastr.success('Фото удалено')
   }
 }
 
@@ -598,6 +621,9 @@ function validateIntegerInput(event, product) {
 // Функция загрузки фото товара
 async function uploadProductPhoto(product, file, index) {
   try {
+    // Устанавливаем состояние загрузки
+    photoUploading.value[product.id] = true
+    
     const formData = new FormData()
     formData.append('photo', file)
     
@@ -617,6 +643,9 @@ async function uploadProductPhoto(product, file, index) {
   } catch (error) {
     console.error('Ошибка загрузки фото:', error)
     toastr.error('Ошибка загрузки фото')
+  } finally {
+    // Убираем состояние загрузки
+    photoUploading.value[product.id] = false
   }
 }
 

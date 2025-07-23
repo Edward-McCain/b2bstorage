@@ -202,16 +202,7 @@
                         </span>
                       </div>
                     </div>
-                    <!-- Превью фото -->
-                    <div v-if="position.tempPhoto || position.photo" class="flex-shrink-0">
-                      <img 
-                        :src="position.tempPhoto || position.photo" 
-                        alt="Фото позиции" 
-                        class="w-8 h-8 rounded object-cover border border-gray-200"
-                        @click="viewFullPhoto(position.tempPhoto || position.photo)"
-                        style="cursor: pointer;"
-                      />
-                    </div>
+
                   </div>
                 </td>
                 <td class="px-3 py-2 text-center">
@@ -244,19 +235,48 @@
                 </td>
                 <td class="px-3 py-2 text-center">
                   <div class="flex justify-center gap-1">
-                    <button 
-                      @click="handlePhotoUpload(position, index)" 
-                      :disabled="!hasDiscrepancy(position)"
-                      :class="[
-                        'p-1 rounded transition-colors',
-                        hasDiscrepancy(position) 
-                          ? ((position.tempPhoto || position.photo) ? 'text-blue-800 bg-blue-100 hover:bg-blue-200' : 'text-blue-600 hover:text-blue-800 hover:bg-blue-50') + ' cursor-pointer'
-                          : 'text-gray-300 cursor-not-allowed'
-                      ]"
-                      :title="hasDiscrepancy(position) ? ((position.tempPhoto || position.photo) ? 'Изменить фото' : 'Прикрепить фото') : 'Доступно только при расхождениях'"
-                    >
-                      <Camera class="w-4 h-4" />
-                    </button>
+                    <!-- Кнопка/изображение для фото -->
+                    <div class="relative">
+                      <!-- Loader во время загрузки -->
+                      <button 
+                        v-if="photoUploading[position.product_id]"
+                        disabled
+                        class="p-1 rounded transition-colors text-blue-600 cursor-not-allowed"
+                        title="Загрузка фото..."
+                      >
+                        <Loader2 class="w-4 h-4 animate-spin" />
+                      </button>
+                      
+                      <!-- Превью изображения если есть фото -->
+                      <button 
+                        v-else-if="(position.tempPhoto || position.photo) && hasDiscrepancy(position)"
+                        @click="handlePhotoReplace(position, index)"
+                        class="p-0 rounded transition-colors hover:opacity-80 cursor-pointer border border-gray-200 hover:border-blue-400"
+                        title="Изменить фото"
+                      >
+                        <img 
+                          :src="position.tempPhoto || position.photo" 
+                          alt="Фото позиции" 
+                          class="w-6 h-6 rounded object-cover"
+                        />
+                      </button>
+                      
+                      <!-- Иконка Camera если нет фото -->
+                      <button 
+                        v-else
+                        @click="handlePhotoUpload(position, index)" 
+                        :disabled="!hasDiscrepancy(position)"
+                        :class="[
+                          'p-1 rounded transition-colors',
+                          hasDiscrepancy(position) 
+                            ? 'text-blue-600 hover:text-blue-800 hover:bg-blue-50 cursor-pointer'
+                            : 'text-gray-300 cursor-not-allowed'
+                        ]"
+                        :title="hasDiscrepancy(position) ? 'Прикрепить фото' : 'Доступно только при расхождениях'"
+                      >
+                        <Camera class="w-4 h-4" />
+                      </button>
+                    </div>
                     <button 
                       @click="handleCommentEdit(position, index)" 
                       :disabled="!hasDiscrepancy(position)"
@@ -383,6 +403,9 @@ const uploading = ref(false)
 const showCommentModal = ref(false)
 const currentPosition = ref(null)
 const currentPositionIndex = ref(-1)
+
+// Состояние загрузки фото для каждой позиции
+const photoUploading = ref({})
 
 // Опции для фильтров
 const warehouseOptions = computed(() => {
@@ -617,24 +640,24 @@ function viewFullPhoto(photoUrl) {
   window.open(photoUrl, '_blank')
 }
 
-// Обновленная функция загрузки фото с возможностью замены
+// Функция загрузки фото (первый раз)
 function handlePhotoUpload(position, index) {
   if (!hasDiscrepancy(position)) return
+  selectAndUploadPositionPhoto(position, index)
+}
+
+// Функция замены фото (когда кликаем на превью)
+function handlePhotoReplace(position, index) {
+  if (!hasDiscrepancy(position)) return
   
-  // Если уже есть фото, показываем опции
-  if (position.tempPhoto || position.photo) {
-    const action = confirm('У позиции уже есть фото. Выберите действие:\nOK - Заменить фото\nОтмена - Удалить фото')
-    if (action) {
-      // Заменить фото
-      selectAndUploadPositionPhoto(position, index)
-    } else {
-      // Удалить фото
-      position.tempPhoto = null
-      toastr.success('Фото удалено')
-    }
-  } else {
-    // Загрузить новое фото
+  const action = confirm('Выберите действие:\nOK - Заменить фото\nОтмена - Удалить фото')
+  if (action) {
+    // Заменить фото
     selectAndUploadPositionPhoto(position, index)
+  } else {
+    // Удалить фото
+    position.tempPhoto = null
+    toastr.success('Фото удалено')
   }
 }
 
@@ -678,6 +701,9 @@ function validateIntegerInput(event, position) {
 // Функция загрузки фото позиции
 async function uploadPositionPhoto(position, file, index) {
   try {
+    // Устанавливаем состояние загрузки
+    photoUploading.value[position.product_id] = true
+    
     const formData = new FormData()
     formData.append('photo', file)
     
@@ -697,6 +723,9 @@ async function uploadPositionPhoto(position, file, index) {
   } catch (error) {
     console.error('Ошибка загрузки фото:', error)
     toastr.error('Ошибка загрузки фото')
+  } finally {
+    // Убираем состояние загрузки
+    photoUploading.value[position.product_id] = false
   }
 }
 
