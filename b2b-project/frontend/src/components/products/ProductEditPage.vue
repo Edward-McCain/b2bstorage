@@ -1066,16 +1066,20 @@ async function handleSave() {
     // Подготавливаем данные для отправки
     const productData = {}
     if (productId.value) productData.id = productId.value
-    if (product.name) productData.name = product.name
+    // Обязательные поля
+    productData.name = product.name
+    productData.category_id = product.category
+    productData.subcategory_id = product.subcategory
+    productData.unit = (product.unit && typeof product.unit === 'object' && product.unit.value) ? product.unit.value : product.unit
+    productData.start_count = product.quantity // Количество (отображается, не редактируется)
+    productData.price = product.price // Стоимость (отображается, не редактируется)
+    // Остальные поля, если заполнены
     if (product.description) productData.description = product.description
-    if (product.category) productData.category_id = product.category
-    if (product.subcategory) productData.subcategory_id = product.subcategory
     if (product.country && typeof product.country === 'object' && product.country.value) productData.country = product.country.value
     if (product.supplier) productData.supplier = product.supplier
     if (product.article) productData.article = product.article
     if (product.code) productData.code = product.code
     if (product.external_code) productData.external_code = product.external_code
-    if (product.unit && typeof product.unit === 'object' && product.unit.value) productData.unit = product.unit.value
     if (product.weight !== null && product.weight !== undefined && product.weight !== '') productData.weight = product.weight
     if (product.volume !== null && product.volume !== undefined && product.volume !== '') productData.volume = product.volume
     if (product.vat) productData.vat = product.vat
@@ -1085,8 +1089,6 @@ async function handleSave() {
     if (product.barcode) productData.barcode = product.barcode
     if (product.cash_register_tax) productData.cash_register_tax = product.cash_register_tax
     if (product.cash_register_type) productData.cash_register_type = product.cash_register_type
-    if (product.quantity !== null && product.quantity !== undefined && product.quantity !== '') productData.start_count = product.quantity
-    if (product.price !== null && product.price !== undefined && product.price !== '') productData.price = product.price
     // warehouse_id не отправляем при редактировании
 
     // Отправляем запрос на сохранение
