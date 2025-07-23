@@ -240,6 +240,7 @@
                       <!-- Loader во время загрузки -->
                       <button 
                         v-if="photoUploading[position.product_id]"
+                        type="button"
                         disabled
                         class="p-1 rounded transition-colors text-blue-600 cursor-not-allowed"
                         title="Загрузка фото..."
@@ -250,6 +251,7 @@
                       <!-- Превью изображения если есть фото -->
                       <button 
                         v-else-if="(position.tempPhoto || position.photo) && hasDiscrepancy(position)"
+                        type="button"
                         @click="handlePhotoReplace(position, index)"
                         class="p-0 rounded transition-colors hover:opacity-80 cursor-pointer border border-gray-200 hover:border-blue-400"
                         title="Изменить фото"
@@ -264,6 +266,7 @@
                       <!-- Иконка Camera если нет фото -->
                       <button 
                         v-else
+                        type="button"
                         @click="handlePhotoUpload(position, index)" 
                         :disabled="!hasDiscrepancy(position)"
                         :class="[
@@ -278,6 +281,7 @@
                       </button>
                     </div>
                     <button 
+                      type="button"
                       @click="handleCommentEdit(position, index)" 
                       :disabled="!hasDiscrepancy(position) && !position.tempNotes && !position.notes"
                       :class="[

@@ -185,11 +185,6 @@ class InventoryController extends Controller
                 $this->createAutoOperations($inventory);
             }
 
-            // Создаем автоматические операции если включено
-            if ($request->auto_create_operations) {
-                $this->createAutoOperations($inventory);
-            }
-
             DB::commit();
 
             // Загружаем связанные данные
@@ -378,6 +373,11 @@ class InventoryController extends Controller
                         'uploaded_by' => Auth::id(),
                     ]);
                 }
+            }
+
+            // Создаем автоматические операции если включено
+            if ($request->auto_create_operations) {
+                $this->createAutoOperations($inventory);
             }
 
             DB::commit();
@@ -621,6 +621,15 @@ class InventoryController extends Controller
      */
     private function createAutoOperations(Inventory $inventory): void
     {
+        // Проверяем, не были ли уже созданы автоматические операции для этой инвентаризации
+        $receiptExists = \App\Models\Receipt::where('number', "ИНВ-ИЗБ-{$inventory->id}-" . date('dmY'))->exists();
+        $writeOffExists = \App\Models\WriteOff::where('number', "ИНВ-СПИ-{$inventory->id}-" . date('dmY'))->exists();
+        
+        if ($receiptExists || $writeOffExists) {
+            // Операции уже были созданы, выходим
+            return;
+        }
+
         // Загружаем товары с расчетом разниц
         $inventory->load('items.product');
         
