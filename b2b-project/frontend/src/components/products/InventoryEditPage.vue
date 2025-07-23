@@ -70,7 +70,7 @@
 
                 <!-- Кнопки -->
                 <div class="flex justify-end gap-2">
-                  <button type="button" @click="closeWarehouseForm" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium px-3 py-1.5 rounded text-sm transition">
+                  <button type="button" @click.prevent.stop="closeWarehouseForm" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium px-3 py-1.5 rounded text-sm transition">
                     Отмена
                   </button>
                   <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-3 py-1.5 rounded text-sm transition flex items-center gap-2" :disabled="warehouseSaving">
@@ -113,7 +113,7 @@
               </div>
             </div>
             <input ref="fileInput" type="file" multiple @change="handleFileUpload" class="hidden" :disabled="uploading" />
-            <button type="button" @click="$refs.fileInput.click()" class="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold px-4 py-2 rounded-lg transition text-sm" :disabled="uploading">
+            <button type="button" @click.prevent.stop="$refs.fileInput.click()" class="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold px-4 py-2 rounded-lg transition text-sm" :disabled="uploading">
               <span v-if="uploading">Загрузка...</span>
               <span v-else>Выбрать файлы</span>
             </button>
@@ -135,7 +135,7 @@
                     <span class="text-xs text-gray-500">{{ file.employee }}</span>
                   </template>
                 </div>
-                <button type="button" @click="removeFile(file.id)" class="text-red-500 hover:text-red-700" :disabled="file.uploading">
+                <button type="button" @click.prevent.stop="removeFile(file.id)" class="text-red-500 hover:text-red-700" :disabled="file.uploading">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                   </svg>
@@ -166,7 +166,7 @@
                 @search-change="onProductSearch"
               />
             </div>
-            <button type="button" @click="addProduct" :disabled="!selectedProduct" class="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-semibold px-4 py-2 rounded-lg transition text-sm">
+            <button type="button" @click.prevent.stop="addProduct" :disabled="!selectedProduct" class="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-semibold px-4 py-2 rounded-lg transition text-sm">
               Добавить
             </button>
           </div>
@@ -249,25 +249,50 @@
                       </button>
                       
                       <!-- Превью изображения если есть фото -->
-                      <button 
+                      <div 
                         v-else-if="(position.tempPhoto || position.photo) && hasDiscrepancy(position)"
-                        type="button"
-                        @click="handlePhotoReplace(position, index)"
-                        class="p-0 rounded transition-colors hover:opacity-80 cursor-pointer border border-gray-200 hover:border-blue-400"
-                        title="Изменить фото"
+                        class="relative"
                       >
-                        <img 
-                          :src="position.tempPhoto || position.photo" 
-                          alt="Фото позиции" 
-                          class="w-6 h-6 rounded object-cover"
-                        />
-                      </button>
+                        <button 
+                          type="button"
+                          @click.prevent.stop="togglePhotoDropdown(index)"
+                          class="p-0 rounded transition-colors hover:opacity-80 cursor-pointer border border-gray-200 hover:border-blue-400"
+                          title="Действия с фото"
+                        >
+                          <img 
+                            :src="position.tempPhoto || position.photo" 
+                            alt="Фото позиции" 
+                            class="w-6 h-6 rounded object-cover"
+                          />
+                        </button>
+                        
+                        <!-- Dropdown для действий с фото -->
+                        <div 
+                          v-if="photoDropdownOpen === index"
+                          class="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 w-40"
+                        >
+                          <button 
+                            type="button"
+                            @click.prevent.stop="handlePhotoReplace(position, index)"
+                            class="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 rounded-t-lg"
+                          >
+                            📸 Загрузить другое
+                          </button>
+                          <button 
+                            type="button"
+                            @click.prevent.stop="handlePhotoDelete(position, index)"
+                            class="w-full px-3 py-2 text-left text-sm text-red-700 hover:bg-red-50 rounded-b-lg"
+                          >
+                            🗑️ Удалить фото
+                          </button>
+                        </div>
+                      </div>
                       
                       <!-- Иконка Camera если нет фото -->
                       <button 
                         v-else
                         type="button"
-                        @click="handlePhotoUpload(position, index)" 
+                        @click.prevent.stop="handlePhotoUpload(position, index)" 
                         :disabled="!hasDiscrepancy(position)"
                         :class="[
                           'p-1 rounded transition-colors',
@@ -280,17 +305,18 @@
                         <Camera class="w-4 h-4" />
                       </button>
                     </div>
+                    <!-- Иконка комментария - всегда видна если есть комментарий или расхождение -->
                     <button 
+                      v-if="hasDiscrepancy(position) || position.tempNotes || position.notes"
                       type="button"
-                      @click="handleCommentEdit(position, index)" 
-                      :disabled="!hasDiscrepancy(position) && !position.tempNotes && !position.notes"
+                      @click.prevent.stop="handleCommentEdit(position, index)" 
                       :class="[
-                        'p-1 rounded transition-colors',
-                        (hasDiscrepancy(position) || position.tempNotes || position.notes)
-                          ? ((position.tempNotes || position.notes) ? 'text-green-800 bg-green-100 hover:bg-green-200' : 'text-green-600 hover:text-green-800 hover:bg-green-50') + ' cursor-pointer'
-                          : 'text-gray-300 cursor-not-allowed'
+                        'p-1 rounded transition-colors cursor-pointer',
+                        (position.tempNotes || position.notes)
+                          ? 'text-green-800 bg-green-100 hover:bg-green-200' 
+                          : 'text-green-600 hover:text-green-800 hover:bg-green-50'
                       ]"
-                      :title="(hasDiscrepancy(position) || position.tempNotes || position.notes) ? ((position.tempNotes || position.notes) ? 'Редактировать комментарий' : 'Добавить комментарий') : 'Доступно только при расхождениях'"
+                      :title="(position.tempNotes || position.notes) ? 'Редактировать комментарий' : 'Добавить комментарий'"
                     >
                       <MessageSquare class="w-4 h-4" />
                     </button>
@@ -302,17 +328,20 @@
         </div>
 
         <!-- Toggle для автоматических операций -->
-        <div v-if="hasDiscrepancies" class="flex items-center gap-2 mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <input 
-            id="auto-operations" 
-            type="checkbox" 
-            v-model="autoCreateOperations"
-            class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-          />
-          <label for="auto-operations" class="text-sm text-gray-700 cursor-pointer">
-            Создать автоматически оприходование и списание по расхождениям
+        <div v-if="hasDiscrepancies" class="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <label class="inline-flex items-center cursor-pointer">
+            <input 
+              id="auto-operations" 
+              type="checkbox" 
+              v-model="autoCreateOperations"
+              class="sr-only peer"
+            />
+            <div class="relative w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+            <span class="ms-3 text-sm font-medium text-gray-700">
+              Создать автоматически оприходование и списание по расхождениям
+            </span>
           </label>
-          <div class="text-xs text-gray-500 ml-2">
+          <div class="text-xs text-gray-500 mt-2">
             (При включении этой опции автоматически создадутся документы для корректировки остатков)
           </div>
         </div>
@@ -347,7 +376,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import ProductsMenu from './ProductsMenu.vue'
 import CommentModal from '../CommentModal.vue'
 import { apiRequest } from '@/config/api'
@@ -372,12 +401,12 @@ const form = ref({
   name: '',
   description: '',
   warehouse: null,
-  status: 'draft',
+  status: 'completed',
   date: new Date().toISOString().slice(0, 16)
 })
 
 // Переменная для автоматического создания операций
-const autoCreateOperations = ref(false)
+const autoCreateOperations = ref(true)
 
 const errors = ref({})
 const saving = ref(false)
@@ -411,6 +440,9 @@ const currentPositionIndex = ref(-1)
 
 // Состояние загрузки фото для каждой позиции
 const photoUploading = ref({})
+
+// Переменная для управления dropdown фото
+const photoDropdownOpen = ref(null)
 
 // Опции для фильтров
 const warehouseOptions = computed(() => {
@@ -529,7 +561,7 @@ async function loadInventory() {
         name: inventory.name || '',
         description: inventory.description || '',
         warehouse: inventory.warehouse_id || null,
-        status: inventory.status || 'draft',
+        status: inventory.status || 'completed',
         date: inventory.created_at ? new Date(inventory.created_at).toISOString().slice(0, 16) : new Date().toISOString().slice(0, 16)
       }
       
@@ -626,8 +658,13 @@ function handleCommentModalClose() {
 // Функция для сохранения комментария
 function handleCommentSave(comment) {
   if (currentPosition.value) {
-    // Сохраняем комментарий во временном хранилище
+    // Сохраняем комментарий во временном хранилище с принудительным обновлением реактивности
     currentPosition.value.tempNotes = comment
+    // Принудительно обновляем массив для реактивности Vue
+    const positionIndex = positions.value.findIndex(p => p.product_id === currentPosition.value.product_id)
+    if (positionIndex !== -1) {
+      positions.value[positionIndex].tempNotes = comment
+    }
     toastr.success('Комментарий сохранен')
   }
   handleCommentModalClose()
@@ -743,6 +780,23 @@ async function uploadPositionPhoto(position, file, index) {
     // Убираем состояние загрузки
     photoUploading.value[position.product_id] = false
   }
+}
+
+// Функции для работы с dropdown фото
+function togglePhotoDropdown(index) {
+  photoDropdownOpen.value = photoDropdownOpen.value === index ? null : index
+}
+
+// Функция удаления фото
+function handlePhotoDelete(position, index) {
+  position.tempPhoto = null
+  photoDropdownOpen.value = null
+  toastr.success('Фото удалено')
+}
+
+// Закрытие dropdown при клике вне его
+function closePhotoDropdown() {
+  photoDropdownOpen.value = null
 }
 
 function calculateDifference(position) {
@@ -865,6 +919,14 @@ async function handleSubmit() {
 
 onMounted(async () => {
   await Promise.all([loadWarehouses(), loadProducts(), loadInventory()])
+  
+  // Добавляем обработчик для закрытия dropdown при клике вне его
+  document.addEventListener('click', closePhotoDropdown)
+})
+
+// Убираем обработчик при размонтировании компонента
+onUnmounted(() => {
+  document.removeEventListener('click', closePhotoDropdown)
 })
 </script>
 

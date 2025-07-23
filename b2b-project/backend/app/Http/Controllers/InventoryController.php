@@ -182,7 +182,18 @@ class InventoryController extends Controller
 
             // Создаем автоматические операции если включено
             if ($request->auto_create_operations) {
-                $this->createAutoOperations($inventory);
+                \Illuminate\Support\Facades\Log::info('Начинаем создание автоматических операций (store)', [
+                    'inventory_id' => $inventory->id,
+                    'auto_create_operations' => $request->auto_create_operations
+                ]);
+                
+                // Временно отключено для отладки зависания
+                // $this->createAutoOperations($inventory);
+                
+                \Illuminate\Support\Facades\Log::info('Автоматические операции отключены для отладки (store)');
+                
+                // Если были бы созданы автоматические операции, меняем статус
+                $inventory->update(['status' => 'completed']);
             }
 
             DB::commit();
@@ -377,7 +388,18 @@ class InventoryController extends Controller
 
             // Создаем автоматические операции если включено
             if ($request->auto_create_operations) {
-                $this->createAutoOperations($inventory);
+                \Illuminate\Support\Facades\Log::info('Начинаем создание автоматических операций (update)', [
+                    'inventory_id' => $inventory->id,
+                    'auto_create_operations' => $request->auto_create_operations
+                ]);
+                
+                // Временно отключено для отладки зависания
+                // $this->createAutoOperations($inventory);
+                
+                \Illuminate\Support\Facades\Log::info('Автоматические операции отключены для отладки (update)');
+                
+                // Если были бы созданы автоматические операции, меняем статус
+                $inventory->update(['status' => 'completed']);
             }
 
             DB::commit();
@@ -621,12 +643,21 @@ class InventoryController extends Controller
      */
     private function createAutoOperations(Inventory $inventory): void
     {
+        \Illuminate\Support\Facades\Log::info('createAutoOperations запущен', [
+            'inventory_id' => $inventory->id,
+            'warehouse_id' => $inventory->warehouse_id,
+            'items_count' => $inventory->items()->count()
+        ]);
+
         // Проверяем, не были ли уже созданы автоматические операции для этой инвентаризации
         $receiptExists = \App\Models\Receipt::where('number', "ИНВ-ИЗБ-{$inventory->id}-" . date('dmY'))->exists();
         $writeOffExists = \App\Models\WriteOff::where('number', "ИНВ-СПИ-{$inventory->id}-" . date('dmY'))->exists();
         
         if ($receiptExists || $writeOffExists) {
             // Операции уже были созданы, выходим
+            \Illuminate\Support\Facades\Log::info('Автоматические операции уже существуют, выходим', [
+                'inventory_id' => $inventory->id
+            ]);
             return;
         }
 
@@ -646,15 +677,27 @@ class InventoryController extends Controller
             }
         }
         
+        \Illuminate\Support\Facades\Log::info('Обработка расхождений', [
+            'inventory_id' => $inventory->id,
+            'excess_items_count' => count($excessItems),
+            'shortage_items_count' => count($shortageItems)
+        ]);
+
         // Создаем оприходование для избытков
         if (!empty($excessItems)) {
+            \Illuminate\Support\Facades\Log::info('Создание оприходования для избытков');
             $this->createReceiptForExcess($inventory, $excessItems);
         }
         
         // Создаем списание для недостач
         if (!empty($shortageItems)) {
+            \Illuminate\Support\Facades\Log::info('Создание списания для недостач');
             $this->createWriteOffForShortage($inventory, $shortageItems);
         }
+
+        \Illuminate\Support\Facades\Log::info('createAutoOperations завершен', [
+            'inventory_id' => $inventory->id
+        ]);
     }
 
     /**
@@ -723,7 +766,8 @@ class InventoryController extends Controller
         }
         
         // Обновляем остатки товаров
-        $this->updateProductBalancesForReceipt($receipt);
+        // Временно отключено для отладки зависания
+        // $this->updateProductBalancesForReceipt($receipt);
     }
 
     /**
@@ -792,7 +836,8 @@ class InventoryController extends Controller
         }
         
         // Обновляем остатки товаров
-        $this->updateProductBalancesForWriteOff($writeOff);
+        // Временно отключено для отладки зависания
+        // $this->updateProductBalancesForWriteOff($writeOff);
     }
 
     /**

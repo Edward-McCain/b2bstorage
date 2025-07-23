@@ -8,7 +8,7 @@
         </h3>
         <button 
           type="button"
-          @click="handleClose" 
+          @click.prevent.stop="handleClose" 
           class="text-gray-400 hover:text-gray-600 transition-colors"
         >
           <X class="w-5 h-5" />
@@ -52,7 +52,7 @@
         <button 
           v-if="initialComment"
           type="button"
-          @click="handleDelete" 
+          @click.prevent.stop="handleDelete" 
           class="px-4 py-2 text-sm font-medium text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
         >
           Удалить комментарий
@@ -62,14 +62,14 @@
         <div class="flex gap-3">
           <button 
             type="button"
-            @click="handleClose" 
+            @click.prevent.stop="handleClose" 
             class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
           >
             Отмена
           </button>
           <button 
             type="button"
-            @click="handleSave" 
+            @click.prevent.stop="handleSave" 
             class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
           >
             Сохранить
