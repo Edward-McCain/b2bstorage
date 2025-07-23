@@ -242,7 +242,7 @@ const updateUserData = async () => {
   <header class="fixed inset-x-0 top-0 z-[9998] bg-white/90 backdrop-blur border-b border-gray-200">
     <nav class="flex items-center justify-between p-4 lg:px-8" aria-label="Global">
       <!-- Логотип -->
-      <div class="flex lg:flex-1">
+      <div class="flex pr-10">
         <a href="/" class="-m-1.5 p-1.5 flex items-center gap-2">
           <img class="h-8 w-auto" src="../assets/skladlogo.png" alt="" />
         </a>
