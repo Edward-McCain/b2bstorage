@@ -218,86 +218,42 @@ class ProductBalanceController extends Controller
      */
     public function summary(Request $request): JsonResponse
     {
-        $query = ProductBalance::with(['product.images', 'warehouse']);
-
-        // Фильтруем по складам текущего пользователя
-        $query->whereHas('warehouse', function ($q) {
-            $q->where('user_id', Auth::id());
-        });
-
-        if ($request->has('warehouse_id') && !empty($request->warehouse_id)) {
-            $query->where('warehouse_id', $request->warehouse_id);
-        }
-
-        $balances = $query->get();
-
-        // Получаем цены из последних оприходований для каждого товара
-        $balances->transform(function ($balance) {
-            // Получаем последнюю цену из оприходований для этого товара
-            $lastReceiptPosition = \App\Models\ReceiptPosition::where('product_id', $balance->product_id)
-                ->whereNotNull('price')
-                ->where('price', '>', 0)
-                ->orderBy('created_at', 'desc')
-                ->first();
-
-            if ($lastReceiptPosition) {
-                $balance->product->price = $lastReceiptPosition->price;
-            } else {
-                $balance->product->price = 0;
-            }
-
-            return $balance;
-        });
-
-        $summary = [
-            'total_products' => $balances->unique('product_id')->count(),
-            'total_warehouses' => $balances->unique('warehouse_id')->count(),
-            'total_quantity' => $balances->sum('quantity'),
-            'total_value' => $balances->sum(function ($balance) {
-                return $balance->quantity * ($balance->product->price ?? 0);
-            }),
-            'low_stock_items' => $balances->where('quantity', '<=', 10)->count(),
-            'out_of_stock_items' => $balances->where('quantity', 0)->count()
-        ];
-
-        // Топ товаров по количеству
-        $topProducts = $balances->groupBy('product_id')
-            ->map(function ($productBalances) {
-                $product = $productBalances->first()->product;
-                return [
-                    'product_id' => $product->id,
-                    'product_name' => $product->name,
-                    'total_quantity' => $productBalances->sum('quantity'),
-                    'warehouses_count' => $productBalances->count()
-                ];
-            })
-            ->sortByDesc('total_quantity')
-            ->take(10)
-            ->values();
-
-        // Топ складов по количеству товаров
-        $topWarehouses = $balances->groupBy('warehouse_id')
-            ->map(function ($warehouseBalances) {
-                $warehouse = $warehouseBalances->first()->warehouse;
-                return [
-                    'warehouse_id' => $warehouse->id,
-                    'warehouse_name' => $warehouse->name,
-                    'total_quantity' => $warehouseBalances->sum('quantity'),
-                    'products_count' => $warehouseBalances->count()
-                ];
-            })
-            ->sortByDesc('total_quantity')
-            ->take(10)
-            ->values();
-
         $user = Auth::user();
         $currency = $user && $user->currency ? $user->currency : 'UZS';
 
+        $query = \App\Models\ProductSklad::where('user_id', $user->id);
+        if ($request->has('warehouse_id') && !empty($request->warehouse_id)) {
+            $query->where('warehouse_id', $request->warehouse_id);
+        }
+        $products = $query->get();
+        $total_value = 0;
+        $total_quantity = 0;
+        $low_stock_items = 0;
+        $out_of_stock_items = 0;
+        foreach ($products as $product) {
+            $start = (float)$product->start_count;
+            $price = (float)$product->price;
+            $receipts = \App\Models\ReceiptPosition::where('product_id', $product->id)->sum('quantity');
+            $writeOffs = \App\Models\WriteOffPosition::where('product_id', $product->id)->sum('quantity');
+            $final_qty = $start + $receipts - $writeOffs;
+            $total_quantity += $final_qty;
+            $total_value += $final_qty * $price;
+            if ($final_qty <= 10 && $final_qty > 0) $low_stock_items++;
+            if ($final_qty <= 0) $out_of_stock_items++;
+        }
+        $summary = [
+            'total_products' => $products->count(),
+            'total_warehouses' => $products->unique('warehouse_id')->count(),
+            'total_quantity' => $total_quantity,
+            'total_value' => $total_value,
+            'low_stock_items' => $low_stock_items,
+            'out_of_stock_items' => $out_of_stock_items
+        ];
         return response()->json([
             'summary' => $summary,
             'currency' => $currency,
-            'top_products' => $topProducts,
-            'top_warehouses' => $topWarehouses
+            'top_products' => [],
+            'top_warehouses' => []
         ]);
     }
 
