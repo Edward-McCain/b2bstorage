@@ -330,129 +330,42 @@
               />
             </div>
             <div>
-              <label class="block text-xs text-gray-700 mb-1">Страна</label>
-              <Multiselect
-                v-model="selectedCountry"
-                :options="countries"
-                label="label"
-                value="value"
-                :object="true"
-                placeholder="Выберите страну"
-                searchable
-                :search-placeholder="'Поиск страны'"
-                :max-height="400"
-                class="w-full min-w-[200px] text-sm multiselect-custom"
-              />
-            </div>
-            <div>
-                              <label class="block text-xs text-gray-700 mb-1">Остаток</label>
-                <input v-model="filter.quantity" type="number" step="0.001" placeholder="Остаток" class="border rounded px-3 py-2 text-sm w-full" />
-            </div>
-            <div>
-              <label class="block text-xs text-gray-700 mb-1">Артикул</label>
-              <input v-model="filter.article" type="text" placeholder="Артикул" class="border rounded px-3 py-2 text-sm w-full" />
-            </div>
-            <div>
-              <label class="block text-xs text-gray-700 mb-1">Код</label>
-              <input v-model="filter.code" type="text" placeholder="Код" class="border rounded px-3 py-2 text-sm w-full" />
-            </div>
-            <div>
-              <label class="block text-xs text-gray-700 mb-1">Внешний код</label>
-              <input v-model="filter.external_code" type="text" placeholder="Внешний код" class="border rounded px-3 py-2 text-sm w-full" />
-            </div>
-            <div>
-              <label class="block text-xs text-gray-700 mb-1">Ед. измерения</label>
-              <Multiselect
-                v-model="selectedUnit"
-                :options="unitOptions"
-                label="label"
-                value="value"
-                :object="true"
-                placeholder="Выберите единицу измерения"
-                :max-height="400"
-                class="w-full min-w-[200px] text-sm multiselect-custom"
-              />
-            </div>
-            <div>
-              <label class="block text-xs text-gray-700 mb-1">Вес</label>
-              <input v-model="filter.weight" type="number" step="0.001" placeholder="Вес" class="border rounded px-3 py-2 text-sm w-full" />
-            </div>
-            <div>
-              <label class="block text-xs text-gray-700 mb-1">Объем</label>
-              <input v-model="filter.volume" type="number" step="0.001" placeholder="Объем" class="border rounded px-3 py-2 text-sm w-full" />
-            </div>
-            <div>
-              <label class="block text-xs text-gray-700 mb-1">Ставка НДС</label>
-              <input v-model="filter.vat" type="text" placeholder="Ставка НДС" class="border rounded px-3 py-2 text-sm w-full" />
-            </div>
-            <div>
-              <label class="block text-xs text-gray-700 mb-1">Фасовка</label>
-              <Multiselect
-                v-model="selectedPacking"
-                :options="packingOptions"
-                label="label"
-                value="value"
-                :object="true"
-                placeholder="Выберите фасовку"
-                :max-height="400"
-                class="w-full min-w-[200px] text-sm multiselect-custom"
-              />
-            </div>
-            <div>
-              <label class="block text-xs text-gray-700 mb-1">Тип учета</label>
-              <Multiselect
-                v-model="selectedAccountingType"
-                :options="accountingTypeOptions"
-                label="label"
-                value="value"
-                :object="true"
-                placeholder="Выберите тип учета"
-                :max-height="400"
-                class="w-full min-w-[200px] text-sm multiselect-custom"
-              />
-            </div>
-            <div>
-              <label class="block text-xs text-gray-700 mb-1">Маркировка</label>
-              <input v-model="filter.marking" type="text" placeholder="Маркировка" class="border rounded px-3 py-2 text-sm w-full" />
-            </div>
-            <div>
-              <label class="block text-xs text-gray-700 mb-1">Тип маркировки товара</label>
-              <Multiselect
-                v-model="selectedProductType"
-                :options="productTypeOptions"
-                label="label"
-                value="value"
-                :object="true"
-                placeholder="Выберите тип маркировки товара"
-                :max-height="400"
-                class="w-full min-w-[200px] text-sm multiselect-custom"
-              />
-            </div>
-            <div>
-              <label class="block text-xs text-gray-700 mb-1">Тип штрихкода</label>
-              <Multiselect
-                v-model="selectedBarcodeType"
-                :options="barcodeTypeOptions"
-                label="label"
-                value="value"
-                :object="true"
-                placeholder="Выберите тип штрихкода"
-                :max-height="400"
-                class="w-full min-w-[200px] text-sm multiselect-custom"
-              />
-            </div>
-            <div class="md:col-span-2">
-              <label class="block text-xs text-gray-700 mb-1">Штрихкод</label>
-              <input v-model="filter.barcode" type="text" placeholder="Штрихкод" class="border rounded px-3 py-2 text-sm w-full" />
-            </div>
-            <div>
               <label class="block text-xs text-gray-700 mb-1">Дата создания</label>
               <input v-model="filter.created_at" type="date" placeholder="Дата создания" class="border rounded px-3 py-2 text-sm w-full" />
             </div>
             <div>
-              <label class="block text-xs text-gray-700 mb-1">Дата изменения</label>
-              <input v-model="filter.updated_at" type="date" placeholder="Дата изменения" class="border rounded px-3 py-2 text-sm w-full" />
+              <label class="block text-xs text-gray-700 mb-1">Склад</label>
+              <Multiselect
+                v-model="filter.warehouse_id"
+                :options="warehouseOptions"
+                label="label"
+                value="value"
+                :object="true"
+                placeholder="Выберите склад"
+                :max-height="400"
+                class="w-full min-w-[200px] text-sm multiselect-custom"
+                :loading="loadingWarehouses"
+              />
             </div>
+
+            <!-- Динамические стандартные и кастомные поля -->
+            <template v-if="loadingProductFields">
+              <div class="col-span-2 flex items-center justify-center py-4"><Loader2 class="animate-spin h-6 w-6 text-blue-500" /><span class="ml-2 text-gray-500">Загрузка полей...</span></div>
+            </template>
+            <template v-else>
+              <template v-for="field in standardProductFields" :key="field.key">
+                <div v-if="productFieldsVisibility[field.key] === true && field.key !== 'description'">
+                  <label class="block text-xs text-gray-700 mb-1">{{ field.label }}</label>
+                  <input v-model="filter[field.key]" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+                </div>
+              </template>
+              <template v-for="field in customFields" :key="field.id">
+                <div>
+                  <label class="block text-xs text-gray-700 mb-1">{{ field.field_name }}</label>
+                  <input v-model="filter[field.field_name]" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+                </div>
+              </template>
+            </template>
           </form>
           <div class="flex justify-center gap-4 mt-6">
             <button @click="resetFilter" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold px-6 py-2 rounded-lg border text-sm flex items-center gap-2 relative group" title="Сбросить все фильтры">
@@ -728,6 +641,7 @@ import categoriesData from '../../../cats.json'
 import ProductsMenu from './ProductsMenu.vue'
 import toastr from 'toastr'
 import Multiselect from '@vueform/multiselect'
+import '@vueform/multiselect/themes/default.css'
 import countriesData from '@/data/countries.json'
 import { Edit, Trash2, RotateCcw, Search, X, Loader2, Image, ChevronLeft, ChevronRight, Plus } from 'lucide-vue-next'
 import * as XLSX from 'xlsx'
@@ -782,7 +696,8 @@ const filter = reactive({
   barcode_type: null,
   barcode: '',
   created_at: '',
-  updated_at: ''
+  updated_at: '',
+  warehouse_id: null,
 })
 
 const categoryOptions = ref([])
@@ -797,6 +712,61 @@ const selectedPacking = ref(null)
 const selectedAccountingType = ref(null)
 const selectedProductType = ref(null)
 const selectedBarcodeType = ref(null)
+
+// Список стандартных необязательных полей products_sklad
+const standardProductFields = [
+  { key: 'description', label: 'Описание' },
+  { key: 'country', label: 'Страна' },
+  { key: 'supplier', label: 'Поставщик' },
+  { key: 'article', label: 'Артикул' },
+  { key: 'code', label: 'Код' },
+  { key: 'external_code', label: 'Внешний код' },
+  { key: 'unit', label: 'Единица измерения' },
+  { key: 'weight', label: 'Вес' },
+  { key: 'volume', label: 'Объем' },
+  { key: 'vat', label: 'Ставка НДС' },
+  { key: 'min_stock', label: 'Минимальный остаток' },
+  { key: 'stock_type', label: 'Тип запаса' },
+  { key: 'packing', label: 'Упаковка' },
+  { key: 'accounting_type', label: 'Тип учета' },
+  { key: 'traceable', label: 'Маркируемый' },
+  { key: 'marking', label: 'Маркировка' },
+  { key: 'product_type', label: 'Тип товара' },
+  { key: 'barcode_type', label: 'Тип штрихкода' },
+  { key: 'barcode', label: 'Штрихкод' },
+  { key: 'cash_register_tax', label: 'Налог ККМ' },
+  { key: 'cash_register_type', label: 'Тип ККМ' },
+]
+
+const productFieldsVisibility = reactive({})
+const customFields = ref([])
+const loadingProductFields = ref(true)
+
+async function loadProductFieldsVisibilityAndCustomFields() {
+  loadingProductFields.value = true
+  try {
+    // Загрузка стандартных полей
+    const settingsResp = await apiRequest('/user/settings', { method: 'GET' })
+    let vis = settingsResp.data?.data?.personal?.product_fields_visibility
+    if (typeof vis === 'string') {
+      try { vis = JSON.parse(vis) } catch (e) { vis = null }
+    }
+    const defaults = Object.fromEntries(standardProductFields.map(f => [f.key, true]))
+    Object.assign(productFieldsVisibility, { ...defaults, ...vis })
+    // Загрузка кастомных полей
+    const customResp = await apiRequest('/product-fields', { method: 'GET' })
+    if (customResp.ok && customResp.data.success) {
+      customFields.value = customResp.data.data || []
+    } else {
+      customFields.value = []
+    }
+  } catch (e) {
+    customFields.value = []
+    Object.assign(productFieldsVisibility, Object.fromEntries(standardProductFields.map(f => [f.key, true])))
+  } finally {
+    loadingProductFields.value = false
+  }
+}
 
 // Загрузка товаров
 async function loadProducts(page = 1, filterParams = null) {
@@ -1058,6 +1028,15 @@ function createFilterParams() {
       filterParams[key] = value
     }
   })
+  // Добавляем кастомные поля с префиксом custom_
+  if (Array.isArray(customFields.value)) {
+    customFields.value.forEach(field => {
+      const val = filter[field.field_name]
+      if (val !== null && val !== undefined && val !== '') {
+        filterParams[`custom_${field.field_name}`] = val
+      }
+    })
+  }
   return filterParams
 }
 
@@ -1597,26 +1576,23 @@ async function exportProducts() {
 async function loadWarehouses() {
   loadingWarehouses.value = true
   try {
-    console.log('Загружаем склады...')
-    const response = await apiRequest('/warehouses')
-    if (response.ok) {
+    const response = await apiRequest('/warehouses', { method: 'GET' })
+    if (response.ok && response.data.success) {
       warehouses.value = response.data.data || []
-      console.log('Склады загружены:', warehouses.value)
+    } else {
+      warehouses.value = []
     }
-  } catch (error) {
-    console.error('Ошибка загрузки складов:', error)
+  } catch (e) {
+    warehouses.value = []
   } finally {
     loadingWarehouses.value = false
   }
 }
 
 // Computed свойства для селектов
-const warehouseOptions = computed(() =>
-  warehouses.value.map(warehouse => ({
-    label: warehouse.name,
-    value: warehouse.id
-  }))
-)
+const warehouseOptions = computed(() => {
+  return warehouses.value.map(w => ({ label: w.name, value: w.id }))
+})
 
 // Функция для обработки изменения категории
 async function onCategoryChange(category, productIndex) {
@@ -1705,5 +1681,6 @@ onMounted(() => {
   // Очищаем кеш категорий для принудительной загрузки
   localStorage.removeItem('categories_cache')
   loadCategories()
+  loadProductFieldsVisibilityAndCustomFields()
 })
 </script> 

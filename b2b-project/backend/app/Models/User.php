@@ -125,6 +125,7 @@ class User extends Authenticatable
             'ref_balance' => 'decimal:10',
             'bonus_balance' => 'decimal:10',
             'password' => 'hashed',
+            'product_fields_visibility' => 'array',
         ];
     }
 

@@ -11,7 +11,7 @@ class ProductSklad extends Model
     use HasFactory;
     protected $table = 'products_sklad';
     protected $fillable = [
-        'user_id', 'name', 'description', 'category', 'subcategory', 'country', 'supplier', 'article', 'code', 'external_code', 'unit', 'warehouse_id', 'weight', 'volume', 'vat', 'min_stock', 'stock_type', 'packing', 'accounting_type', 'traceable', 'marking', 'product_type', 'barcode_type', 'barcode', 'cash_register_tax', 'cash_register_type', 'start_count', 'price'
+        'user_id', 'name', 'description', 'category', 'subcategory', 'country', 'supplier', 'article', 'code', 'external_code', 'unit', 'warehouse_id', 'weight', 'volume', 'vat', 'min_stock', 'stock_type', 'packing', 'accounting_type', 'traceable', 'marking', 'product_type', 'barcode_type', 'barcode', 'cash_register_tax', 'cash_register_type', 'start_count', 'price', 'fields'
     ];
 
     /**
@@ -25,7 +25,8 @@ class ProductSklad extends Model
         'min_stock' => 'decimal:3',
         'traceable' => 'boolean',
         'warehouse_id' => 'integer',
-        'user_id' => 'integer'
+        'user_id' => 'integer',
+        'fields' => 'array',
     ];
 
     /**

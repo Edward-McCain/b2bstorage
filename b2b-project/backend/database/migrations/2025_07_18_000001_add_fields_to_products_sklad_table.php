@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('products_sklad', function (Blueprint $table) {
-            $table->decimal('price', 15, 2)->default(0)->after('quantity');
+            $table->json('fields')->nullable()->after('price'); // Кастомные поля
         });
     }
 
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('products_sklad', function (Blueprint $table) {
-            $table->dropColumn(['price', 'fields']);
+            $table->dropColumn('fields');
         });
     }
 }; 

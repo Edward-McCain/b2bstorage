@@ -222,210 +222,28 @@
         </div>
         
         <div v-show="showAdditionalData" class="flex flex-col gap-3">
-          <!-- Описание -->
-          <div>
-            <label class="block text-xs text-gray-700 mb-1">Описание</label>
-            <textarea v-model="product.description" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white"></textarea>
-          </div>
-          
-          <!-- Страна и поставщик -->
-          <div class="flex gap-2">
-            <div class="flex-1">
-              <label class="block text-xs text-gray-700 mb-1">Страна</label>
-              <Multiselect
-                v-model="product.country"
-                :options="countries"
-                label="label"
-                value="value"
-                :object="true"
-                placeholder="Выберите страну"
-                searchable
-                :search-placeholder="'Поиск страны'"
-                :max-height="400"
-                class="w-full text-xs multiselect-custom"
-              />
+          <template v-if="loadingProductFields">
+            <div class="flex items-center justify-center py-8">
+              <Loader2 class="animate-spin h-8 w-8 text-blue-500" />
+              <span class="ml-3 text-sm text-gray-500">Загрузка полей...</span>
             </div>
-            <div class="flex-1">
-              <label class="block text-xs text-gray-700 mb-1">Поставщик</label>
-              <input v-model="product.supplier" type="text" placeholder="" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" />
-            </div>
-          </div>
-          
-          <!-- Артикул, код, внешний код -->
-          <div class="flex gap-2 relative">
-            <div class="flex-1 relative">
-              <label class="block text-xs text-gray-700 mb-1 flex items-center gap-1 relative">
-                Артикул
-                <span @mouseenter="showTooltip.article = true" @mouseleave="showTooltip.article = false" class="text-blue-400 cursor-pointer relative">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z" /></svg>
-                  <span v-if="showTooltip.article" class="absolute left-0 top-full z-10 mt-2 max-w-xs w-max rounded bg-gray-900 text-white text-xs px-3 py-2 shadow-lg transition-opacity duration-200 whitespace-pre-line">
-                    <span class="absolute -top-2 left-4 w-3 h-3 bg-gray-900 rotate-45"></span>
-                    Назначенный производителем идентификатор товара.
-                  </span>
-                </span>
-              </label>
-              <input v-model="product.article" type="text" placeholder="" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" />
-            </div>
-            <div class="flex-1 relative">
-              <label class="block text-xs text-gray-700 mb-1 flex items-center gap-1 relative">
-                Код
-                <span @mouseenter="showTooltip.code = true" @mouseleave="showTooltip.code = false" class="text-blue-400 cursor-pointer relative">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z" /></svg>
-                  <span v-if="showTooltip.code" class="absolute left-0 top-full z-10 mt-2 max-w-xs w-max rounded bg-gray-900 text-white text-xs px-3 py-2 shadow-lg transition-opacity duration-200 whitespace-pre-line">
-                    <span class="absolute -top-2 left-4 w-3 h-3 bg-gray-900 rotate-45"></span>
-                    Внутренний код товара в вашей системе.
-                  </span>
-                </span>
-              </label>
-              <input v-model="product.code" type="text" placeholder="" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" />
-            </div>
-            <div class="flex-1">
-              <label class="block text-xs text-gray-700 mb-1">Внешний код</label>
-              <input v-model="product.external_code" type="text" placeholder="" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" />
-            </div>
-          </div>
-          
-          <!-- Вес, объем, НДС -->
-          <div class="flex gap-2">
-            <div class="flex-1">
-              <label class="block text-xs text-gray-700 mb-1">Вес</label>
-              <input v-model="product.weight" type="number" placeholder="" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" />
-            </div>
-            <div class="flex-1">
-              <label class="block text-xs text-gray-700 mb-1">Объем</label>
-              <input v-model="product.volume" type="number" placeholder="" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" />
-            </div>
-            <div class="flex-1">
-              <label class="block text-xs text-gray-700 mb-1">НДС</label>
-              <input v-model="product.vat" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" />
-            </div>
-          </div>
-          
-          <!-- Особенности учета -->
-          <div class="flex flex-col gap-2">
-            <div class="flex gap-2">
-              <div class="flex-1">
-                <label class="block text-xs text-gray-700 mb-1">Фасовка</label>
-                <Multiselect
-                  v-model="product.packing"
-                  :options="[
-                    { label: 'Штучная', value: 'Штучная' },
-                    { label: 'Весовая', value: 'Весовая' },
-                    { label: 'Разливная', value: 'Разливная' }
-                  ]"
-                  label="label"
-                  value="value"
-                  :object="true"
-                  placeholder="Выберите фасовку"
-                  :max-height="400"
-                  class="w-full text-xs multiselect-custom"
-                />
+          </template>
+          <template v-else>
+            <!-- Активные стандартные поля -->
+            <template v-for="field in standardProductFields" :key="field.key">
+              <div v-if="productFieldsVisibility[field.key] === true">
+                <label class="block text-xs text-gray-700 mb-1">{{ field.label }}</label>
+                <input v-model="product[field.key]" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" />
               </div>
-              <div class="flex-1">
-                <label class="block text-xs text-gray-700 mb-1">Тип учета</label>
-                <Multiselect
-                  v-model="product.accounting_type"
-                  :options="[
-                    { label: 'Без специализированного учета', value: 'Без специализированного учета' },
-                    { label: 'Алкогольный товар', value: 'Алкогольный товар' },
-                    { label: 'Учет по серийным номерам', value: 'Учет по серийным номерам' },
-                    { label: 'СИЗ', value: 'Средство индивидуальной защиты' }
-                  ]"
-                  label="label"
-                  value="value"
-                  :object="true"
-                  placeholder="Выберите тип учета"
-                  :max-height="400"
-                  class="w-full text-xs multiselect-custom"
-                />
+            </template>
+            <!-- Пользовательские поля -->
+            <template v-for="field in customFields" :key="field.id">
+              <div>
+                <label class="block text-xs text-gray-700 mb-1">{{ field.field_name }}</label>
+                <input v-model="customFieldValues[field.field_name]" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" />
               </div>
-            </div>
-
-            <div>
-              <label class="block text-xs text-gray-700 mb-1">Тип продукции</label>
-              <Multiselect
-                v-model="product.product_type"
-                :options="[
-                  { label: 'Не маркируется', value: 'Не маркируется' },
-                  { label: 'Табачная продукция', value: 'Табачная продукция' },
-                  { label: 'Обувь', value: 'Обувь' },
-                  { label: 'Одежда', value: 'Одежда' },
-                  { label: 'Постельное белье', value: 'Постельное белье' },
-                  { label: 'Духи и туалетная вода', value: 'Духи и туалетная вода' },
-                  { label: 'Фотокамеры и лампы-вспышки', value: 'Фотокамеры и лампы-вспышки' },
-                  { label: 'Шины и покрышки', value: 'Шины и покрышки' },
-                  { label: 'Молочная продукция', value: 'Молочная продукция' },
-                  { label: 'Упакованная вода', value: 'Упакованная вода' },
-                  { label: 'Альтернативная табачная продукция', value: 'Альтернативная табачная продукция' },
-                  { label: 'Никотиносодержащая продукция', value: 'Никотиносодержащая продукция' },
-                  { label: 'Биологически активные добавки к пище', value: 'Биологически активные добавки к пище' },
-                  { label: 'Антисептики', value: 'Антисептики' },
-                  { label: 'Медизделия и кресла-коляски', value: 'Медизделия и кресла-коляски' },
-                  { label: 'Безалкогольные напитки', value: 'Безалкогольные напитки' },
-                  { label: 'Ветеринарные препараты', value: 'Ветеринарные препараты' },
-                  { label: 'Икра и морепродукты', value: 'Икра и морепродукты' },
-                  { label: 'Велосипеды', value: 'Велосипеды' },
-                  { label: 'Безалкогольное пиво', value: 'Безалкогольное пиво' }
-                ]"
-                label="label"
-                value="value"
-                :object="true"
-                placeholder="Выберите тип продукции"
-                :max-height="400"
-                class="w-full text-xs multiselect-custom"
-              />
-            </div>
-          </div>
-          
-          <!-- Штрихкоды товара -->
-          <div>
-            <div class="font-semibold mb-2 flex items-center gap-2">Штрихкоды товара <span class="text-blue-400 cursor-pointer text-xs">?</span></div>
-            <div class="bg-blue-50 text-xs text-gray-700 rounded p-3 mb-3">
-              Укажите штрихкод товара, чтобы добавлять его в документы при помощи сканера штрихкодов. Код GTIN включает только цифры и может иметь длину 8, 12, 13 или 14 цифр. В учетных системах всегда используется 14 знаков, коды с меньшим количеством цифр дополняют ведущими нулями.
-            </div>
-            <div class="flex gap-2 mb-2">
-              <div class="w-32">
-                <label class="block text-xs text-gray-700 mb-1">Тип штрихкода</label>
-                <Multiselect
-                  v-model="product.barcode_type"
-                  :options="[
-                    { label: 'EAN8', value: 'EAN8' },
-                    { label: 'EAN13', value: 'EAN13' },
-                    { label: 'Code128', value: 'Code128' },
-                    { label: 'GTIN', value: 'GTIN' },
-                    { label: 'UPC', value: 'UPC' }
-                  ]"
-                  label="label"
-                  value="value"
-                  :object="true"
-                  placeholder="Тип"
-                  :max-height="400"
-                  class="w-full text-xs multiselect-custom bg-white"
-                />
-              </div>
-              <div class="flex-1">
-                <label class="block text-xs text-gray-700 mb-1">Штрихкод</label>
-                <input v-model="product.barcode" type="text" placeholder="" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" />
-              </div>
-            </div>
-          </div>
-          
-          <!-- Кассовый чек -->
-          <div>
-            <div class="font-semibold mb-2">Кассовый чек</div>
-            <div class="flex flex-col gap-2">
-              <div class="flex gap-2">
-                <div class="flex-1">
-                  <label class="block text-xs text-gray-700 mb-1">Система налогообложения</label>
-                  <input v-model="product.cash_register_tax" type="text" placeholder="" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" />
-                </div>
-                <div class="flex-1">
-                  <label class="block text-xs text-gray-700 mb-1">Признак предмета расчета</label>
-                  <input v-model="product.cash_register_type" type="text" placeholder="" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" />
-                </div>
-              </div>
-            </div>
-          </div>
+            </template>
+          </template>
         </div>
       </div>
     </div>
@@ -545,6 +363,60 @@ const selectedWarehouse = ref(null)
 /** @type {import('vue').Ref<boolean>} */
 const showAdditionalData = ref(false)
 
+// Список стандартных необязательных полей products_sklad
+const standardProductFields = [
+  { key: 'description', label: 'Описание' },
+  { key: 'country', label: 'Страна' },
+  { key: 'supplier', label: 'Поставщик' },
+  { key: 'article', label: 'Артикул' },
+  { key: 'code', label: 'Код' },
+  { key: 'external_code', label: 'Внешний код' },
+  { key: 'unit', label: 'Единица измерения' },
+  { key: 'weight', label: 'Вес' },
+  { key: 'volume', label: 'Объем' },
+  { key: 'vat', label: 'Ставка НДС' },
+  { key: 'min_stock', label: 'Минимальный остаток' },
+  { key: 'stock_type', label: 'Тип запаса' },
+  { key: 'packing', label: 'Упаковка' },
+  { key: 'accounting_type', label: 'Тип учета' },
+  { key: 'traceable', label: 'Маркируемый' },
+  { key: 'marking', label: 'Маркировка' },
+  { key: 'product_type', label: 'Тип товара' },
+  { key: 'barcode_type', label: 'Тип штрихкода' },
+  { key: 'barcode', label: 'Штрихкод' },
+  { key: 'cash_register_tax', label: 'Налог ККМ' },
+  { key: 'cash_register_type', label: 'Тип ККМ' },
+]
+
+const productFieldsVisibility = reactive({})
+const customFields = ref([])
+const customFieldValues = reactive({})
+const loadingProductFields = ref(true)
+
+async function loadProductFieldsVisibilityAndCustomFields() {
+  loadingProductFields.value = true
+  try {
+    // Загрузка стандартных полей
+    const settingsResp = await apiRequest('/user/settings', { method: 'GET' })
+    let vis = settingsResp.data?.data?.personal?.product_fields_visibility
+    if (typeof vis === 'string') {
+      try { vis = JSON.parse(vis) } catch (e) { vis = null }
+    }
+    const defaults = Object.fromEntries(standardProductFields.map(f => [f.key, true]))
+    Object.assign(productFieldsVisibility, { ...defaults, ...(vis || {}) })
+    // Загрузка пользовательских полей
+    const fieldsResp = await apiRequest('/product-fields', { method: 'GET' })
+    if (fieldsResp.ok && fieldsResp.data.success) {
+      customFields.value = fieldsResp.data.data || []
+      customFields.value.forEach(f => { if (!(f.field_name in customFieldValues)) customFieldValues[f.field_name] = '' })
+    }
+  } catch (e) {
+    Object.assign(productFieldsVisibility, Object.fromEntries(standardProductFields.map(f => [f.key, true])))
+  } finally {
+    loadingProductFields.value = false
+  }
+}
+
 const countries = computed(() =>
   countriesData.map(country => ({
     label: country.name,
@@ -613,21 +485,9 @@ async function handleDeleteImage(imgId) {
 
 
 onMounted(async () => {
-  console.log('onMounted called for component:', componentId.value)
-  
-  // Получаем ID товара из URL
-  const newProductId = parseInt(route.params.id)
-  
-  // Если ID товара изменился, сбрасываем флаги
-  if (productId.value !== newProductId) {
-    console.log('Product ID changed from', productId.value, 'to', newProductId, 'component:', componentId.value)
-    lastLoadedProductId.value = null
-    isInitialLoad.value = true
-  }
-  
-  productId.value = newProductId
-  
-  // Загружаем категории
+  // Явно устанавливаем productId из route.params.id
+  productId.value = parseInt(route.params.id)
+  // 1. Загружаем категории
   loadingCategories.value = true
   try {
     categories.value = await getCategoriesWithCache()
@@ -636,16 +496,14 @@ onMounted(async () => {
   } finally {
     loadingCategories.value = false
   }
-  
-  // Загружаем данные товара (это загрузит и изображения)
+  // 2. Загружаем кастомные поля и настройки видимости
+  await loadProductFieldsVisibilityAndCustomFields()
+  // 3. Загружаем сам товар и подставляем значения
   await loadProduct()
-  
   // Устанавливаем флаг завершения начальной загрузки
   isInitialLoad.value = false
-  
   // Добавляем обработчики для предотвращения случайного закрытия
   window.addEventListener('beforeunload', handleBeforeUnload)
-  
   // Добавляем обработчик для навигации внутри приложения
   router.beforeEach(handleBeforeRouteLeave)
 })
@@ -834,6 +692,40 @@ async function loadProduct() {
       
       // Отмечаем, что товар загружен
       lastLoadedProductId.value = productId.value
+      
+      // После загрузки товара — корректно подставить значения в customFieldValues
+      if (productData.fields && typeof productData.fields === 'object') {
+        customFields.value.forEach(f => {
+          customFieldValues[f.field_name] = productData.fields[f.field_name] ?? ''
+        })
+      } else {
+        customFields.value.forEach(f => {
+          customFieldValues[f.field_name] = ''
+        })
+      }
+      // Категория и подкатегория
+      if (productData.category) {
+        selectedCategory.value = categoryOptions.value.find(c => c.value === productData.category) || null
+        // Загружаем подкатегории напрямую
+        if (productData.category) {
+          loadingSubcategories.value = true
+          try {
+            const response = await apiRequest(`/subcategories?category_id=${encodeURIComponent(productData.category)}`)
+            if (response.ok && response.data.success) {
+              subcategories.value = response.data.data || []
+            } else {
+              subcategoryError.value = 'Ошибка загрузки подкатегорий'
+            }
+          } catch (e) {
+            subcategoryError.value = 'Ошибка загрузки подкатегорий'
+          } finally {
+            loadingSubcategories.value = false
+          }
+        }
+        if (productData.subcategory) {
+          selectedSubcategory.value = subcategoryOptions.value.find(s => s.value === productData.subcategory) || null
+        }
+      }
       
     } else {
       saveError.value = response.data.message || 'Ошибка загрузки товара'
@@ -1090,6 +982,7 @@ async function handleSave() {
     if (product.cash_register_tax) productData.cash_register_tax = product.cash_register_tax
     if (product.cash_register_type) productData.cash_register_type = product.cash_register_type
     // warehouse_id не отправляем при редактировании
+    productData.fields = { ...customFieldValues }
 
     // Отправляем запрос на сохранение
     const response = await apiRequest(`/products/${productId.value}`, {

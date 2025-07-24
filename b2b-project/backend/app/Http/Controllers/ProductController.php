@@ -35,10 +35,14 @@ class ProductController extends Controller
             return response()->json(['error' => 'Пользователь не авторизован'], 401);
         }
         
-        $product = ProductSklad::create([
+        $data = [
             'user_id' => $user->id,
             'name' => $request->name,
-        ]);
+        ];
+        if ($request->has('fields')) {
+            $data['fields'] = $request->fields;
+        }
+        $product = ProductSklad::create($data);
         
         return response()->json(['id' => $product->id], 201);
     }
@@ -195,6 +199,9 @@ class ProductController extends Controller
         ];
         if ($request->has('warehouse_id') && $request->warehouse_id) {
             $updateData['warehouse_id'] = $request->warehouse_id;
+        }
+        if ($request->has('fields')) {
+            $updateData['fields'] = $request->fields;
         }
         $product->update($updateData);
 
@@ -388,6 +395,26 @@ class ProductController extends Controller
         // Фильтрация по типу кассы
         if ($request->has('cash_register_type') && $request->cash_register_type) {
             $query->where('cash_register_type', 'ilike', "%{$request->cash_register_type}%");
+        }
+
+        // Фильтрация по складу (warehouse_id)
+        if ($request->has('warehouse_id') && $request->warehouse_id) {
+            $query->whereExists(function($q) use ($request) {
+                $q->select(DB::raw(1))
+                  ->from('product_balances')
+                  ->whereRaw('product_balances.product_id = products_sklad.id')
+                  ->where('product_balances.warehouse_id', $request->warehouse_id);
+            });
+        }
+
+        // Фильтрация по кастомным полям (fields->>'field_name')
+        if ($request->all()) {
+            foreach ($request->all() as $key => $value) {
+                if (strpos($key, 'custom_') === 0 && $value !== null && $value !== '') {
+                    $fieldName = substr($key, 7); // custom_fieldname
+                    $query->whereRaw("fields->>? ILIKE ?", [$fieldName, "%$value%"]);
+                }
+            }
         }
 
         $products = $query->orderBy('created_at', 'desc')

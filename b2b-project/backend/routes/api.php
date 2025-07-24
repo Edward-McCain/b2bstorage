@@ -150,6 +150,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/warehouses', [AdminController::class, 'getWarehouses']);
         Route::get('/warehouses/{id}', [AdminController::class, 'getWarehouseDetails']);
     });
+
+    // Product fields (custom fields) routes
+    Route::get('/product-fields', [\App\Http\Controllers\ProductFieldController::class, 'index']);
+    Route::post('/product-fields', [\App\Http\Controllers\ProductFieldController::class, 'store']);
+    Route::put('/product-fields/{id}', [\App\Http\Controllers\ProductFieldController::class, 'update']);
+    Route::delete('/product-fields/{id}', [\App\Http\Controllers\ProductFieldController::class, 'destroy']);
+    // Product fields visibility (стандартные поля)
+    Route::put('/user/product-fields-visibility', [\App\Http\Controllers\AuthController::class, 'updateProductFieldsVisibility']);
 });
 
 // Админские маршруты для перемещений

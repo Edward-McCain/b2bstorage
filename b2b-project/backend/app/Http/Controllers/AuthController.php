@@ -529,11 +529,45 @@ class AuthController extends Controller
                     'timezone' => $user->timezone,
                     'currency' => $user->currency,
                     'avatar_url' => $user->avatar_url,
+                    'product_fields_visibility' => $user->product_fields_visibility,
                 ],
                 'company' => [
                     'name' => $user->company_name,
                     'inn' => $user->inn,
                 ]
+            ]
+        ]);
+    }
+
+    /**
+     * Обновить видимость стандартных полей товаров
+     */
+    public function updateProductFieldsVisibility(Request $request)
+    {
+        $user = $request->user();
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not authenticated'
+            ], 401);
+        }
+        $validator = Validator::make($request->all(), [
+            'product_fields_visibility' => 'required|array',
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+        $user->product_fields_visibility = json_encode($request->product_fields_visibility);
+        $user->save();
+        return response()->json([
+            'success' => true,
+            'message' => 'Product fields visibility updated',
+            'data' => [
+                'product_fields_visibility' => $user->product_fields_visibility
             ]
         ]);
     }

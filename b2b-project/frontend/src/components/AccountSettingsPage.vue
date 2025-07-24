@@ -40,6 +40,16 @@
                     Смена пароля
                   </button>
                 </li>
+                <li>
+                  <button 
+                    @click="scrollToSection('custom-product-fields')"
+                    class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors flex items-center gap-2"
+                    :class="{ 'bg-blue-50 text-blue-700': activeSection === 'custom-product-fields' }"
+                  >
+                    <List class="w-4 h-4" />
+                    Поля товаров
+                  </button>
+                </li>
               </ul>
             </nav>
           </div>
@@ -429,6 +439,104 @@
               </div>
             </form>
           </section>
+
+          <!-- Кастомные поля товаров -->
+          <section id="custom-product-fields" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center gap-3 mb-6">
+              <List class="w-5 h-5 text-blue-600" />
+              <h2 class="text-xl font-semibold text-gray-900">Кастомные поля товаров</h2>
+            </div>
+
+            <div class="mb-6">
+              <h3 class="text-lg font-semibold mb-2">Стандартные поля товаров</h3>
+              <div v-if="loadingVisibility || Object.keys(productFieldsVisibility).length === 0" class="flex items-center gap-2 text-blue-600"><Loader2 class="animate-spin w-4 h-4" /> Загрузка...</div>
+              <div v-else>
+                <div v-if="errorVisibility" class="text-red-600 text-sm mb-2">{{ errorVisibility }}</div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div v-for="field in standardProductFields" :key="field.key" class="flex items-center gap-3 p-2 bg-gray-50 rounded">
+                    <label class="flex-1 text-gray-800 text-sm">{{ field.label }}</label>
+                    <button @click="toggleFieldVisibility(field.key)"
+                      :class="productFieldsVisibility[field.key] === true ? 'bg-blue-600' : 'bg-gray-300'"
+                      class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none">
+                      <span :class="productFieldsVisibility[field.key] === true ? 'translate-x-6 bg-white' : 'translate-x-1 bg-white'"
+                        class="inline-block h-4 w-4 transform rounded-full transition-transform" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- CRUD кастомных полей ниже -->
+            <div class="border-t border-gray-200 pt-6 mt-6">
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="text-lg font-semibold">Пользовательские поля</h3>
+                <button 
+                  @click="openAddFieldModal"
+                  class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors flex items-center gap-2 text-sm"
+                >
+                  <Plus class="w-4 h-4" /> Добавить поле
+                </button>
+              </div>
+              <div v-if="loadingFields" class="flex items-center justify-center py-8"><Loader2 class="animate-spin w-6 h-6 text-blue-600" /></div>
+              <div v-else>
+                <div v-if="errorFields" class="text-red-600 text-sm mb-2">{{ errorFields }}</div>
+                <table v-if="productFields.length" class="min-w-full divide-y divide-gray-200">
+                  <thead>
+                    <tr>
+                      <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Наименование</th>
+                      <th class="px-4 py-2 text-right text-xs font-medium text-gray-500">Действия</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="field in productFields" :key="field.id">
+                      <td class="px-4 py-2">{{ field.field_name }}</td>
+                      <td class="px-4 py-2 text-right">
+                        <div class="flex justify-end gap-3">
+                          <button @click="editField(field)" class="text-blue-600 hover:underline text-xs flex items-center gap-1 cursor-pointer" title="Редактировать"><Pencil class="w-4 h-4" /></button>
+                          <button @click="confirmDeleteField(field)" class="text-red-600 hover:underline text-xs flex items-center gap-1 cursor-pointer" title="Удалить"><Trash2 class="w-4 h-4" /></button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div v-else class="text-gray-500 text-sm py-4">Нет кастомных полей</div>
+              </div>
+              <!-- Модалка подтверждения удаления -->
+              <div v-if="showDeleteModal" class="fixed inset-0 bg-white/90 bg-opacity-30 flex items-center justify-center z-50">
+                <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
+                  <h3 class="text-lg font-semibold mb-4">Удалить поле?</h3>
+                  <p class="mb-6 text-gray-700">Вы действительно хотите удалить поле <b>{{ fieldToDelete?.field_name }}</b>?</p>
+                  <div class="flex justify-end gap-2">
+                    <button @click="cancelDeleteField" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium px-4 py-2 rounded-lg">Нет</button>
+                    <button @click="doDeleteField" class="bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-lg">Да, удалить</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Модальное окно для добавления/редактирования -->
+            <div v-if="showFieldModal" class="fixed inset-0 bg-white/90 bg-opacity-30 flex items-center justify-center z-50">
+              <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
+                <div class="flex items-center justify-between mb-4">
+                  <h3 class="text-lg font-semibold">{{ editingField ? 'Редактировать поле' : 'Добавить поле' }}</h3>
+                  <button @click="closeFieldModal" class="text-gray-400 hover:text-gray-700"><X class="w-6 h-6" /></button>
+                </div>
+                <form @submit.prevent="saveField">
+                  <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Наименование поля</label>
+                    <input v-model="fieldForm.field_name" type="text" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent" placeholder="Введите наименование" />
+                  </div>
+                  <div v-if="errorSaveField" class="text-red-600 text-sm mb-2">{{ errorSaveField }}</div>
+                  <div class="flex justify-end gap-2">
+                    <button type="button" @click="closeFieldModal" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium px-4 py-2 rounded-lg">Отмена</button>
+                    <button type="submit" :disabled="savingField" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg flex items-center gap-2">
+                      <Loader2 v-if="savingField" class="animate-spin w-4 h-4" />
+                      Сохранить
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </section>
         </div>
       </div>
     </div>
@@ -445,8 +553,8 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onUnmounted, computed } from 'vue'
-import { User, Building, Lock, Eye, EyeOff, ChevronDown, Loader2, X } from 'lucide-vue-next'
+import { ref, reactive, onMounted, onUnmounted, computed, watch } from 'vue'
+import { User, Building, Lock, Eye, EyeOff, ChevronDown, Loader2, X, Pencil, Trash2, Plus, List } from 'lucide-vue-next'
 import Multiselect from '@vueform/multiselect'
 import '@vueform/multiselect/themes/default.css'
 import countriesData from '@/data/countries.json'
@@ -568,6 +676,190 @@ const filteredCountries = computed(() => {
     country.code.toLowerCase().includes(countrySearch.value.toLowerCase())
   )
 })
+
+// Кастомные поля товаров
+const productFields = ref([])
+const loadingFields = ref(false)
+const errorFields = ref('')
+
+async function loadProductFields() {
+  loadingFields.value = true
+  errorFields.value = ''
+  try {
+    const response = await apiRequest('/product-fields', { method: 'GET' })
+    if (response.ok && response.data.success) {
+      productFields.value = response.data.data
+    } else {
+      errorFields.value = response.data.message || 'Ошибка загрузки полей'
+    }
+  } catch (e) {
+    errorFields.value = 'Ошибка загрузки полей'
+  } finally {
+    loadingFields.value = false
+  }
+}
+
+const showFieldModal = ref(false)
+const editingField = ref(null)
+const fieldForm = reactive({ field_name: '' })
+const savingField = ref(false)
+const errorSaveField = ref('')
+
+function openAddFieldModal() {
+  editingField.value = null
+  fieldForm.field_name = ''
+  showFieldModal.value = true
+  errorSaveField.value = ''
+}
+function closeFieldModal() {
+  showFieldModal.value = false
+}
+function editField(field) {
+  editingField.value = field
+  fieldForm.field_name = field.field_name
+  showFieldModal.value = true
+  errorSaveField.value = ''
+}
+async function saveField() {
+  savingField.value = true
+  errorSaveField.value = ''
+  try {
+    if (editingField.value) {
+      // PUT
+      const response = await apiRequest(`/product-fields/${editingField.value.id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ field_name: fieldForm.field_name }),
+        headers: { 'Content-Type': 'application/json' }
+      })
+      if (response.ok && response.data.success) {
+        await loadProductFields()
+        closeFieldModal()
+      } else {
+        errorSaveField.value = response.data.message || 'Ошибка сохранения'
+      }
+    } else {
+      // POST
+      const response = await apiRequest('/product-fields', {
+        method: 'POST',
+        body: JSON.stringify({ field_name: fieldForm.field_name }),
+        headers: { 'Content-Type': 'application/json' }
+      })
+      if (response.ok && response.data.success) {
+        await loadProductFields()
+        closeFieldModal()
+      } else {
+        errorSaveField.value = response.data.message || 'Ошибка добавления'
+      }
+    }
+  } catch (e) {
+    errorSaveField.value = 'Ошибка сохранения'
+  } finally {
+    savingField.value = false
+  }
+}
+async function deleteField(id) {
+  if (!confirm('Удалить поле?')) return
+  try {
+    const response = await apiRequest(`/product-fields/${id}`, { method: 'DELETE' })
+    if (response.ok && response.data.success) {
+      await loadProductFields()
+    } else {
+      alert(response.data.message || 'Ошибка удаления')
+    }
+  } catch (e) {
+    alert('Ошибка удаления')
+  } finally {
+    showDeleteModal.value = false
+    fieldToDelete.value = null
+  }
+}
+
+// Список стандартных необязательных полей products_sklad
+const standardProductFields = [
+  { key: 'description', label: 'Описание' },
+  { key: 'country', label: 'Страна' },
+  { key: 'supplier', label: 'Поставщик' },
+  { key: 'article', label: 'Артикул' },
+  { key: 'code', label: 'Код' },
+  { key: 'external_code', label: 'Внешний код' },
+  { key: 'unit', label: 'Единица измерения' },
+  { key: 'weight', label: 'Вес' },
+  { key: 'volume', label: 'Объем' },
+  { key: 'vat', label: 'Ставка НДС' },
+  { key: 'min_stock', label: 'Минимальный остаток' },
+  { key: 'stock_type', label: 'Тип запаса' },
+  { key: 'packing', label: 'Упаковка' },
+  { key: 'accounting_type', label: 'Тип учета' },
+  { key: 'traceable', label: 'Маркируемый' },
+  { key: 'marking', label: 'Маркировка' },
+  { key: 'product_type', label: 'Тип товара' },
+  { key: 'barcode_type', label: 'Тип штрихкода' },
+  { key: 'barcode', label: 'Штрихкод' },
+  { key: 'cash_register_tax', label: 'Налог ККМ' },
+  { key: 'cash_register_type', label: 'Тип ККМ' },
+]
+
+const productFieldsVisibility = reactive({})
+const loadingVisibility = ref(false)
+const errorVisibility = ref('')
+
+async function loadProductFieldsVisibility() {
+  loadingVisibility.value = true
+  errorVisibility.value = ''
+  try {
+    const response = await apiRequest('/user/settings', { method: 'GET' })
+    if (response.ok && response.data.success) {
+      // Гарантируем правильный путь
+      let vis = response.data.data.personal?.product_fields_visibility
+      console.log('RAW product_fields_visibility:', vis)
+      if (typeof vis === 'string') {
+        try {
+          vis = JSON.parse(vis)
+          console.log('Parsed product_fields_visibility:', vis)
+        } catch (e) {
+          console.error('Ошибка парсинга product_fields_visibility:', vis, e)
+          vis = {}
+        }
+      }
+      if (typeof vis !== 'object' || vis === null) vis = {}
+      console.log('vis до assign:', vis)
+      const defaults = Object.fromEntries(standardProductFields.map(f => [f.key, true]))
+      Object.assign(productFieldsVisibility, { ...defaults, ...vis })
+      console.log('productFieldsVisibility итог:', JSON.parse(JSON.stringify(productFieldsVisibility)))
+    } else {
+      errorVisibility.value = response.data.message || 'Ошибка загрузки настроек видимости'
+      Object.assign(productFieldsVisibility, Object.fromEntries(standardProductFields.map(f => [f.key, true])))
+    }
+  } catch (e) {
+    errorVisibility.value = 'Ошибка загрузки настроек видимости'
+    Object.assign(productFieldsVisibility, Object.fromEntries(standardProductFields.map(f => [f.key, true])))
+  } finally {
+    loadingVisibility.value = false
+  }
+}
+
+async function saveProductFieldsVisibility(key) {
+  // Не блокируем UI, не ставим loadingVisibility
+  errorVisibility.value = ''
+  try {
+    const response = await apiRequest('/user/product-fields-visibility', {
+      method: 'PUT',
+      body: JSON.stringify({ product_fields_visibility: productFieldsVisibility }),
+      headers: { 'Content-Type': 'application/json' }
+    })
+    if (!response.ok || !response.data.success) {
+      errorVisibility.value = response.data.message || 'Ошибка сохранения настроек видимости'
+    }
+  } catch (e) {
+    errorVisibility.value = 'Ошибка сохранения настроек видимости'
+  }
+}
+
+function toggleFieldVisibility(key) {
+  productFieldsVisibility[key] = !productFieldsVisibility[key]
+  // Просто отправляем запрос, не перезагружаем настройки и не блокируем UI
+  saveProductFieldsVisibility(key)
+}
 
 // Функции для работы с аватаром
 const openAvatarUpload = () => {
@@ -1030,6 +1322,34 @@ const handleAvatarLoad = (event) => {
   console.log('Аватар успешно загружен:', event.target.src)
 }
 
+const showDeleteModal = ref(false)
+const fieldToDelete = ref(null)
+
+function confirmDeleteField(field) {
+  fieldToDelete.value = field
+  showDeleteModal.value = true
+}
+function cancelDeleteField() {
+  showDeleteModal.value = false
+  fieldToDelete.value = null
+}
+async function doDeleteField() {
+  if (!fieldToDelete.value) return
+  try {
+    const response = await apiRequest(`/product-fields/${fieldToDelete.value.id}`, { method: 'DELETE' })
+    if (response.ok && response.data.success) {
+      await loadProductFields()
+    } else {
+      alert(response.data.message || 'Ошибка удаления')
+    }
+  } catch (e) {
+    alert('Ошибка удаления')
+  } finally {
+    showDeleteModal.value = false
+    fieldToDelete.value = null
+  }
+}
+
 onMounted(async () => {
   // Устанавливаем заголовок страницы
   document.title = 'B2B SKLAD - Настройки аккаунта'
@@ -1083,6 +1403,12 @@ onMounted(async () => {
   } else {
     console.log('Данные уже заполнены, автоопределение не требуется')
   }
+
+  // Загружаем кастомные поля товаров
+  await loadProductFields()
+
+  // Загружаем настройки видимости полей
+  await loadProductFieldsVisibility()
 })
 
 onUnmounted(() => {
