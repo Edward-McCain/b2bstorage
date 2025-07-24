@@ -354,7 +354,7 @@
             </template>
             <template v-else>
               <template v-for="field in standardProductFields" :key="field.key">
-                <div v-if="productFieldsVisibility[field.key] === true && field.key !== 'description'">
+                <div v-if="productFieldsVisibility[field.key] === true && field.key !== 'description' && field.key !== 'unit'">
                   <label class="block text-xs text-gray-700 mb-1">{{ field.label }}</label>
                   <input v-model="filter[field.key]" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
                 </div>
