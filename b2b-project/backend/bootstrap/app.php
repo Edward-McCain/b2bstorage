@@ -16,6 +16,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'international' => \App\Http\Middleware\InternationalSupport::class,
         ]);
+        
+        // Добавляем middleware для увеличения таймаутов для API запросов
+        $middleware->group('api', [
+            \App\Http\Middleware\IncreaseTimeouts::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

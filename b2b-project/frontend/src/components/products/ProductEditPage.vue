@@ -103,10 +103,21 @@
               Склад выбран при создании товара
             </div>
           </div>
-          <!-- Количество единиц товара, единица измерения и стоимость -->
+          <!-- Начальный остаток, единица измерения и стоимость -->
           <div class="flex gap-2">
             <div class="flex-1">
-              <label class="block text-xs text-gray-700 mb-1">Количество единиц товара <span class="text-red-500">*</span></label>
+              <div class="flex items-center gap-1 mb-1">
+                <label class="block text-xs text-gray-700">Начальный остаток <span class="text-red-500">*</span></label>
+                <div class="group relative">
+                  <svg class="w-4 h-4 text-gray-400 cursor-help" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"></path>
+                  </svg>
+                  <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 text-xs text-white bg-gray-900 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none w-32 z-10">
+                    При изменении начального остатка создается автоматическая инвентаризация.
+                    <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                  </div>
+                </div>
+              </div>
               <template v-if="loadingProduct">
                 <div class="w-full h-10 flex items-center justify-center bg-white border border-gray-200 rounded-lg">
                   <Loader2 class="animate-spin h-5 w-5 text-blue-500" />

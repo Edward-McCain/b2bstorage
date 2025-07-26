@@ -367,8 +367,15 @@ export default {
       loadTransfers()
     }
 
-    const formatDate = (date) => {
-      return new Date(date).toLocaleDateString('ru-RU')
+    function formatDate(date) {
+      if (!date) return ''
+      return new Date(date).toLocaleString('ru-RU', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      })
     }
 
     const getStatusClass = (status) => {

@@ -187,10 +187,9 @@ class InventoryController extends Controller
                     'auto_create_operations' => $request->auto_create_operations
                 ]);
                 
-                // Временно отключено для отладки зависания
-                // $this->createAutoOperations($inventory);
+                $this->createAutoOperations($inventory);
                 
-                \Illuminate\Support\Facades\Log::info('Автоматические операции отключены для отладки (store)');
+                \Illuminate\Support\Facades\Log::info('Автоматические операции завершены (store)');
                 
                 // Если были бы созданы автоматические операции, меняем статус
                 $inventory->update(['status' => 'completed']);

@@ -21,11 +21,11 @@
               <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
             </div>
           </button>
-          <router-link to="/products/create" class="flex-1 flex items-center justify-center gap-1 bg-blue-50 border border-blue-200 text-blue-700 font-medium px-3 py-1.5 rounded text-sm relative group" title="Создать новый товар">
+          <router-link to="/products/create" class="flex-1 flex items-center justify-center gap-1 bg-blue-50 border border-blue-200 text-blue-700 font-medium px-3 py-1.5 rounded text-sm relative group" title="Добавить начальный остаток">
             <Plus class="w-4 h-4" />
             Товар
             <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
-              Создать новый товар
+              Добавить начальный остаток
               <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
             </div>
           </router-link>
@@ -33,12 +33,12 @@
             @click="openImportModal"
             :disabled="importLoading"
             class="flex-1 bg-white border border-gray-300 px-3 py-1.5 rounded font-medium text-sm relative group hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center" 
-            :title="importLoading ? 'Обработка файла...' : 'Импорт товаров из файла'"
+            :title="importLoading ? 'Обработка файла...' : 'Импорт начальных остатков из файла'"
           >
             <Loader2 v-if="importLoading" class="w-4 h-4 animate-spin mr-1" />
             {{ importLoading ? 'Обработка...' : 'Импорт' }}
             <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
-              {{ importLoading ? 'Обработка файла...' : 'Импорт товаров из файла' }}
+              {{ importLoading ? 'Обработка файла...' : 'Импорт начальных остатков из файла' }}
               <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
             </div>
           </button>
@@ -46,12 +46,12 @@
             @click="exportProducts"
             :disabled="exportLoading"
             class="flex-1 bg-white border border-gray-300 px-3 py-1.5 rounded font-medium text-sm relative group hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center" 
-            :title="exportLoading ? 'Выполняется экспорт...' : 'Экспорт товаров в файл'"
+            :title="exportLoading ? 'Выполняется экспорт...' : 'Экспорт остатков в файл'"
           >
             <Loader2 v-if="exportLoading" class="w-4 h-4 animate-spin mr-1" />
             {{ exportLoading ? 'Экспорт...' : 'Экспорт' }}
             <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
-              {{ exportLoading ? 'Выполняется экспорт...' : 'Экспорт товаров в файл' }}
+              {{ exportLoading ? 'Выполняется экспорт...' : 'Экспорт остатков в файл' }}
               <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
             </div>
           </button>
@@ -65,17 +65,17 @@
       <div v-if="loading" class="flex items-center justify-center py-20">
         <div class="text-center">
           <Loader2 class="animate-spin h-8 w-8 text-blue-500 mx-auto mb-4" />
-          <p class="text-gray-600">Загрузка товаров...</p>
+          <p class="text-gray-600">Загрузка начальных остатков...</p>
         </div>
       </div>
 
       <!-- Ошибка -->
       <div v-else-if="error" class="text-center py-20">
         <p class="text-red-500 mb-4">{{ error }}</p>
-        <button @click="loadProducts" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg relative group" title="Повторить загрузку товаров">
+        <button @click="loadProducts" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg relative group" title="Повторить загрузку начальных остатков">
           Попробовать снова
           <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
-            Повторить загрузку товаров
+            Повторить загрузку начальных остатков
             <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
           </div>
         </button>
@@ -440,7 +440,7 @@
     <div v-if="showImportModal" class="fixed inset-0 z-[99999999] flex items-center justify-center bg-white/90 bg-opacity-50">
       <div class="bg-white rounded-lg shadow-lg w-full max-w-6xl mx-4 p-6 max-h-[90vh] overflow-y-auto">
         <div class="flex items-center justify-between mb-6">
-          <h2 class="text-xl font-bold">Импорт товаров</h2>
+          <h2 class="text-xl font-bold">Импорт начальных остатков</h2>
           <button @click="closeImportModal" class="text-gray-400 hover:text-gray-700 p-1 rounded hover:bg-gray-100 transition-colors">
             <X class="w-5 h-5" />
           </button>
@@ -520,7 +520,7 @@
                 class="bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white font-semibold px-6 py-2 rounded-lg transition-colors flex items-center gap-2 text-sm"
               >
                 <Loader2 v-if="importSaving" class="animate-spin h-4 w-4" />
-                {{ importSaving ? 'Сохранение...' : 'Сохранить товары в базу' }}
+                {{ importSaving ? 'Сохранение...' : 'Сохранить начальные остатки' }}
               </button>
             </div>
           </div>

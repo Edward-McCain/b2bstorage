@@ -240,7 +240,7 @@ const updateUserData = async () => {
 
 <template>
   <header class="fixed inset-x-0 top-0 z-[9998] bg-white/90 backdrop-blur border-b border-gray-200">
-    <nav class="flex items-center justify-between p-4 lg:px-8" aria-label="Global">
+    <nav class="flex items-center justify-between p-4 lg:px-8 max-w-7xl mx-auto" aria-label="Global">
       <!-- Логотип -->
       <div class="flex pr-10">
         <a href="/" class="-m-1.5 p-1.5 flex items-center gap-2">
@@ -377,6 +377,15 @@ const updateUserData = async () => {
                 @click="closeProductsMenu"
               >
                 Склады
+              </router-link>
+              <router-link
+                to="/products/logs"
+                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                role="menuitem"
+                tabindex="-1"
+                @click="closeProductsMenu"
+              >
+                Логи
               </router-link>
               <!-- <router-link
                 to="/products/turnovers"
@@ -849,6 +858,13 @@ const updateUserData = async () => {
                 @click="toggleMobileMenu"
               >
                 Склады
+              </router-link>
+              <router-link
+                to="/products/logs"
+                class="block text-sm text-gray-700 hover:text-blue-600 py-2 pl-4"
+                @click="toggleMobileMenu"
+              >
+                Логи
               </router-link>
             </div>
           </div>

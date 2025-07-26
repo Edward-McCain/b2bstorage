@@ -1,11 +1,7 @@
 <template>
   <div class="min-h-screen bg-gray-50" style="padding-top: 66px;">
     <ProductsMenu />
-    <div class="max-w-3xl mx-auto bg-white rounded-xl shadow p-6 relative mt-4">
-      <router-link :to="`/products/receipts/edit/${receipt.id}`" class="absolute top-4 right-4 bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded flex items-center gap-1 text-sm transition">
-        <Pencil class="w-4 h-4" />
-        Редактировать
-      </router-link>
+    <div class="max-w-7xl mx-auto bg-white rounded-xl shadow p-6 relative mt-4">
       
       <!-- Прелоадер -->
       <div v-if="loading" class="flex items-center justify-center py-20">
@@ -72,7 +68,7 @@
                 <tr v-for="pos in positions" :key="pos.id" class="hover:bg-gray-50">
                   <td class="px-3 py-2">{{ pos.name }}</td>
                   <td class="px-3 py-2 text-center">{{ pos.code }}</td>
-                  <td class="px-3 py-2 text-center">{{ pos.quantity }}</td>
+                  <td class="px-3 py-2 text-center">{{ parseFloat(pos.quantity) }}</td>
                   <td class="px-3 py-2 text-center">{{ pos.price }}</td>
                   <td class="px-3 py-2 text-center">{{ pos.amount }}</td>
                 </tr>

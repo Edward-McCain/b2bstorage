@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\ProductSklad;
 use App\Models\ProductImage;
 use App\Models\ReceiptPosition;
+use App\Models\Inventory;
+use App\Models\InventoryItem;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
@@ -143,6 +145,9 @@ class ProductController extends Controller
             return response()->json(['error' => 'Товар не найден'], 404);
         }
         
+        // Сохраняем старое значение start_count для сравнения
+        $oldStartCount = $product->start_count;
+        
         // Валидация данных
         $request->validate([
             'name' => 'required|string|max:255',
@@ -223,6 +228,25 @@ class ProductController extends Controller
                 'warehouse_id' => $warehouseId,
                 'start_count' => $request->start_count
             ]);
+
+            // Создаем инвентаризацию если изменился start_count
+            $newStartCount = $request->start_count;
+            if ($oldStartCount != $newStartCount) {
+                $this->createSingleProductInventory(
+                    $product->id,
+                    $warehouseId,
+                    $newStartCount,
+                    'update',
+                    $oldStartCount,
+                    $user->id
+                );
+                
+                Log::info('Создана инвентаризация для изменения начального остатка', [
+                    'product_id' => $product->id,
+                    'old_start_count' => $oldStartCount,
+                    'new_start_count' => $newStartCount
+                ]);
+            }
 
         } catch (\Exception $e) {
             Log::error('Ошибка обновления остатков товара', [
@@ -691,11 +715,196 @@ class ProductController extends Controller
                 );
             }
 
+            // 3. Создаем инвентаризацию для всех созданных товаров
+            if (!empty($createdProducts)) {
+                $this->createBulkProductsInventory($createdProducts, $warehouseId, $user->id);
+            }
+
             DB::commit();
             return response()->json(['success' => true, 'created_products_count' => count($createdProducts)]);
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
+    }
+
+    /**
+     * Создать инвентаризацию для одного товара
+     * @param int $productId ID товара
+     * @param int $warehouseId ID склада
+     * @param int $quantity Количество
+     * @param string $operationType Тип операции ('create' или 'update')
+     * @param int|null $oldQuantity Старое количество (для обновления)
+     * @param int|null $userId ID пользователя
+     * @return int ID созданной инвентаризации
+     */
+    private function createSingleProductInventory($productId, $warehouseId, $quantity, $operationType, $oldQuantity = null, $userId = null)
+    {
+        $date = now()->format('d.m.Y');
+        $inventoryName = $operationType === 'create' 
+            ? "Добавление начальных остатков от {$date}"
+            : "Изменение начальных остатков от {$date}";
+        
+        // Получаем название товара
+        $product = ProductSklad::find($productId);
+        $productName = $product ? $product->name : "Товар ID: {$productId}";
+        
+        // Используем переданный user_id или текущего пользователя
+        $createdBy = $userId ?? Auth::id();
+        
+        $inventory = Inventory::create([
+            'name' => $inventoryName,
+            'description' => "Автоматическая инвентаризация для товара: {$productName}",
+            'warehouse_id' => $warehouseId,
+            'status' => 'completed',
+            'created_by' => $createdBy,
+            'completed_at' => now()
+        ]);
+        
+        $notes = $operationType === 'create'
+            ? "Создание начального остатка {$quantity}"
+            : "Изменение начального остатка с {$oldQuantity} на {$quantity}";
+
+        $calculatedQuantity = $operationType === 'update' ? $oldQuantity : 0;
+
+        InventoryItem::create([
+            'inventory_id' => $inventory->id,
+            'product_id' => $productId,
+            'calculated_quantity' => $calculatedQuantity,
+            'actual_quantity' => $quantity,
+            'notes' => $notes
+        ]);
+        
+        Log::info('Создана автоматическая инвентаризация для товара', [
+            'inventory_id' => $inventory->id,
+            'product_id' => $productId,
+            'product_name' => $productName,
+            'warehouse_id' => $warehouseId,
+            'operation_type' => $operationType,
+            'quantity' => $quantity,
+            'old_quantity' => $oldQuantity,
+            'created_by' => $createdBy
+        ]);
+        
+        return $inventory->id;
+    }
+
+    /**
+     * Создать инвентаризацию для множества товаров
+     * @param array $products Массив товаров с данными
+     * @param int $warehouseId ID склада
+     * @param int $userId ID пользователя
+     * @return int ID созданной инвентаризации
+     */
+    private function createBulkProductsInventory($products, $warehouseId, $userId = null)
+    {
+        $createdBy = $userId ?? Auth::id();
+        
+        // Получаем названия товаров для описания
+        $productNames = [];
+        foreach ($products as $product) {
+            $productNames[] = $product['name'] ?? "Товар ID: {$product['id']}";
+        }
+        
+        // Ограничиваем список до 5 товаров для описания
+        $productNamesList = implode(', ', array_slice($productNames, 0, 5));
+        if (count($productNames) > 5) {
+            $productNamesList .= ' и другие';
+        }
+        
+        Log::info('Создание массовой инвентаризации', [
+            'created_by' => $createdBy,
+            'product_names' => $productNamesList
+        ]);
+        
+        $inventory = Inventory::create([
+            'user_id' => $createdBy,
+            'warehouse_id' => $warehouseId,
+            'status' => 'completed',
+            'description' => "Автоматическая инвентаризация для товаров: {$productNamesList}",
+            'created_by' => $createdBy
+        ]);
+        
+        foreach ($products as $product) {
+            $quantity = $product['quantity'] ?? 0;
+            InventoryItem::create([
+                'inventory_id' => $inventory->id,
+                'product_id' => $product['id'],
+                'calculated_quantity' => 0,
+                'actual_quantity' => $quantity,
+                'notes' => "Создание начального остатка {$quantity}"
+            ]);
+        }
+        
+        return $inventory;
+    }
+
+    /**
+     * Получить логи операций с товарами
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getProductOperations(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['error' => 'Пользователь не авторизован'], 401);
+        }
+
+        $query = ProductOperation::with(['product', 'warehouse', 'createdByUser'])
+            ->whereHas('product', function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            });
+
+        // Фильтр по типу операции
+        if ($request->has('operation_type') && $request->operation_type) {
+            $query->where('operation_type', $request->operation_type);
+        }
+
+        // Фильтр по складу
+        if ($request->has('warehouse') && $request->warehouse) {
+            $query->where('warehouse_id', $request->warehouse);
+        }
+
+        // Фильтр по дате от
+        if ($request->has('date_from') && $request->date_from) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+
+        // Фильтр по дате до
+        if ($request->has('date_to') && $request->date_to) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        // Сортировка по дате создания (новые сначала)
+        $query->orderBy('created_at', 'desc');
+
+        $operations = $query->get();
+
+        // Формируем ответ с дополнительными данными
+        $formattedOperations = $operations->map(function ($operation) {
+            return [
+                'id' => $operation->id,
+                'product_id' => $operation->product_id,
+                'product_name' => $operation->product->name ?? 'Неизвестный товар',
+                'product_code' => $operation->product->code ?? '',
+                'warehouse_id' => $operation->warehouse_id,
+                'warehouse_name' => $operation->warehouse->name ?? 'Неизвестный склад',
+                'operation_type' => $operation->operation_type,
+                'quantity' => $operation->quantity,
+                'reference_type' => $operation->reference_type,
+                'reference_id' => $operation->reference_id,
+                'notes' => $operation->notes,
+                'created_by' => $operation->created_by,
+                'created_by_name' => $operation->createdByUser->first_name ?? 'Неизвестный пользователь',
+                'created_at' => $operation->created_at,
+                'updated_at' => $operation->updated_at
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $formattedOperations
+        ]);
     }
 } 

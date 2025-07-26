@@ -119,7 +119,7 @@
                 <tr v-for="position in receipt.positions" :key="position.id" class="hover:bg-gray-50">
                   <td class="px-3 py-2 text-gray-900">{{ position.name }}</td>
                   <td class="px-3 py-2 text-center text-gray-900">{{ position.code }}</td>
-                  <td class="px-3 py-2 text-center text-gray-900">{{ position.quantity }}</td>
+                  <td class="px-3 py-2 text-center text-gray-900">{{ parseFloat(position.quantity) }}</td>
                   <td class="px-3 py-2 text-center text-gray-900">{{ position.price }}</td>
                   <td class="px-3 py-2 text-center text-gray-900 font-semibold">{{ position.amount }}</td>
                 </tr>
@@ -173,7 +173,13 @@ const loading = ref(true)
 
 function formatDate(date) {
   if (!date) return ''
-  return new Date(date).toLocaleDateString('ru-RU')
+  return new Date(date).toLocaleString('ru-RU', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
 }
 
 function formatPrice(price) {

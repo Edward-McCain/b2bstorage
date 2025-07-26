@@ -59,9 +59,9 @@
                   <div>
                     <div class="font-medium text-gray-900">{{ position.product?.name }}</div>
                     <div class="text-sm text-gray-500">
-                      Количество: {{ position.quantity }}
+                      Количество: {{ parseFloat(position.quantity) }}
                       <span v-if="position.actual_quantity !== null">
-                        (фактически: {{ position.actual_quantity }})
+                        (фактически: {{ parseFloat(position.actual_quantity) }})
                       </span>
                     </div>
                     <div v-if="position.notes" class="text-sm text-gray-500 mt-1">
@@ -108,8 +108,15 @@ export default {
   },
   emits: ['close'],
   setup() {
-    const formatDate = (date) => {
-      return new Date(date).toLocaleDateString('ru-RU')
+    function formatDate(date) {
+      if (!date) return ''
+      return new Date(date).toLocaleString('ru-RU', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      })
     }
 
     const formatDateTime = (date) => {

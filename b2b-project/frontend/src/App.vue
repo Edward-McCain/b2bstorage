@@ -97,4 +97,8 @@ const isAdminRoute = computed(() => {
 #toast-container > div.toast-warning {
   border-left: 4px solid #f59e42 !important;
 }
+
+button.bg-gray-100 {
+  border: none !important;
+}
 </style>
