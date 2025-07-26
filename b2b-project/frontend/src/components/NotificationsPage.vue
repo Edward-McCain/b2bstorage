@@ -154,9 +154,6 @@ const loadNotifications = async () => {
       notifications.value = response.data.data
       unreadCount.value = response.data.unread_count || 0
       console.log('notifications.value после установки:', notifications.value)
-      
-      // Отправляем событие об обновлении уведомлений
-      window.dispatchEvent(new CustomEvent('notifications-updated'))
     } else {
       console.error('API вернул ошибку:', response.data)
     }
@@ -175,8 +172,6 @@ const markAllAsRead = async () => {
     
     if (response.data && response.data.success) {
       loadNotifications()
-      // Отправляем событие об обновлении уведомлений
-      window.dispatchEvent(new CustomEvent('notifications-updated'))
     }
   } catch (error) {
     console.error('Ошибка при отметке всех как прочитанные:', error)
@@ -192,8 +187,6 @@ const getAIRecommendations = async () => {
     
     if (response.data && response.data.success) {
       loadNotifications()
-      // Отправляем событие об обновлении уведомлений
-      window.dispatchEvent(new CustomEvent('notifications-updated'))
     }
   } catch (error) {
     console.error('Ошибка при получении AI рекомендаций:', error)

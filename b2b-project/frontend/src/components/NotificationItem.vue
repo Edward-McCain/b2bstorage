@@ -148,8 +148,6 @@ const markAsRead = async () => {
     
     if (response.data && response.data.success) {
       emit('updated')
-      // Отправляем событие об обновлении уведомлений
-      window.dispatchEvent(new CustomEvent('notifications-updated'))
     }
   } catch (error) {
     console.error('Ошибка при отметке как прочитанное:', error)
@@ -165,8 +163,6 @@ const deleteNotification = async () => {
     if (response.data && response.data.success) {
       emit('deleted')
       showDeleteModal.value = false
-      // Отправляем событие об обновлении уведомлений
-      window.dispatchEvent(new CustomEvent('notifications-updated'))
     }
   } catch (error) {
     console.error('Ошибка при удалении уведомления:', error)

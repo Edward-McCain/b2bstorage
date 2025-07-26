@@ -345,63 +345,109 @@ class AIService
     }
 
     /**
-     * Генерация общих рекомендаций с учетом реальных данных
+     * Генерация общих рекомендаций
      */
     public function generateGeneralRecommendations($userId)
     {
         try {
-            // Собираем статистику системы
-            $totalProducts = ProductSklad::count();
-            $totalQuantity = ProductSklad::sum('start_count');
-            $lowStockCount = ProductSklad::where('start_count', '<=', 10)->count();
-            $warehousesCount = \App\Models\Warehouse::count();
+            Log::info('AIService: Начинаем генерацию общих рекомендаций для пользователя ' . $userId);
             
-            $recentDocuments = Receipt::where('created_at', '>=', now()->subDays(7))->count() +
-                              WriteOff::where('created_at', '>=', now()->subDays(7))->count() +
-                              ProductTransfer::where('created_at', '>=', now()->subDays(7))->count();
+            // Получаем все товары
+            $allProducts = ProductSklad::with(['product', 'warehouse'])->get();
+            Log::info('AIService: Получено товаров: ' . $allProducts->count());
+            
+            if ($allProducts->isEmpty()) {
+                Log::info('AIService: Нет товаров для анализа');
+                return "В системе нет товаров для анализа.";
+            }
 
-            $prompt = "Дай 5-7 практичных рекомендаций по улучшению управления складскими запасами для бизнеса со следующими характеристиками:
+            // Анализируем остатки
+            $totalProducts = $allProducts->count();
+            $totalQuantity = $allProducts->sum('start_count');
+            $lowStockCount = $allProducts->where('start_count', '>', 0)->where('start_count', '<=', 10)->count();
+            $warehousesCount = $allProducts->pluck('warehouse_id')->unique()->count();
+            
+            // Получаем последние документы
+            $recentDocuments = collect();
+            $recentReceipts = Receipt::where('created_at', '>=', now()->subDays(30))->count();
+            $recentWriteOffs = WriteOff::where('created_at', '>=', now()->subDays(30))->count();
+            $recentTransfers = ProductTransfer::where('created_at', '>=', now()->subDays(30))->count();
+            
+            Log::info('AIService: Статистика - товаров: ' . $totalProducts . ', остаток: ' . $totalQuantity . ', низкий остаток: ' . $lowStockCount);
+            
+            // Формируем список товаров для анализа
+            $productsList = $allProducts->take(10)->map(function ($item) {
+                return "Товар: {$item->name}, Остаток: {$item->start_count}, Склад: " . ($item->warehouse ? $item->warehouse->name : 'Не указан');
+            })->implode("\n");
 
-            СТАТИСТИКА СИСТЕМЫ:
-            - Всего товаров: {$totalProducts}
-            - Общий остаток: {$totalQuantity}
-            - Товаров с низким остатком (≤10): {$lowStockCount}
-            - Количество складов: {$warehousesCount}
-            - Документов за неделю: {$recentDocuments}
+            $prompt = "Проанализируй следующие данные и дай общие рекомендации по управлению запасами:
 
-            Рекомендации должны быть:
-            1. Практичными и применимыми к данной системе
-            2. Основанными на реальных данных
-            3. Конкретными и измеримыми
-            4. Приоритизированными по важности
-            5. Содержать конкретные действия
+СТАТИСТИКА:
+- Всего товаров: {$totalProducts}
+- Общий остаток: {$totalQuantity}
+- Товаров с низким остатком (1-10): {$lowStockCount}
+- Количество складов: {$warehousesCount}
+- Документов за 30 дней: оприходований {$recentReceipts}, списаний {$recentWriteOffs}, перемещений {$recentTransfers}
 
-            Ответ должен быть на русском языке и структурированным.";
+ТОВАРЫ (первые 10):
+{$productsList}
 
+Дай общие рекомендации по управлению запасами на русском языке. Включи:
+1. Анализ и оптимизацию запасов
+2. Управление поставками
+3. Оптимизацию складских процессов
+4. Мониторинг и контроль
+5. Обучение персонала
+6. Анализ эффективности
+7. Сотрудничество с отделом продаж
+
+Ответ должен быть структурированным и практичным.";
+
+            Log::info('AIService: Отправляем запрос к OpenAI');
+            
             $response = OpenAI::chat()->create([
                 'model' => 'gpt-3.5-turbo',
                 'messages' => [
-                    ['role' => 'system', 'content' => 'Ты консультант по управлению складскими запасами. Давай практичные рекомендации на основе реальных данных системы.'],
+                    ['role' => 'system', 'content' => 'Ты эксперт по управлению складскими запасами. Давай детальные и практичные рекомендации на основе реальных данных.'],
                     ['role' => 'user', 'content' => $prompt]
                 ],
                 'max_tokens' => 800,
                 'temperature' => 0.7
             ]);
-
+            
+            Log::info('AIService: Получен ответ от OpenAI');
+            
             $recommendations = $response->choices[0]->message->content;
-
-            // Создаем уведомление
+            
+            // Создаем уведомление с рекомендациями
             Notification::create([
                 'user_id' => $userId,
-                'type' => Notification::TYPE_RECOMMENDATION,
-                'message' => "Общие рекомендации по управлению запасами:\n\n{$recommendations}"
+                'type' => 'recommendation',
+                'message' => $recommendations,
+                'is_read' => false
             ]);
-
-            return $recommendations;
+            
+            Log::info('AIService: Уведомление создано успешно');
+            
+            return [
+                'recommendations' => $recommendations,
+                'statistics' => [
+                    'total_products' => $totalProducts,
+                    'total_quantity' => $totalQuantity,
+                    'low_stock_count' => $lowStockCount,
+                    'warehouses_count' => $warehousesCount,
+                    'recent_documents' => [
+                        'receipts' => $recentReceipts,
+                        'write_offs' => $recentWriteOffs,
+                        'transfers' => $recentTransfers
+                    ]
+                ]
+            ];
 
         } catch (\Exception $e) {
-            Log::error('Ошибка при генерации общих рекомендаций через AI: ' . $e->getMessage());
-            return null;
+            Log::error('AIService: Ошибка при генерации рекомендаций: ' . $e->getMessage());
+            Log::error('AIService: Stack trace: ' . $e->getTraceAsString());
+            throw $e;
         }
     }
 } 

@@ -148,8 +148,14 @@ class AIController extends Controller
     public function generateRecommendations(): JsonResponse
     {
         try {
+            Log::info('AIController: Начинаем генерацию рекомендаций');
+            
             $user = Auth::user();
+            Log::info('AIController: Пользователь: ' . $user->id);
+            
             $result = $this->aiService->generateGeneralRecommendations($user->id);
+            
+            Log::info('AIController: Рекомендации сгенерированы успешно');
 
             if ($result) {
                 return response()->json([
@@ -157,6 +163,7 @@ class AIController extends Controller
                     'data' => $result
                 ]);
             } else {
+                Log::warning('AIController: Результат пустой');
                 return response()->json([
                     'success' => false,
                     'message' => 'Не удалось сгенерировать рекомендации'
@@ -164,10 +171,11 @@ class AIController extends Controller
             }
 
         } catch (\Exception $e) {
-            Log::error('Ошибка при генерации рекомендаций: ' . $e->getMessage());
+            Log::error('AIController: Ошибка при генерации рекомендаций: ' . $e->getMessage());
+            Log::error('AIController: Stack trace: ' . $e->getTraceAsString());
             return response()->json([
                 'success' => false,
-                'message' => 'Ошибка при генерации рекомендаций'
+                'message' => 'Не удалось сгенерировать рекомендации: ' . $e->getMessage()
             ], 500);
         }
     }

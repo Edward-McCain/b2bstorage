@@ -246,7 +246,7 @@ const updateUserData = async () => {
 const loadUnreadNotificationsCount = async () => {
   try {
     const token = localStorage.getItem('auth_token')
-    const response = await fetch('http://127.0.0.1:8000/api/notifications/unread-count', {
+    const response = await fetch('/api/notifications/unread-count', {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
