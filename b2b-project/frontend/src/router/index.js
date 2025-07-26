@@ -29,6 +29,7 @@ import InventoryCreatePage from '../components/products/InventoryCreatePage.vue'
 import InventoryViewPage from '../components/products/InventoryViewPage.vue'
 import InventoryEditPage from '../components/products/InventoryEditPage.vue'
 import ProductsLogsPage from '../components/products/ProductsLogs.vue'
+import NotificationsPage from '../components/NotificationsPage.vue'
 
 // Warehouse pages
 import WarehousesPage from '../components/warehouses/WarehousesPage.vue'
@@ -161,6 +162,11 @@ const routes = [
     path: '/products/logs',
     name: 'ProductsLogs',
     component: ProductsLogsPage
+  },
+  {
+    path: '/notifications',
+    name: 'Notifications',
+    component: NotificationsPage
   },
   {
     path: '/products/turnovers',

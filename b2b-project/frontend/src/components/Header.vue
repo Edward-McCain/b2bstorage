@@ -2,6 +2,7 @@
 // Компонент шапки сайта
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { Bell } from 'lucide-vue-next'
 import { getFileUrl } from '../config/api.js'
 import CurrencySelector from './CurrencySelector.vue'
 
@@ -13,6 +14,7 @@ const userMenuOpen = ref(false)
 const productsMenuOpen = ref(false)
 const purchasesMenuOpen = ref(false)
 const salesMenuOpen = ref(false)
+const unreadNotificationsCount = ref(0)
 
 // Computed свойство для правильного URL аватара
 const avatarUrl = computed(() => {
@@ -35,6 +37,9 @@ onMounted(() => {
     
     // Обновляем данные пользователя из API для получения актуальной валюты
     updateUserData()
+    
+    // Загружаем количество непрочитанных уведомлений
+    loadUnreadNotificationsCount()
   }
   
   // Добавляем глобальный обработчик события обновления аватара
@@ -236,6 +241,43 @@ const updateUserData = async () => {
     console.error('Header: Ошибка запроса:', error)
   }
 }
+
+// Функция для загрузки количества непрочитанных уведомлений
+const loadUnreadNotificationsCount = async () => {
+  try {
+    const token = localStorage.getItem('auth_token')
+    const response = await fetch('http://127.0.0.1:8000/api/notifications/unread-count', {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    })
+
+    if (response.ok) {
+      const result = await response.json()
+      console.log('Header: Ответ API счетчика уведомлений:', result)
+      if (result.success) {
+        const newCount = result.count || 0
+        console.log('Header: Обновляем счетчик с', unreadNotificationsCount.value, 'на', newCount)
+        unreadNotificationsCount.value = newCount
+      }
+    }
+  } catch (error) {
+    console.error('Header: Ошибка при загрузке счетчика уведомлений:', error)
+  }
+}
+
+// Функция для обновления счетчика уведомлений
+const updateNotificationsCount = () => {
+  loadUnreadNotificationsCount()
+}
+
+// Добавляем обработчик события обновления уведомлений
+window.addEventListener('notifications-updated', () => {
+  updateNotificationsCount()
+})
 </script>
 
 <template>
@@ -387,42 +429,6 @@ const updateUserData = async () => {
               >
                 Логи
               </router-link>
-              <!-- <router-link
-                to="/products/turnovers"
-                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                role="menuitem"
-                tabindex="-1"
-                @click="closeProductsMenu"
-              >
-                Обороты
-              </router-link>
-              <router-link
-                to="/products/serial-numbers"
-                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                role="menuitem"
-                tabindex="-1"
-                @click="closeProductsMenu"
-              >
-                Сер. номера
-              </router-link>
-              <router-link
-                to="/products/marking-codes"
-                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                role="menuitem"
-                tabindex="-1"
-                @click="closeProductsMenu"
-              >
-                Коды маркировки
-              </router-link>
-              <router-link
-                to="/products/marking"
-                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                role="menuitem"
-                tabindex="-1"
-                @click="closeProductsMenu"
-              >
-                Маркировка
-              </router-link> -->
             </div>
           </div>
         </div>
@@ -657,6 +663,22 @@ const updateUserData = async () => {
       </div>
       <!-- Справа: кнопки авторизации -->
       <div class="hidden lg:flex lg:flex-1 lg:justify-end items-center gap-4">
+        <!-- Иконка уведомлений -->
+        <router-link
+          to="/notifications"
+          class="relative p-2 text-gray-700 hover:text-blue-600 transition-colors"
+          title="Уведомления"
+        >
+          <Bell class="h-6 w-6" />
+          <!-- Счетчик непрочитанных уведомлений -->
+          <span 
+            v-if="unreadNotificationsCount > 0"
+            class="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-medium" style="zoom: 0.8; margin: 8px 8px 0 0;"
+          >
+            {{ unreadNotificationsCount > 99 ? '99+' : unreadNotificationsCount }}
+          </span>
+        </router-link>
+        
         <!-- Если пользователь авторизован -->
         <div v-if="isAuthenticated" class="relative">
           <!-- Flyout Menu -->
@@ -867,6 +889,17 @@ const updateUserData = async () => {
                 Логи
               </router-link>
             </div>
+          </div>
+
+          <!-- Отдельный пункт для уведомлений -->
+          <div>
+            <router-link
+              to="/notifications"
+              class="block text-sm text-gray-700 hover:text-blue-600 py-2 pl-4"
+              @click="toggleMobileMenu"
+            >
+              Уведомления
+            </router-link>
           </div>
 
           <!-- Закупки -->

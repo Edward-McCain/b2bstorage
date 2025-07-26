@@ -160,6 +160,22 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/product-fields/{id}', [\App\Http\Controllers\ProductFieldController::class, 'destroy']);
     // Product fields visibility (стандартные поля)
     Route::put('/user/product-fields-visibility', [\App\Http\Controllers\AuthController::class, 'updateProductFieldsVisibility']);
+    
+    // Notification routes
+    Route::get('/notifications', [\App\Http\Controllers\NotificationController::class, 'index']);
+    Route::get('/notifications/unread', [\App\Http\Controllers\NotificationController::class, 'unread']);
+    Route::get('/notifications/unread-count', [\App\Http\Controllers\NotificationController::class, 'unreadCount']);
+    Route::put('/notifications/{id}/mark-read', [\App\Http\Controllers\NotificationController::class, 'markAsRead']);
+    Route::put('/notifications/mark-all-read', [\App\Http\Controllers\NotificationController::class, 'markAllAsRead']);
+    Route::delete('/notifications/{id}', [\App\Http\Controllers\NotificationController::class, 'destroy']);
+    
+    // AI routes
+    Route::post('/ai/analyze-stock', [\App\Http\Controllers\AIController::class, 'analyzeStockLevels']);
+    Route::post('/ai/analyze-documents', [\App\Http\Controllers\AIController::class, 'analyzeDocuments']);
+    Route::post('/ai/smart-search', [\App\Http\Controllers\AIController::class, 'smartSearch']);
+    Route::post('/ai/forecast-stock', [\App\Http\Controllers\AIController::class, 'forecastStock']);
+    Route::post('/ai/generate-recommendations', [\App\Http\Controllers\AIController::class, 'generateRecommendations']);
+    Route::post('/ai/comprehensive-analysis', [\App\Http\Controllers\AIController::class, 'comprehensiveAnalysis']);
 });
 
 // Админские маршруты для перемещений
