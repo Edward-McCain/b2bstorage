@@ -59,7 +59,6 @@
                 <thead class="bg-gray-50">
                   <tr>
                     <th class="px-3 py-2 text-left font-semibold text-gray-700">Наименование</th>
-                    <th class="px-3 py-2 text-center font-semibold text-gray-700">Код</th>
                     <th class="px-3 py-2 text-center font-semibold text-gray-700">Количество</th>
                     <th class="px-3 py-2 text-center font-semibold text-gray-700">Цена</th>
                     <th class="px-3 py-2 text-center font-semibold text-gray-700">Сумма</th>
@@ -68,7 +67,6 @@
                 <tbody>
                   <tr v-for="pos in positions" :key="pos.id" class="hover:bg-gray-50">
                     <td class="px-3 py-2">{{ pos.name }}</td>
-                    <td class="px-3 py-2 text-center">{{ pos.code }}</td>
                     <td class="px-3 py-2 text-center">{{ parseFloat(pos.quantity) }}</td>
                     <td class="px-3 py-2 text-center">{{ pos.price }}</td>
                     <td class="px-3 py-2 text-center">{{ pos.amount }}</td>
