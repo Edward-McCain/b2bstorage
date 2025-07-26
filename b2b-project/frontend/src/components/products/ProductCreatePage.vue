@@ -370,7 +370,6 @@ const standardProductFields = [
   { key: 'article', label: 'Артикул' },
   { key: 'code', label: 'Код' },
   { key: 'external_code', label: 'Внешний код' },
-  { key: 'unit', label: 'Единица измерения' },
   { key: 'weight', label: 'Вес' },
   { key: 'volume', label: 'Объем' },
   { key: 'vat', label: 'Ставка НДС' },
@@ -759,7 +758,8 @@ async function handleSave() {
       start_count: product.start_count,
       warehouse_id: selectedWarehouse.value?.value || product.warehouse,
       price: product.price,
-      fields: { ...customFieldValues }
+      fields: { ...customFieldValues },
+      is_creation: true // Указываем, что это создание товара
     }
 
     // Отправляем запрос на сохранение

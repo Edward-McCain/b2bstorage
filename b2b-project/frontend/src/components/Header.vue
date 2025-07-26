@@ -729,7 +729,7 @@ const updateUserData = async () => {
                 </button>
                 
                 <!-- Техническая поддержка -->
-                <button
+                <!-- <button
                   @click="openSupport"
                   class="flex items-center gap-3 text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 w-full text-left cursor-pointer"
                   role="menuitem"
@@ -743,7 +743,7 @@ const updateUserData = async () => {
                     <path d="M14.5 11a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z"/>
                   </svg>
                   Техническая поддержка
-                </button>
+                </button> -->
                 
                 <!-- Разделитель -->
                 <div class="border-t border-gray-100 my-1"></div>

@@ -232,19 +232,23 @@ class ProductController extends Controller
             // Создаем инвентаризацию если изменился start_count
             $newStartCount = $request->start_count;
             if ($oldStartCount != $newStartCount) {
+                // Определяем тип операции: создание или редактирование
+                $operationType = $request->has('is_creation') && $request->is_creation ? 'create' : 'update';
+                
                 $this->createSingleProductInventory(
                     $product->id,
                     $warehouseId,
                     $newStartCount,
-                    'update',
+                    $operationType,
                     $oldStartCount,
                     $user->id
                 );
                 
-                Log::info('Создана инвентаризация для изменения начального остатка', [
+                Log::info('Создана инвентаризация для ' . ($operationType === 'create' ? 'создания' : 'изменения') . ' начального остатка', [
                     'product_id' => $product->id,
                     'old_start_count' => $oldStartCount,
-                    'new_start_count' => $newStartCount
+                    'new_start_count' => $newStartCount,
+                    'operation_type' => $operationType
                 ]);
             }
 

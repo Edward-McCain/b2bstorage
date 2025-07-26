@@ -382,7 +382,6 @@ const standardProductFields = [
   { key: 'article', label: 'Артикул' },
   { key: 'code', label: 'Код' },
   { key: 'external_code', label: 'Внешний код' },
-  { key: 'unit', label: 'Единица измерения' },
   { key: 'weight', label: 'Вес' },
   { key: 'volume', label: 'Объем' },
   { key: 'vat', label: 'Ставка НДС' },

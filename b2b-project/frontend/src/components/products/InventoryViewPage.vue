@@ -1,156 +1,158 @@
 <template>
   <div class="min-h-screen bg-gray-50" style="padding-top: 66px;">
     <ProductsMenu />
-    <div class="max-w-7xl mx-auto bg-white rounded-xl shadow p-6 relative mt-4">
-      <!-- <router-link 
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div class="bg-white rounded-xl shadow p-6 relative">
+        <!-- <router-link 
         :to="`/products/inventory/edit/${inventoryId}`"
         class="absolute top-4 right-4 bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded flex items-center gap-1 text-sm transition"
       >
         <Pencil class="w-4 h-4" />
         Редактировать
       </router-link> -->
-      
-      <!-- Прелоадер -->
-      <div v-if="loading" class="flex items-center justify-center py-20">
-        <div class="text-center">
-          <Loader2 class="animate-spin h-8 w-8 text-blue-600 mx-auto mb-4" />
-          <p class="text-gray-600 text-sm">Загрузка инвентаризации...</p>
-        </div>
-      </div>
-
-      <!-- Контент -->
-      <div v-else>
-        <div class="mb-6">
-          <h1 class="text-xl font-bold text-gray-900 mb-1">{{ inventory.name }}</h1>
-          <div class="text-gray-500 text-sm">от {{ formatDate(inventory.created_at) }}</div>
-        </div>
         
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <div>
-            <div class="text-gray-500 text-xs mb-1">Статус</div>
-            <div class="text-gray-900 text-sm">
-              <span :class="getStatusClass(inventory.status)">
-                {{ getStatusText(inventory.status) }}
-              </span>
+        <!-- Прелоадер -->
+        <div v-if="loading" class="flex items-center justify-center py-20">
+          <div class="text-center">
+            <Loader2 class="animate-spin h-8 w-8 text-blue-600 mx-auto mb-4" />
+            <p class="text-gray-600 text-sm">Загрузка инвентаризации...</p>
+          </div>
+        </div>
+
+        <!-- Контент -->
+        <div v-else>
+          <div class="mb-6">
+            <h1 class="text-xl font-bold text-gray-900 mb-1">{{ inventory.name }}</h1>
+            <div class="text-gray-500 text-sm">от {{ formatDate(inventory.created_at) }}</div>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div>
+              <div class="text-gray-500 text-xs mb-1">Статус</div>
+              <div class="text-gray-900 text-sm">
+                <span :class="getStatusClass(inventory.status)">
+                  {{ getStatusText(inventory.status) }}
+                </span>
+              </div>
+            </div>
+            <div>
+              <div class="text-gray-500 text-xs mb-1">Склад</div>
+              <div class="text-gray-900 text-sm">{{ inventory.warehouse_name || `Склад #${inventory.warehouse_id}` }}</div>
+            </div>
+            <div>
+              <div class="text-gray-500 text-xs mb-1">Создал</div>
+              <div class="text-gray-900 text-sm">{{ inventory.created_by_name || '-' }}</div>
+            </div>
+            <div v-if="inventory.completed_at">
+              <div class="text-gray-500 text-xs mb-1">Завершена</div>
+              <div class="text-gray-900 text-sm">{{ formatDate(inventory.completed_at) }}</div>
+            </div>
+            <div v-if="inventory.description">
+              <div class="text-gray-500 text-xs mb-1">Описание</div>
+              <div class="text-gray-900 text-sm">{{ inventory.description }}</div>
             </div>
           </div>
-          <div>
-            <div class="text-gray-500 text-xs mb-1">Склад</div>
-            <div class="text-gray-900 text-sm">{{ inventory.warehouse_name || `Склад #${inventory.warehouse_id}` }}</div>
-          </div>
-          <div>
-            <div class="text-gray-500 text-xs mb-1">Создал</div>
-            <div class="text-gray-900 text-sm">{{ inventory.created_by_name || '-' }}</div>
-          </div>
-          <div v-if="inventory.completed_at">
-            <div class="text-gray-500 text-xs mb-1">Завершена</div>
-            <div class="text-gray-900 text-sm">{{ formatDate(inventory.completed_at) }}</div>
-          </div>
-          <div v-if="inventory.description">
-            <div class="text-gray-500 text-xs mb-1">Описание</div>
-            <div class="text-gray-900 text-sm">{{ inventory.description }}</div>
-          </div>
-        </div>
 
-        <!-- Статистика -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div class="bg-gray-50 rounded-lg p-3">
-            <div class="text-gray-500 text-xs mb-1">Всего товаров</div>
-            <div class="text-lg font-semibold text-gray-900">{{ inventory.items_count || 0 }}</div>
+          <!-- Статистика -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-gray-50 rounded-lg p-3">
+              <div class="text-gray-500 text-xs mb-1">Всего товаров</div>
+              <div class="text-lg font-semibold text-gray-900">{{ inventory.items_count || 0 }}</div>
+            </div>
+            <div class="bg-gray-50 rounded-lg p-3">
+              <div class="text-gray-500 text-xs mb-1">Норма</div>
+              <div class="text-lg font-semibold text-green-600">{{ normalCount }}</div>
+            </div>
+            <div class="bg-gray-50 rounded-lg p-3">
+              <div class="text-gray-500 text-xs mb-1">Недостача</div>
+              <div class="text-lg font-semibold text-red-600">{{ shortageCount }}</div>
+            </div>
+            <div class="bg-gray-50 rounded-lg p-3">
+              <div class="text-gray-500 text-xs mb-1">Избыток</div>
+              <div class="text-lg font-semibold text-yellow-600">{{ excessCount }}</div>
+            </div>
           </div>
-          <div class="bg-gray-50 rounded-lg p-3">
-            <div class="text-gray-500 text-xs mb-1">Норма</div>
-            <div class="text-lg font-semibold text-green-600">{{ normalCount }}</div>
-          </div>
-          <div class="bg-gray-50 rounded-lg p-3">
-            <div class="text-gray-500 text-xs mb-1">Недостача</div>
-            <div class="text-lg font-semibold text-red-600">{{ shortageCount }}</div>
-          </div>
-          <div class="bg-gray-50 rounded-lg p-3">
-            <div class="text-gray-500 text-xs mb-1">Избыток</div>
-            <div class="text-lg font-semibold text-yellow-600">{{ excessCount }}</div>
-          </div>
-        </div>
-        
-        <!-- Товары -->
-        <div class="mb-6">
-          <div class="font-semibold text-gray-800 mb-2">Товары</div>
-          <div v-if="items.length === 0" class="text-center py-8 text-gray-500">
-            Нет товаров в инвентаризации
-          </div>
-          <div v-else>
-            <table class="min-w-full divide-y divide-gray-200 text-sm">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th class="px-3 py-2 text-left font-semibold text-gray-700">Наименование</th>
-                  <th class="px-3 py-2 text-center font-semibold text-gray-700">Расчетный остаток</th>
-                  <th class="px-3 py-2 text-center font-semibold text-gray-700">Фактический остаток</th>
-                  <th class="px-3 py-2 text-center font-semibold text-gray-700">Разница</th>
-                  <th class="px-3 py-2 text-center font-semibold text-gray-700">Статус</th>
-                  <th class="px-3 py-2 text-center font-semibold text-gray-700">Детали</th>
-                </tr>
-              </thead>
-              <tbody>
-                <template v-for="item in items" :key="item.id">
-                  <tr class="hover:bg-gray-50">
-                    <td class="px-3 py-2">
-                      <div>
-                        <div class="font-medium">{{ item.product_name }}</div>
-                        <div class="text-xs text-gray-500">{{ item.product_sku }}</div>
-                      </div>
-                    </td>
-                    <td class="px-3 py-2 text-center">{{ formatNumber(item.calculated_quantity) }}</td>
-                    <td class="px-3 py-2 text-center">{{ formatNumber(item.actual_quantity) }}</td>
-                    <td class="px-3 py-2 text-center">
-                      <span :class="getDifferenceClass(item)">
-                        {{ formatNumber(item.difference_quantity) }}
-                      </span>
-                    </td>
-                    <td class="px-3 py-2 text-center">
-                      <span :class="getExcessShortageClass(item)">
-                        {{ getExcessShortageText(item) }}
-                      </span>
-                    </td>
-                    <td class="px-3 py-2 text-center">
-                      <div v-if="hasDiscrepancy(item) && item.photo" class="flex items-center justify-center gap-2">
-                        <button 
-                          @click="viewFullPhoto(item.photo)"
-                          class="p-0 rounded transition-colors hover:opacity-80 cursor-pointer border border-gray-200 hover:border-blue-400"
-                          title="Просмотреть фото"
-                        >
-                          <img 
-                            :src="item.photo" 
-                            alt="Фото товара" 
-                            class="w-6 h-6 rounded object-cover"
-                          />
-                        </button>
-                      </div>
-                      <span v-else class="text-gray-400 text-xs">—</span>
-                    </td>
+          
+          <!-- Товары -->
+          <div class="mb-6">
+            <div class="font-semibold text-gray-800 mb-2">Товары</div>
+            <div v-if="items.length === 0" class="text-center py-8 text-gray-500">
+              Нет товаров в инвентаризации
+            </div>
+            <div v-else>
+              <table class="min-w-full divide-y divide-gray-200 text-sm">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-3 py-2 text-left font-semibold text-gray-700">Наименование</th>
+                    <th class="px-3 py-2 text-center font-semibold text-gray-700">Расчетный остаток</th>
+                    <th class="px-3 py-2 text-center font-semibold text-gray-700">Фактический остаток</th>
+                    <th class="px-3 py-2 text-center font-semibold text-gray-700">Разница</th>
+                    <th class="px-3 py-2 text-center font-semibold text-gray-700">Статус</th>
+                    <th class="px-3 py-2 text-center font-semibold text-gray-700">Детали</th>
                   </tr>
-                  <!-- Комментарий под строкой -->
-                  <tr v-if="item.notes && item.notes.trim() !== ''" :key="item.id + '-comment'">
-                    <td colspan="6" class="bg-gray-50 px-3 py-2 text-sm text-black border-t border-b border-gray-100">
-                      <div class="flex items-start gap-2">
-                        <span style="font-size: 12px;color: #747474;">Комментарий: {{ item.notes }}</span>
-                      </div>
-                    </td>
-                  </tr>
-                </template>
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  <template v-for="item in items" :key="item.id">
+                    <tr class="hover:bg-gray-50">
+                      <td class="px-3 py-2">
+                        <div>
+                          <div class="font-medium">{{ item.product_name }}</div>
+                          <div class="text-xs text-gray-500">{{ item.product_sku }}</div>
+                        </div>
+                      </td>
+                      <td class="px-3 py-2 text-center">{{ formatNumber(item.calculated_quantity) }}</td>
+                      <td class="px-3 py-2 text-center">{{ formatNumber(item.actual_quantity) }}</td>
+                      <td class="px-3 py-2 text-center">
+                        <span :class="getDifferenceClass(item)">
+                          {{ formatNumber(item.difference_quantity) }}
+                        </span>
+                      </td>
+                      <td class="px-3 py-2 text-center">
+                        <span :class="getExcessShortageClass(item)">
+                          {{ getExcessShortageText(item) }}
+                        </span>
+                      </td>
+                      <td class="px-3 py-2 text-center">
+                        <div v-if="hasDiscrepancy(item) && item.photo" class="flex items-center justify-center gap-2">
+                          <button 
+                            @click="viewFullPhoto(item.photo)"
+                            class="p-0 rounded transition-colors hover:opacity-80 cursor-pointer border border-gray-200 hover:border-blue-400"
+                            title="Просмотреть фото"
+                          >
+                            <img 
+                              :src="item.photo" 
+                              alt="Фото товара" 
+                              class="w-6 h-6 rounded object-cover"
+                            />
+                          </button>
+                        </div>
+                        <span v-else class="text-gray-400 text-xs">—</span>
+                      </td>
+                    </tr>
+                    <!-- Комментарий под строкой -->
+                    <tr v-if="item.notes && item.notes.trim() !== ''" :key="item.id + '-comment'">
+                      <td colspan="6" class="bg-gray-50 px-3 py-2 text-sm text-black border-t border-b border-gray-100">
+                        <div class="flex items-start gap-2">
+                          <span style="font-size: 12px;color: #747474;">Комментарий: {{ item.notes }}</span>
+                        </div>
+                      </td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
-        
-        <!-- Файлы -->
-        <div v-if="files.length > 0" class="mb-4">
-          <div class="font-semibold text-gray-800 mb-2">Файлы</div>
-          <ul class="list-disc pl-5">
-            <li v-for="file in files" :key="file.id" class="mb-1">
-              <a :href="getFileUrl(file.file_url)" target="_blank" class="text-blue-600 hover:underline text-sm">{{ file.original_filename || file.filename }}</a>
-              <span class="text-gray-400 text-xs ml-2">({{ formatFileSize(file.file_size) }})</span>
-            </li>
-          </ul>
+          
+          <!-- Файлы -->
+          <div v-if="files.length > 0" class="mb-4">
+            <div class="font-semibold text-gray-800 mb-2">Файлы</div>
+            <ul class="list-disc pl-5">
+              <li v-for="file in files" :key="file.id" class="mb-1">
+                <a :href="getFileUrl(file.file_url)" target="_blank" class="text-blue-600 hover:underline text-sm">{{ file.original_filename || file.filename }}</a>
+                <span class="text-gray-400 text-xs ml-2">({{ formatFileSize(file.file_size) }})</span>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>
