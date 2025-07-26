@@ -94,7 +94,7 @@
     <!-- Content -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <!-- Список уведомлений -->
-      <div class="space-y-3 sm:space-y-4">
+      <div class="space-y-3 sm:space-y-4 mb-8">
         
         <div v-if="loading" class="flex items-center justify-center py-8">
           <Loader2 class="animate-spin h-6 w-6 text-blue-600 mr-2" />
