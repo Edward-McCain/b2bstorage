@@ -666,6 +666,12 @@ class ProductController extends Controller
         $warehouseId = $request->input('warehouse_id');
         $products = $request->input('products');
 
+        Log::info('ImportWithReceipt: Начало обработки', [
+            'user_id' => $user ? $user->id : null,
+            'warehouse_id' => $warehouseId,
+            'products_count' => is_array($products) ? count($products) : 0
+        ]);
+
         if (!$warehouseId || !is_array($products) || count($products) === 0) {
             return response()->json(['success' => false, 'error' => 'warehouse_id и products обязательны'], 422);
         }
@@ -721,6 +727,10 @@ class ProductController extends Controller
 
             // 3. Создаем инвентаризацию для всех созданных товаров
             if (!empty($createdProducts)) {
+                Log::info('ImportWithReceipt: Создание инвентаризации', [
+                    'created_products_count' => count($createdProducts),
+                    'first_product_structure' => array_keys($createdProducts[0] ?? [])
+                ]);
                 $this->createBulkProductsInventory($createdProducts, $warehouseId, $user->id);
             }
 
@@ -804,10 +814,24 @@ class ProductController extends Controller
     {
         $createdBy = $userId ?? Auth::id();
         
+        Log::info('CreateBulkProductsInventory: Начало обработки', [
+            'created_by' => $createdBy,
+            'warehouse_id' => $warehouseId,
+            'products_count' => count($products),
+            'first_product_structure' => array_keys($products[0] ?? [])
+        ]);
+        
         // Получаем названия товаров для описания
         $productNames = [];
         foreach ($products as $product) {
-            $productNames[] = $product['name'] ?? "Товар ID: {$product['id']}";
+            // Проверяем структуру данных
+            if (isset($product['model']) && isset($product['input'])) {
+                // Новая структура из importWithReceipt
+                $productNames[] = $product['input']['name'] ?? "Товар ID: {$product['model']->id}";
+            } else {
+                // Старая структура
+                $productNames[] = $product['name'] ?? "Товар ID: " . ($product['id'] ?? 'неизвестно');
+            }
         }
         
         // Ограничиваем список до 5 товаров для описания
@@ -821,7 +845,11 @@ class ProductController extends Controller
             'product_names' => $productNamesList
         ]);
         
+        $date = now()->format('d.m.Y');
+        $inventoryName = "Массовая инвентаризация от {$date}";
+        
         $inventory = Inventory::create([
+            'name' => $inventoryName,
             'user_id' => $createdBy,
             'warehouse_id' => $warehouseId,
             'status' => 'completed',
@@ -830,10 +858,34 @@ class ProductController extends Controller
         ]);
         
         foreach ($products as $product) {
-            $quantity = $product['quantity'] ?? 0;
+            // Проверяем структуру данных
+            if (isset($product['model']) && isset($product['input'])) {
+                // Новая структура из importWithReceipt
+                $productId = $product['model']->id;
+                $quantity = $product['input']['start_count'] ?? 0;
+            } else {
+                // Старая структура
+                $productId = $product['id'] ?? null;
+                $quantity = $product['quantity'] ?? 0;
+            }
+            
+            // Проверяем, что productId существует
+            if (!$productId) {
+                Log::error('CreateBulkProductsInventory: Отсутствует product_id', [
+                    'product' => $product
+                ]);
+                continue;
+            }
+            
+            Log::info('CreateBulkProductsInventory: Создание InventoryItem', [
+                'inventory_id' => $inventory->id,
+                'product_id' => $productId,
+                'quantity' => $quantity
+            ]);
+            
             InventoryItem::create([
                 'inventory_id' => $inventory->id,
-                'product_id' => $product['id'],
+                'product_id' => $productId,
                 'calculated_quantity' => 0,
                 'actual_quantity' => $quantity,
                 'notes' => "Создание начального остатка {$quantity}"
