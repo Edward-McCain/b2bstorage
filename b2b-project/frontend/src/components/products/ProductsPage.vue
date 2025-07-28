@@ -602,9 +602,9 @@
                           class="w-full min-w-[150px] text-xs multiselect-custom"
                         />
                       </div>
-                      <div>
+                      <div v-if="productFieldsVisibility.price !== false">
                         <label class="block text-xs text-gray-600 mb-1">Стоимость</label>
-                        <input v-model="product.price" type="number" step="0.01" class="w-full text-sm border border-gray-300 rounded px-2 py-1" placeholder="Стоимость" />
+                        <input v-model="product.price" type="number" min="0" step="0.01" class="w-full border border-gray-300 rounded px-2 py-1 text-xs" />
                       </div>
                     </div>
                   </td>
@@ -736,6 +736,7 @@ const standardProductFields = [
   { key: 'barcode', label: 'Штрихкод' },
   { key: 'cash_register_tax', label: 'Налог ККМ' },
   { key: 'cash_register_type', label: 'Тип ККМ' },
+  { key: 'price', label: 'Цена' },
 ]
 
 const productFieldsVisibility = reactive({})
@@ -1448,7 +1449,7 @@ async function saveImportedProducts() {
           cash_register_tax: product.cash_register_tax,
           cash_register_type: product.cash_register_type,
           start_count: product.start_count,
-          price: product.price,
+          price: productFieldsVisibility.price === false ? 0 : (product.price ?? 0),
         }))
       })
     });

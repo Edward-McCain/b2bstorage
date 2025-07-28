@@ -158,7 +158,30 @@ const handleCurrencyChanged = async (newCurrency) => {
   // например, перезагрузка данных с новой валютой
 }
 
+// Определяем, находимся ли мы на странице товаров
+const isOnProductsPage = computed(() => {
+  const currentRoute = router.currentRoute.value.path
+  const productsRoutes = [
+    '/products',
+    '/products/receipts',
+    '/products/write-offs',
+    '/products/inventory',
+    '/products/transfers',
+    '/products/balances',
+    '/warehouses',
+    '/products/logs'
+  ]
+  return productsRoutes.some(route => currentRoute.startsWith(route))
+})
+
 const toggleProductsMenu = () => {
+  // Если мы на странице товаров, просто переходим на страницу товаров
+  if (isOnProductsPage.value) {
+    router.push('/products')
+    return
+  }
+  
+  // Иначе показываем дропдаун
   productsMenuOpen.value = !productsMenuOpen.value
   // Закрываем другие меню
   userMenuOpen.value = false
@@ -324,14 +347,14 @@ window.addEventListener('notifications-updated', () => {
             aria-haspopup="true"
           >
             Товары
-            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg v-if="!isOnProductsPage" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
             </svg>
           </button>
 
           <!-- Dropdown menu для товаров -->
           <div
-            v-if="productsMenuOpen"
+            v-if="productsMenuOpen && !isOnProductsPage"
             class="absolute left-0 z-[9999] mt-2 w-56 origin-top-left rounded-md bg-white shadow-lg focus:outline-none border border-gray-200"
             role="menu"
             aria-orientation="vertical"

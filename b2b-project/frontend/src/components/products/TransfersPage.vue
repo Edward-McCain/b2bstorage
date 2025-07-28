@@ -5,75 +5,79 @@
     
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- Заголовок страницы -->
-      <div class="mb-8">
+      <div class="flex items-center justify-between mb-6">
         <h1 class="text-3xl font-bold text-gray-900">Перемещения</h1>
-        <p class="mt-2 text-gray-600">Управление перемещениями товаров между складами</p>
-      </div>
-      
-      <!-- Основной контент -->
-      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <div class="flex justify-between items-center mb-6">
-          <h2 class="text-xl font-semibold text-gray-900">Список перемещений</h2>
+        <div class="flex items-center gap-2">
+          <button
+            @click="toggleFilters"
+            class="flex items-center gap-2 text-gray-700 font-medium px-4 py-2 rounded text-sm hover:bg-gray-100 transition-colors cursor-pointer"
+          >
+            <Filter v-if="!showFilters" class="w-4 h-4" />
+            <FunnelX v-else class="w-4 h-4" />
+          </button>
           <router-link
             to="/products/transfers/create"
-            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm"
+            class="flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-700 font-medium px-4 py-2 rounded text-sm hover:bg-blue-100 transition-colors"
           >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>
-            Создать перемещение
+            Добавить
           </router-link>
         </div>
+      </div>
 
-        <!-- Фильтры -->
-        <div class="bg-gray-50 rounded-lg p-4 mb-6">
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Склад</label>
-              <Multiselect
-                v-model="filters.warehouse_id"
-                :options="warehouseOptions"
-                label="label"
-                value="value"
-                :object="false"
-                placeholder="Выберите склад"
-                :max-height="400"
-                class="w-full text-sm multiselect-custom"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Дата с</label>
-              <input
-                v-model="filters.date_from"
-                type="date"
-                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Дата по</label>
-              <input
-                v-model="filters.date_to"
-                type="date"
-                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
-              />
-            </div>
+      <!-- Фильтры и поиск -->
+      <div v-if="showFilters" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-sm text-gray-700 mb-1">Склад</label>
+            <Multiselect
+              v-model="filters.warehouse_id"
+              :options="warehouseOptions"
+              label="label"
+              value="value"
+              :object="false"
+              placeholder="Выберите склад"
+              :max-height="400"
+              class="w-full text-sm multiselect-custom"
+            />
           </div>
-          <div class="mt-4 flex gap-2">
-            <button
-              @click="() => filterTransfers(1)"
-              class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm"
-            >
-              Применить фильтры
-            </button>
-            <button
-              @click="clearFilters"
-              class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm"
-            >
-              Сбросить
-            </button>
+          <div>
+            <label class="block text-sm text-gray-700 mb-1">Дата с</label>
+            <input
+              v-model="filters.date_from"
+              type="date"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm"
+            />
+          </div>
+          <div>
+            <label class="block text-sm text-gray-700 mb-1">Дата по</label>
+            <input
+              v-model="filters.date_to"
+              type="date"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm"
+            />
           </div>
         </div>
+        <div class="mt-4 flex gap-2">
+          <button
+            @click="() => filterTransfers(1)"
+            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition"
+          >
+            Применить фильтры
+          </button>
+          <button
+            @click="clearFilters"
+            class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm transition"
+          >
+            Сбросить
+          </button>
+        </div>
+      </div>
 
+      <!-- Основной контент -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <!-- Загрузка -->
         <div v-if="loading" class="flex items-center justify-center py-12">
           <Loader2 class="animate-spin h-8 w-8 text-blue-600 mr-3" />
@@ -232,7 +236,7 @@ import TransferViewModal from './TransferViewModal.vue'
 import TransferCompleteModal from './TransferCompleteModal.vue'
 import Multiselect from '@vueform/multiselect'
 import '@vueform/multiselect/themes/default.css'
-import { Loader2 } from 'lucide-vue-next'
+import { Loader2, Filter, FunnelX } from 'lucide-vue-next'
 
 export default {
   name: 'TransfersPage',
@@ -241,7 +245,9 @@ export default {
     TransferViewModal,
     TransferCompleteModal,
     Multiselect,
-    Loader2
+    Loader2,
+    Filter,
+    FunnelX
   },
   setup() {
     const transfers = ref([])
@@ -260,6 +266,7 @@ export default {
     const showCompleteModal = ref(false)
     const viewingTransfer = ref(null)
     const completingTransfer = ref(null)
+    const showFilters = ref(false)
 
     // Computed свойства для опций фильтров
 
@@ -323,6 +330,10 @@ export default {
         filters[key] = ''
       })
       loadTransfers()
+    }
+
+    const toggleFilters = () => {
+      showFilters.value = !showFilters.value
     }
 
     const viewTransfer = (transfer) => {
@@ -400,6 +411,7 @@ export default {
       pagination,
       loading,
       filters,
+      showFilters,
       showViewModal,
       showCompleteModal,
       viewingTransfer,
@@ -409,6 +421,7 @@ export default {
       filterTransfers,
       loadWarehouses,
       clearFilters,
+      toggleFilters,
       viewTransfer,
       editTransfer,
       confirmTransfer,

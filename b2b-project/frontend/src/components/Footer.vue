@@ -20,7 +20,7 @@
         
         <!-- Копирайт -->
         <div class="border-t border-gray-200 pt-8">
-          <p class="text-gray-500 text-sm">Copyright © 2025 - Все права защищены B2B Global. v1.0.0</p>
+          <p class="text-gray-500 text-sm">Copyright © 2025 - Все права защищены B2B Global.</p>
         </div>
       </div>
     </div>

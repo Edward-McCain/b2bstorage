@@ -796,6 +796,7 @@ const standardProductFields = [
   { key: 'barcode', label: 'Штрихкод' },
   { key: 'cash_register_tax', label: 'Налог ККМ' },
   { key: 'cash_register_type', label: 'Тип ККМ' },
+  { key: 'price', label: 'Цена' },
 ]
 
 const productFieldsVisibility = reactive({})

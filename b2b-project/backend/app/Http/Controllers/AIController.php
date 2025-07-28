@@ -173,6 +173,15 @@ class AIController extends Controller
         } catch (\Exception $e) {
             Log::error('AIController: Ошибка при генерации рекомендаций: ' . $e->getMessage());
             Log::error('AIController: Stack trace: ' . $e->getTraceAsString());
+            
+            // Проверяем, является ли это специальным сообщением об ошибке
+            if ($e->getMessage() === 'Попробуйте позднее.') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Попробуйте позднее.'
+                ], 503); // 503 Service Unavailable
+            }
+            
             return response()->json([
                 'success' => false,
                 'message' => 'Не удалось сгенерировать рекомендации: ' . $e->getMessage()

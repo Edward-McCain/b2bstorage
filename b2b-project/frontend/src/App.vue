@@ -101,4 +101,9 @@ const isAdminRoute = computed(() => {
 button.bg-gray-100 {
   border: none !important;
 }
+
+button, input, select, optgroup, textarea, ::file-selector-button {
+  box-shadow: none !important;
+}
+*:not(.shadow-2xl) {box-shadow: none !important;}
 </style>

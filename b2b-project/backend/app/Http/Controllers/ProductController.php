@@ -704,6 +704,7 @@ class ProductController extends Controller
                     'barcode' => $prod['barcode'] ?? null,
                     'cash_register_tax' => $prod['cash_register_tax'] ?? null,
                     'cash_register_type' => $prod['cash_register_type'] ?? null,
+                    'price' => $prod['price'] ?? 0,
                     'start_count' => $prod['start_count'] ?? 0, // Используем start_count вместо quantity
                 ]);
                 $createdProducts[] = [

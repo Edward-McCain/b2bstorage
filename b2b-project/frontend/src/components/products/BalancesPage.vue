@@ -5,98 +5,85 @@
     
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- Заголовок страницы -->
-      <div class="mb-8">
+      <div class="flex items-center justify-between mb-6">
         <h1 class="text-3xl font-bold text-gray-900">Остатки</h1>
-        <p class="mt-2 text-gray-600">Просмотр складских остатков товаров</p>
+        <div class="flex items-center gap-2">
+          <button
+            @click="toggleFilters"
+            class="flex items-center gap-2 text-gray-700 font-medium px-4 py-2 rounded text-sm hover:bg-gray-100 transition-colors cursor-pointer"
+          >
+            <Filter v-if="!showFilters" class="w-4 h-4" />
+            <FunnelX v-else class="w-4 h-4" />
+          </button>
+        </div>
       </div>
       
+      <!-- Фильтры и поиск -->
+      <div v-if="showFilters" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div>
+            <label class="block text-sm text-gray-700 mb-1">Склад</label>
+            <Multiselect
+              v-model="filters.warehouse_id"
+              :options="warehouseOptions"
+              label="label"
+              value="value"
+              :object="false"
+              placeholder="Все склады"
+              :max-height="400"
+              class="w-full text-sm multiselect-custom"
+              :loading="loadingWarehouses"
+              :disabled="loadingWarehouses"
+            />
+          </div>
+          <div>
+            <label class="block text-sm text-gray-700 mb-1">Поиск товара</label>
+            <input
+              v-model="filters.search"
+              type="text"
+              placeholder="Название товара..."
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm"
+            />
+          </div>
+          <div>
+            <label class="block text-sm text-gray-700 mb-1">Мин. остаток</label>
+            <input
+              v-model.number="filters.min_quantity"
+              type="number"
+              min="0"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm"
+            />
+          </div>
+          <div>
+            <label class="block text-sm text-gray-700 mb-1">Макс. остаток</label>
+            <input
+              v-model.number="filters.max_quantity"
+              type="number"
+              min="0"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm"
+            />
+          </div>
+        </div>
+        <div class="mt-4 flex gap-2">
+          <button
+            @click="loadBalances"
+            :disabled="loading"
+            class="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg text-sm transition"
+          >
+            Применить фильтры
+          </button>
+          <button
+            @click="clearFilters"
+            :disabled="loading"
+            class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm transition"
+          >
+            Сбросить
+          </button>
+        </div>
+      </div>
+
       <!-- Основной контент -->
       <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <div class="flex justify-between items-center mb-6">
-          <h2 class="text-xl font-semibold text-gray-900">Остатки товаров</h2>
-          <div class="flex gap-2">
-            <button
-              @click="loadSummary"
-              class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm hidden"
-            >
-              Сводка
-            </button>
-          </div>
-        </div>
-
-        <!-- Фильтры -->
-        <div class="bg-gray-50 rounded-lg p-4 mb-6">
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Склад</label>
-              <Multiselect
-                v-model="filters.warehouse_id"
-                :options="warehouseOptions"
-                label="label"
-                value="value"
-                :object="false"
-                placeholder="Все склады"
-                :max-height="400"
-                class="w-full text-sm multiselect-custom"
-                :loading="loadingWarehouses"
-                :disabled="loadingWarehouses"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Поиск товара</label>
-              <input
-                v-model="filters.search"
-                type="text"
-                placeholder="Название товара..."
-                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Мин. остаток</label>
-              <input
-                v-model.number="filters.min_quantity"
-                type="number"
-                min="0"
-                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Макс. остаток</label>
-              <input
-                v-model.number="filters.max_quantity"
-                type="number"
-                min="0"
-                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
-              />
-            </div>
-          </div>
-          <div class="mt-4 flex gap-2">
-            <button
-              @click="loadBalances"
-              :disabled="loading"
-              class="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2"
-            >
-              <svg v-if="loading" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              <span v-if="loading">Загрузка...</span>
-              <span v-else>Применить фильтры</span>
-            </button>
-            <button
-              @click="clearFilters"
-              :disabled="loading"
-              class="bg-gray-500 hover:bg-gray-600 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2"
-            >
-              <svg v-if="loading" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              <span v-if="loading">Загрузка...</span>
-              <span v-else>Сбросить</span>
-            </button>
-          </div>
-        </div>
 
         <!-- Сводка -->
         <div v-if="loadingSummary" class="bg-blue-50 rounded-lg p-4 mb-6">
@@ -289,13 +276,16 @@ import ProductsMenu from './ProductsMenu.vue'
 import MovementsModal from './MovementsModal.vue'
 import Multiselect from '@vueform/multiselect'
 import '@vueform/multiselect/themes/default.css'
+import { Filter, FunnelX } from 'lucide-vue-next'
 
 export default {
   name: 'BalancesPage',
   components: {
     ProductsMenu,
     MovementsModal,
-    Multiselect
+    Multiselect,
+    Filter,
+    FunnelX
   },
   setup() {
     const balances = ref([])
@@ -317,6 +307,7 @@ export default {
     const selectedProductId = ref(null)
     const selectedWarehouseId = ref(null)
     const loadingWarehouses = ref(false)
+    const showFilters = ref(false)
 
     // Computed свойства
     const warehouseOptions = computed(() => {
@@ -373,6 +364,10 @@ export default {
       loadSummary() // Обновляем сводку вместо уничтожения
     }
 
+    const toggleFilters = () => {
+      showFilters.value = !showFilters.value
+    }
+
     const viewMovements = (productId, warehouseId) => {
       selectedProductId.value = productId
       selectedWarehouseId.value = warehouseId
@@ -419,6 +414,7 @@ export default {
       loading,
       loadingSummary,
       filters,
+      showFilters,
       showMovementsModal,
       selectedProductId,
       selectedWarehouseId,
@@ -428,6 +424,7 @@ export default {
       loadWarehouses,
       loadSummary,
       clearFilters,
+      toggleFilters,
       viewMovements,
       formatCurrency,
       getQuantityClass,

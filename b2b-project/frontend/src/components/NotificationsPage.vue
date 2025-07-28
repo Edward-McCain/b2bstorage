@@ -190,6 +190,13 @@ const getAIRecommendations = async () => {
     }
   } catch (error) {
     console.error('Ошибка при получении AI рекомендаций:', error)
+    
+    // Проверяем, является ли это ошибкой "Попробуйте позднее"
+    if (error.response && error.response.data && error.response.data.message === 'Попробуйте позднее.') {
+      alert('Попробуйте позднее.')
+    } else {
+      alert('Ошибка при получении AI рекомендаций. Попробуйте еще раз.')
+    }
   } finally {
     aiLoading.value = false
   }

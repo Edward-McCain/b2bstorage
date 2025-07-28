@@ -2,7 +2,7 @@
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-sm">
     <!-- Наименование и кнопки -->
     <div class="mb-6 w-full" style="position: sticky;top: 62px;background: #fff;z-index: 99;padding: 10px 0;">
-      <div class="flex flex-col gap-3 sm:inline-flex sm:flex-row sm:items-center w-full">
+      <div class="flex flex-col gap-3 sm:inline-flex sm:flex-row sm:items-center w-full px-4">
         <input v-model="product.name" @blur="handleNameBlur" type="text" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" placeholder="Наименование товара *" />
         <div class="flex gap-2 mt-3 sm:mt-0">
           <button @click="handleSave" :disabled="!product.name || !selectedCategory || !selectedSubcategory || !selectedWarehouse || !product.unit || !product.start_count || !productId || isSavingDraft || isSavingProduct" class="bg-lime-500 hover:bg-lime-600 text-white font-semibold px-6 py-2 rounded-lg shadow transition text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
@@ -139,7 +139,7 @@
               </button>
             </div>
           </div>
-          <!-- Количество единиц товара, единица измерения и стоимость -->
+          <!-- Количество единиц товара и единица измерения -->
           <div class="flex gap-2">
             <div class="flex-1">
               <label class="block text-xs text-gray-700 mb-1">Начальный остаток <span class="text-red-500">*</span></label>
@@ -178,10 +178,6 @@
                 class="w-full text-xs multiselect-custom bg-white"
               />
             </div>
-            <div class="flex-1">
-              <label class="block text-xs text-gray-700 mb-1">Стоимость за единицу</label>
-              <input v-model="product.price" type="number" min="0" step="0.01" placeholder="0.00" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" />
-            </div>
           </div>
         </div>
       </div>
@@ -208,11 +204,16 @@
           <template v-else>
             <!-- Активные стандартные поля -->
             <template v-for="field in standardProductFields" :key="field.key">
-              <div v-if="productFieldsVisibility[field.key] === true">
+              <div v-if="productFieldsVisibility[field.key] === true && field.key !== 'price'">
                 <label class="block text-xs text-gray-700 mb-1">{{ field.label }}</label>
                 <input v-model="product[field.key]" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" />
               </div>
             </template>
+            <!-- Цена отдельным блоком -->
+            <div v-if="productFieldsVisibility.price === true">
+              <label class="block text-xs text-gray-700 mb-1">Стоимость за единицу</label>
+              <input v-model="product.price" type="number" min="0" step="0.01" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" />
+            </div>
             <!-- Пользовательские поля -->
             <template v-for="field in customFields" :key="field.id">
               <div>
@@ -384,6 +385,7 @@ const standardProductFields = [
   { key: 'barcode', label: 'Штрихкод' },
   { key: 'cash_register_tax', label: 'Налог ККМ' },
   { key: 'cash_register_type', label: 'Тип ККМ' },
+  { key: 'price', label: 'Цена' },
 ]
 
 async function loadProductFieldsVisibilityAndCustomFields() {

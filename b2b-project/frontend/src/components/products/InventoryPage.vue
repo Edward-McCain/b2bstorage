@@ -4,19 +4,28 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div class="flex items-center justify-between mb-6">
         <h1 class="text-3xl font-bold text-gray-900">Инвентаризации</h1>
-        <router-link
-          to="/products/inventory/create"
-          class="flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-700 font-medium px-4 py-2 rounded text-sm hover:bg-blue-100 transition-colors"
-        >
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-          </svg>
-          Добавить
-        </router-link>
+        <div class="flex items-center gap-2">
+          <button
+            @click="toggleFilters"
+            class="flex items-center gap-2 text-gray-700 font-medium px-4 py-2 rounded text-sm hover:bg-gray-100 transition-colors cursor-pointer"
+          >
+            <Filter v-if="!showFilters" class="w-4 h-4" />
+            <FunnelX v-else class="w-4 h-4" />
+          </button>
+          <router-link
+            to="/products/inventory/create"
+            class="flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-700 font-medium px-4 py-2 rounded text-sm hover:bg-blue-100 transition-colors"
+          >
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Добавить
+          </router-link>
+        </div>
       </div>
 
       <!-- Фильтры и поиск -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+      <div v-if="showFilters" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <!-- Поиск по названию -->
           <div>
@@ -102,7 +111,7 @@
       </div>
 
       <!-- Таблица инвентаризаций -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-4">
         <div v-if="loading" class="flex items-center justify-center py-8">
           <Loader2 class="animate-spin h-6 w-6 text-blue-600 mr-2" />
           <span class="text-sm text-gray-600">Загрузка инвентаризаций...</span>
@@ -188,7 +197,7 @@ import { ref, onMounted, computed } from 'vue'
 import ProductsMenu from './ProductsMenu.vue'
 import { apiRequest } from '@/config/api'
 import { useRouter } from 'vue-router'
-import { Eye, Edit, Trash2, Loader2 } from 'lucide-vue-next'
+import { Eye, Edit, Trash2, Loader2, Filter, FunnelX } from 'lucide-vue-next'
 import toastr from 'toastr'
 import Multiselect from '@vueform/multiselect'
 import '@vueform/multiselect/themes/default.css'
@@ -203,6 +212,7 @@ const loading = ref(false)
 const showDeleteModal = ref(false)
 const deleting = ref(false)
 const deleteTarget = ref(null)
+const showFilters = ref(false)
 
 // Фильтры
 const filters = ref({
@@ -332,6 +342,10 @@ function clearFilters() {
     status: null
   }
   fetchInventories()
+}
+
+function toggleFilters() {
+  showFilters.value = !showFilters.value
 }
 
 function viewInventory(id) {
