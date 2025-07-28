@@ -16,7 +16,7 @@ class StatisticsController extends Controller
             // Временно используем тестового пользователя для отладки
             $userId = Auth::id() ?: 52; // Если пользователь не аутентифицирован, используем ID 52
             
-            $period = $request->get('period', 'month'); // week, month, year
+            $period = $request->get('period', 'week'); // week, month, year
             
             Log::info("Statistics request", [
                 'user_id' => $userId,
