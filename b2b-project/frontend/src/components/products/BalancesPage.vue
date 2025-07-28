@@ -90,10 +90,7 @@
           <!-- <h3 class="text-lg font-medium text-gray-900 mb-4">Сводка по остаткам</h3> -->
           <div class="flex justify-center items-center py-8">
             <div class="text-center">
-              <svg class="animate-spin h-8 w-8 text-blue-600 mx-auto mb-4" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
+              <Loader2 class="animate-spin h-8 w-8 text-blue-600 mx-auto mb-4" />
               <div class="text-gray-600">Загрузка сводки...</div>
             </div>
           </div>
@@ -132,10 +129,7 @@
         <!-- Список остатков -->
         <div v-if="loading" class="flex justify-center items-center py-12">
           <div class="text-center">
-            <svg class="animate-spin h-8 w-8 text-blue-600 mx-auto mb-4" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
+            <Loader2 class="animate-spin h-8 w-8 text-blue-600 mx-auto mb-4" />
             <div class="text-gray-600">Загрузка остатков...</div>
           </div>
         </div>
@@ -153,10 +147,10 @@
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500">
                   Остаток
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500">
+                <th v-if="productFieldsVisibility.price !== false" class="px-6 py-3 text-left text-xs font-medium text-gray-500">
                   Цена
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500">
+                <th v-if="productFieldsVisibility.price !== false" class="px-6 py-3 text-left text-xs font-medium text-gray-500">
                   Итого
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500">
@@ -168,56 +162,187 @@
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-for="balance in balances" :key="`${balance.product_id}-${balance.warehouse_id}`" class="hover:bg-gray-50">
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="flex items-center">
-                    <div class="flex-shrink-0 h-10 w-10">
-                      <img
-                        v-if="balance.product?.images?.length > 0"
-                        :src="balance.product.images[0].image_url"
-                        :alt="balance.product.images[0].alt_text || balance.product.name"
-                        class="h-10 w-10 rounded-lg object-cover"
-                      />
-                      <div v-else class="h-10 w-10 bg-gray-200 rounded-lg flex items-center justify-center">
-                        <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
-                        </svg>
+              <template v-for="balance in balances" :key="`${balance.product_id}-${balance.warehouse_id}`">
+                <tr class="hover:bg-gray-50">
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center">
+                      <div class="flex-shrink-0 h-10 w-10">
+                        <img
+                          v-if="balance.product?.images?.length > 0"
+                          :src="balance.product.images[0].image_url"
+                          :alt="balance.product.images[0].alt_text || balance.product.name"
+                          class="h-10 w-10 rounded-lg object-cover"
+                        />
+                        <div v-else class="h-10 w-10 bg-gray-200 rounded-lg flex items-center justify-center">
+                          <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                          </svg>
+                        </div>
+                      </div>
+                      <div class="ml-4">
+                        <div class="text-sm font-medium text-gray-900">{{ balance.product?.name }}</div>
+                        <div class="text-sm text-gray-500">{{ balance.product?.category?.name }}</div>
                       </div>
                     </div>
-                    <div class="ml-4">
-                      <div class="text-sm font-medium text-gray-900">{{ balance.product?.name }}</div>
-                      <div class="text-sm text-gray-500">{{ balance.product?.category?.name }}</div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{ balance.warehouse?.name }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <span :class="getQuantityClass(balance.quantity)">
+                      {{ balance.quantity }}
+                    </span>
+                  </td>
+                  <td v-if="productFieldsVisibility.price !== false" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{ formatCurrency(balance.product?.price) }}
+                  </td>
+                  <td v-if="productFieldsVisibility.price !== false" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{ formatCurrency(balance.quantity * (balance.product?.price || 0)) }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span :class="getStatusClass(balance.quantity)" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
+                      {{ getStatusText(balance.quantity) }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div class="flex items-center gap-2">
+                      <button
+                        @click="viewMovements(balance.product_id, balance.warehouse_id)"
+                        class="text-blue-600 hover:text-blue-900 cursor-pointer p-1 rounded hover:bg-blue-50 transition-colors"
+                        title="Движение товара"
+                      >
+                        <ArrowRightLeft class="w-4 h-4" />
+                      </button>
+                      <router-link
+                        :to="`/products/${balance.product_id}/edit`"
+                        class="text-green-600 hover:text-green-900 cursor-pointer p-1 rounded hover:bg-green-50 transition-colors"
+                        title="Редактировать товар"
+                      >
+                        <Edit class="w-4 h-4" />
+                      </router-link>
+                      <button
+                        @click="openDeleteModal(balance.product_id)"
+                        class="text-red-600 hover:text-red-900 cursor-pointer p-1 rounded hover:bg-red-50 transition-colors"
+                        title="Удалить товар"
+                      >
+                        <Trash2 class="w-4 h-4" />
+                      </button>
                     </div>
-                  </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {{ balance.warehouse?.name }}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  <span :class="getQuantityClass(balance.quantity)">
-                    {{ balance.quantity }}
-                  </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {{ formatCurrency(balance.product?.price) }}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {{ formatCurrency(balance.quantity * (balance.product?.price || 0)) }}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span :class="getStatusClass(balance.quantity)" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
-                    {{ getStatusText(balance.quantity) }}
-                  </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <button
-                    @click="viewMovements(balance.product_id, balance.warehouse_id)"
-                    class="text-blue-600 hover:text-blue-900 cursor-pointer"
-                  >
-                    Движение
-                  </button>
-                </td>
-              </tr>
+                  </td>
+                </tr>
+                <!-- Дополнительная строка с полями товара -->
+                <tr class="bg-gray-50">
+                  <td :colspan="productFieldsVisibility.price !== false ? 7 : 5" class="px-6 py-3">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+                      <!-- Обязательные поля -->
+                      <div v-if="balance.product?.category?.name" class="flex items-center gap-2">
+                        <span class="font-medium text-gray-600">Категория:</span>
+                        <span class="text-gray-900">{{ balance.product.category.name }}</span>
+                      </div>
+                      <div v-if="balance.product?.subcategory?.name" class="flex items-center gap-2">
+                        <span class="font-medium text-gray-600">Подкатегория:</span>
+                        <span class="text-gray-900">{{ balance.product.subcategory.name }}</span>
+                      </div>
+                      
+                      <!-- Дополнительные поля (активные) -->
+                      <div v-if="productFieldsVisibility.description && balance.product?.description" class="flex items-center gap-2">
+                        <span class="font-medium text-gray-600">Описание:</span>
+                        <span class="text-gray-900">{{ balance.product.description }}</span>
+                      </div>
+                      <div v-if="productFieldsVisibility.country && balance.product?.country" class="flex items-center gap-2">
+                        <span class="font-medium text-gray-600">Страна:</span>
+                        <span class="text-gray-900">{{ balance.product.country }}</span>
+                      </div>
+                      <div v-if="productFieldsVisibility.supplier && balance.product?.supplier" class="flex items-center gap-2">
+                        <span class="font-medium text-gray-600">Поставщик:</span>
+                        <span class="text-gray-900">{{ balance.product.supplier }}</span>
+                      </div>
+                      <div v-if="productFieldsVisibility.article && balance.product?.article" class="flex items-center gap-2">
+                        <span class="font-medium text-gray-600">Артикул:</span>
+                        <span class="text-gray-900">{{ balance.product.article }}</span>
+                      </div>
+                      <div v-if="productFieldsVisibility.code && balance.product?.code" class="flex items-center gap-2">
+                        <span class="font-medium text-gray-600">Код:</span>
+                        <span class="text-gray-900">{{ balance.product.code }}</span>
+                      </div>
+                      <div v-if="productFieldsVisibility.external_code && balance.product?.external_code" class="flex items-center gap-2">
+                        <span class="font-medium text-gray-600">Внешний код:</span>
+                        <span class="text-gray-900">{{ balance.product.external_code }}</span>
+                      </div>
+                      <div v-if="productFieldsVisibility.unit && balance.product?.unit" class="flex items-center gap-2">
+                        <span class="font-medium text-gray-600">Единица измерения:</span>
+                        <span class="text-gray-900">{{ balance.product.unit }}</span>
+                      </div>
+                      <div v-if="productFieldsVisibility.weight && balance.product?.weight" class="flex items-center gap-2">
+                        <span class="font-medium text-gray-600">Вес:</span>
+                        <span class="text-gray-900">{{ balance.product.weight }}</span>
+                      </div>
+                      <div v-if="productFieldsVisibility.volume && balance.product?.volume" class="flex items-center gap-2">
+                        <span class="font-medium text-gray-600">Объем:</span>
+                        <span class="text-gray-900">{{ balance.product.volume }}</span>
+                      </div>
+                      <div v-if="productFieldsVisibility.vat && balance.product?.vat" class="flex items-center gap-2">
+                        <span class="font-medium text-gray-600">Ставка НДС:</span>
+                        <span class="text-gray-900">{{ balance.product.vat }}</span>
+                      </div>
+                      <div v-if="productFieldsVisibility.min_stock && balance.product?.min_stock" class="flex items-center gap-2">
+                        <span class="font-medium text-gray-600">Минимальный остаток:</span>
+                        <span class="text-gray-900">{{ balance.product.min_stock }}</span>
+                      </div>
+                      <div v-if="productFieldsVisibility.stock_type && balance.product?.stock_type" class="flex items-center gap-2">
+                        <span class="font-medium text-gray-600">Тип запаса:</span>
+                        <span class="text-gray-900">{{ balance.product.stock_type }}</span>
+                      </div>
+                      <div v-if="productFieldsVisibility.packing && balance.product?.packing" class="flex items-center gap-2">
+                        <span class="font-medium text-gray-600">Упаковка:</span>
+                        <span class="text-gray-900">{{ balance.product.packing }}</span>
+                      </div>
+                      <div v-if="productFieldsVisibility.accounting_type && balance.product?.accounting_type" class="flex items-center gap-2">
+                        <span class="font-medium text-gray-600">Тип учета:</span>
+                        <span class="text-gray-900">{{ balance.product.accounting_type }}</span>
+                      </div>
+                      <div v-if="productFieldsVisibility.traceable && balance.product?.traceable" class="flex items-center gap-2">
+                        <span class="font-medium text-gray-600">Маркируемый:</span>
+                        <span class="text-gray-900">{{ balance.product.traceable ? 'Да' : 'Нет' }}</span>
+                      </div>
+                      <div v-if="productFieldsVisibility.marking && balance.product?.marking" class="flex items-center gap-2">
+                        <span class="font-medium text-gray-600">Маркировка:</span>
+                        <span class="text-gray-900">{{ balance.product.marking }}</span>
+                      </div>
+                      <div v-if="productFieldsVisibility.product_type && balance.product?.product_type" class="flex items-center gap-2">
+                        <span class="font-medium text-gray-600">Тип товара:</span>
+                        <span class="text-gray-900">{{ balance.product.product_type }}</span>
+                      </div>
+                      <div v-if="productFieldsVisibility.barcode_type && balance.product?.barcode_type" class="flex items-center gap-2">
+                        <span class="font-medium text-gray-600">Тип штрихкода:</span>
+                        <span class="text-gray-900">{{ balance.product.barcode_type }}</span>
+                      </div>
+                      <div v-if="productFieldsVisibility.barcode && balance.product?.barcode" class="flex items-center gap-2">
+                        <span class="font-medium text-gray-600">Штрихкод:</span>
+                        <span class="text-gray-900">{{ balance.product.barcode }}</span>
+                      </div>
+                      <div v-if="productFieldsVisibility.cash_register_tax && balance.product?.cash_register_tax" class="flex items-center gap-2">
+                        <span class="font-medium text-gray-600">Налог ККМ:</span>
+                        <span class="text-gray-900">{{ balance.product.cash_register_tax }}</span>
+                      </div>
+                      <div v-if="productFieldsVisibility.cash_register_type && balance.product?.cash_register_type" class="flex items-center gap-2">
+                        <span class="font-medium text-gray-600">Тип ККМ:</span>
+                        <span class="text-gray-900">{{ balance.product.cash_register_type }}</span>
+                      </div>
+                      <div v-if="productFieldsVisibility.price && balance.product?.price" class="flex items-center gap-2">
+                        <span class="font-medium text-gray-600">Цена:</span>
+                        <span class="text-gray-900">{{ formatCurrency(balance.product.price) }}</span>
+                      </div>
+                      
+                      <!-- Кастомные поля -->
+                      <div v-for="field in customFields" :key="field.id" class="flex items-center gap-2">
+                        <span class="font-medium text-gray-600">{{ field.name }}:</span>
+                        <span class="text-gray-900">{{ balance.product?.[field.key] || '-' }}</span>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              </template>
             </tbody>
           </table>
         </div>
@@ -234,10 +359,7 @@
               :disabled="loading"
               class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400 text-sm flex items-center gap-2"
             >
-              <svg v-if="loading" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
+              <Loader2 v-if="loading" class="animate-spin h-4 w-4" />
               <span v-if="loading">Загрузка...</span>
               <span v-else>Назад</span>
             </button>
@@ -247,10 +369,7 @@
               :disabled="loading"
               class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400 text-sm flex items-center gap-2"
             >
-              <svg v-if="loading" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
+              <Loader2 v-if="loading" class="animate-spin h-4 w-4" />
               <span v-if="loading">Загрузка...</span>
               <span v-else>Вперед</span>
             </button>
@@ -266,6 +385,40 @@
       :warehouse-id="selectedWarehouseId"
       @close="showMovementsModal = false"
     />
+    
+    <!-- Модальное окно подтверждения удаления -->
+    <div v-if="showDeleteModal" class="fixed inset-0 z-[99999999] flex items-center justify-center bg-white/90 bg-opacity-50">
+      <div class="bg-white rounded-lg shadow-lg w-full max-w-md mx-4 p-6">
+        <div class="flex items-center mb-4">
+          <div class="flex-shrink-0">
+            <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+              <Trash2 class="w-6 h-6 text-red-600" />
+            </div>
+          </div>
+          <div class="ml-4">
+            <h3 class="text-lg font-semibold text-gray-900">Удалить товар?</h3>
+            <p class="text-sm text-gray-500">Это действие нельзя отменить. Товар будет удален навсегда.</p>
+          </div>
+        </div>
+        <div class="flex gap-3">
+          <button 
+            @click="closeDeleteModal" 
+            :disabled="deletingProductId !== null"
+            class="flex-1 bg-gray-100 hover:bg-gray-200 disabled:bg-gray-50 disabled:cursor-not-allowed text-gray-800 font-semibold px-4 py-2 rounded-lg transition-colors"
+          >
+            Отмена
+          </button>
+          <button 
+            @click="confirmDelete" 
+            :disabled="deletingProductId !== null"
+            class="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-red-400 disabled:cursor-not-allowed text-white font-semibold px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2"
+          >
+            <Loader2 v-if="deletingProductId !== null" class="w-4 h-4 animate-spin" />
+            {{ deletingProductId !== null ? 'Удаление...' : 'Удалить' }}
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -276,7 +429,7 @@ import ProductsMenu from './ProductsMenu.vue'
 import MovementsModal from './MovementsModal.vue'
 import Multiselect from '@vueform/multiselect'
 import '@vueform/multiselect/themes/default.css'
-import { Filter, FunnelX } from 'lucide-vue-next'
+import { Filter, FunnelX, Loader2, ArrowRightLeft, Edit, Trash2 } from 'lucide-vue-next'
 
 export default {
   name: 'BalancesPage',
@@ -285,7 +438,11 @@ export default {
     MovementsModal,
     Multiselect,
     Filter,
-    FunnelX
+    FunnelX,
+    Loader2,
+    ArrowRightLeft,
+    Edit,
+    Trash2
   },
   setup() {
     const balances = ref([])
@@ -308,6 +465,16 @@ export default {
     const selectedWarehouseId = ref(null)
     const loadingWarehouses = ref(false)
     const showFilters = ref(false)
+    
+    // Состояния для удаления товара
+    const showDeleteModal = ref(false)
+    const productIdToDelete = ref(null)
+    const deletingProductId = ref(null)
+    
+    // Состояния для настроек полей товара
+    const productFieldsVisibility = reactive({})
+    const customFields = ref([])
+    const loadingProductFields = ref(true)
 
     // Computed свойства
     const warehouseOptions = computed(() => {
@@ -399,11 +566,73 @@ export default {
       if (quantity <= 10) return 'Низкий остаток'
       return 'В наличии'
     }
+    
+    // Загрузка настроек полей товара
+    const loadProductFieldsVisibilityAndCustomFields = async () => {
+      loadingProductFields.value = true
+      try {
+        // Загрузка стандартных полей
+        const userResponse = await api.get('/user/settings')
+        if (userResponse.data.success && userResponse.data.data.product_fields_visibility) {
+          Object.assign(productFieldsVisibility, userResponse.data.data.product_fields_visibility)
+        }
+        
+        // Загрузка кастомных полей
+        const customFieldsResponse = await api.get('/product-fields')
+        if (customFieldsResponse.data.success) {
+          customFields.value = customFieldsResponse.data.data || []
+        }
+      } catch (error) {
+        console.error('Ошибка загрузки настроек полей:', error)
+      } finally {
+        loadingProductFields.value = false
+      }
+    }
+    
+    // Функции для удаления товара
+    const openDeleteModal = (productId) => {
+      productIdToDelete.value = productId
+      showDeleteModal.value = true
+    }
+    
+    const closeDeleteModal = () => {
+      showDeleteModal.value = false
+      productIdToDelete.value = null
+      deletingProductId.value = null
+    }
+    
+    const confirmDelete = async () => {
+      if (!productIdToDelete.value) return
+      
+      deletingProductId.value = productIdToDelete.value
+      
+      try {
+        const response = await api.delete(`/products/${productIdToDelete.value}`)
+        
+        if (response.data.success) {
+          // Удаляем товар из списка остатков
+          balances.value = balances.value.filter(balance => 
+            balance.product_id !== productIdToDelete.value
+          )
+          
+          alert('Товар успешно удален')
+          closeDeleteModal()
+        } else {
+          alert(response.data.message || 'Ошибка при удалении товара')
+        }
+      } catch (err) {
+        console.error('Ошибка удаления товара:', err)
+        alert('Ошибка при удалении товара')
+      } finally {
+        deletingProductId.value = null
+      }
+    }
 
     onMounted(() => {
       loadBalances()
       loadWarehouses()
       loadSummary() // Автоматически загружаем сводку при загрузке страницы
+      loadProductFieldsVisibilityAndCustomFields() // Загружаем настройки полей
     })
 
     return {
@@ -430,7 +659,16 @@ export default {
       getQuantityClass,
       getStatusClass,
       getStatusText,
-      currency
+      currency,
+      productFieldsVisibility,
+      customFields,
+      loadingProductFields,
+      showDeleteModal,
+      productIdToDelete,
+      deletingProductId,
+      openDeleteModal,
+      closeDeleteModal,
+      confirmDelete
     }
   }
 }
