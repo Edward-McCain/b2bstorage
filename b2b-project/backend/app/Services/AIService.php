@@ -20,7 +20,7 @@ class AIService
     {
         try {
             // Получаем все товары с остатками
-            $allProducts = ProductSklad::with(['product', 'warehouse'])->get();
+            $allProducts = ProductSklad::with(['warehouse'])->get();
             
             if ($allProducts->isEmpty()) {
                 return "В системе нет товаров для анализа.";
@@ -285,7 +285,7 @@ class AIService
     {
         try {
             // Получаем историю движения товара
-            $product = ProductSklad::with(['product', 'warehouse'])->find($productId);
+            $product = ProductSklad::with(['warehouse'])->find($productId);
             
             if (!$product) {
                 return null;
@@ -353,7 +353,7 @@ class AIService
             Log::info('AIService: Начинаем генерацию общих рекомендаций для пользователя ' . $userId);
             
             // Получаем все товары
-            $allProducts = ProductSklad::with(['product', 'warehouse'])->get();
+            $allProducts = ProductSklad::with(['warehouse'])->get();
             Log::info('AIService: Получено товаров: ' . $allProducts->count());
             
             if ($allProducts->isEmpty()) {

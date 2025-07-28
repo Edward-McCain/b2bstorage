@@ -149,7 +149,7 @@
                     <button @click="viewReceipt(receipt.id)" class="text-gray-600 hover:text-gray-900 p-1 rounded hover:bg-gray-100 transition-colors cursor-pointer">
                       <Eye class="w-4 h-4" />
                     </button>
-                    <router-link 
+                    <!-- <router-link 
                       :to="`/products/receipts/edit/${receipt.id}`"
                       class="text-blue-600 hover:text-blue-800 p-1 rounded hover:bg-blue-50 transition-colors cursor-pointer"
                     >
@@ -157,7 +157,7 @@
                     </router-link>
                     <button @click="openDeleteModal(receipt.id)" class="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50 transition-colors cursor-pointer">
                       <Trash2 class="w-4 h-4" />
-                    </button>
+                    </button> -->
                   </div>
                 </td>
               </tr>
