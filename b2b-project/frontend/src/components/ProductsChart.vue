@@ -20,7 +20,7 @@
         </div>
         <div class="text-right">
           <div class="text-3xl font-bold text-gray-900 hidden">{{ totalOperations }}</div>
-          <div class="text-sm text-green-600 font-medium">+{{ growthPercentage }}% ↑</div>
+          <div class="text-sm text-green-600 font-medium hidden">+{{ growthPercentage }}% ↑</div>
         </div>
       </div>
     </div>
