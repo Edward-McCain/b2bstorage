@@ -28,7 +28,7 @@
                 class="w-full text-sm multiselect-custom"
                 :loading="loadingWarehouses"
                 :disabled="loadingWarehouses"
-                @change="loadAvailableProducts"
+                @update:modelValue="onFromWarehouseChange"
                 required
               />
             </div>
@@ -372,8 +372,7 @@ const setWarehouseFromUrl = () => {
     
     if (warehouse) {
       form.from_warehouse_id = warehouseId
-      // Автоматически загружаем товары для выбранного склада
-      loadAvailableProducts()
+      // loadAvailableProducts() будет вызван автоматически через watch
     }
   }
 }
@@ -394,8 +393,16 @@ const setProductFromUrl = () => {
   }
 }
 
+const onFromWarehouseChange = (value) => {
+  console.log('onFromWarehouseChange: Склад изменен на', value)
+  // Не вызываем loadAvailableProducts здесь, так как watch уже это сделает
+}
+
 const loadAvailableProducts = async () => {
+  console.log('loadAvailableProducts: Начало загрузки товаров для склада', form.from_warehouse_id)
+  
   if (!form.from_warehouse_id) {
+    console.log('loadAvailableProducts: Склад не выбран, очищаем список товаров')
     availableProducts.value = []
     originalProducts.value = []
     return
@@ -403,9 +410,12 @@ const loadAvailableProducts = async () => {
 
   try {
     loadingProducts.value = true
+    console.log('loadAvailableProducts: Отправляем запрос к API')
     const response = await api.post('/transfers/available-products', {
       warehouse_id: form.from_warehouse_id
     })
+    
+    console.log('loadAvailableProducts: Получен ответ от API', response.data)
     
     // Добавляем поля для выбора количества и примечаний
     const products = response.data.map(product => ({
@@ -417,14 +427,17 @@ const loadAvailableProducts = async () => {
     availableProducts.value = products
     originalProducts.value = [...products] // Сохраняем оригинальный список
     
+    console.log('loadAvailableProducts: Товары загружены', products.length)
+    
     // Устанавливаем предвыбранный товар из URL параметра
     setProductFromUrl()
   } catch (error) {
-    console.error('Ошибка загрузки доступных товаров:', error)
+    console.error('loadAvailableProducts: Ошибка загрузки доступных товаров:', error)
     availableProducts.value = []
     originalProducts.value = []
   } finally {
     loadingProducts.value = false
+    console.log('loadAvailableProducts: Загрузка завершена')
   }
 }
 
@@ -499,6 +512,15 @@ const saveTransfer = async () => {
     creatingTransfer.value = false
   }
 }
+
+// Следим за изменениями склада отправления
+watch(() => form.from_warehouse_id, (newValue, oldValue) => {
+  console.log('watch: Склад отправления изменился с', oldValue, 'на', newValue)
+  if (newValue && newValue !== oldValue) {
+    console.log('watch: Вызываем loadAvailableProducts для склада', newValue)
+    loadAvailableProducts()
+  }
+})
 
 onMounted(async () => {
   // Проверяем наличие складов и показываем модальное окно если их нет

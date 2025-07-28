@@ -520,9 +520,19 @@ class ProductTransferController extends Controller
             'warehouse_id' => 'required|exists:warehouses,id'
         ]);
 
+        $user = Auth::user();
+        
+        Log::info('getAvailableProducts: Запрос товаров для склада', [
+            'warehouse_id' => $request->warehouse_id,
+            'user_id' => $user->id
+        ]);
+        
         // Получаем товары с остатками на указанном складе
         $balances = ProductBalance::where('warehouse_id', $request->warehouse_id)
             ->where('quantity', '>', 0)
+            ->whereHas('product', function($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })
             ->get();
 
         $products = [];
@@ -545,6 +555,11 @@ class ProductTransferController extends Controller
                 ];
             }
         }
+        
+        Log::info('getAvailableProducts: Найдено товаров', [
+            'warehouse_id' => $request->warehouse_id,
+            'products_count' => count($products)
+        ]);
 
         return response()->json($products);
     }
