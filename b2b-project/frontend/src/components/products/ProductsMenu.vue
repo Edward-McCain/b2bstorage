@@ -7,7 +7,7 @@
           class="border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap"
           :class="{ 'border-blue-700 text-blue-700': route.path === '/products' }"
         >
-          Товары
+          Главная
         </router-link>
         <router-link 
           to="/products/receipts" 

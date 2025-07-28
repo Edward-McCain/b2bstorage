@@ -176,11 +176,23 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/ai/forecast-stock', [\App\Http\Controllers\AIController::class, 'forecastStock']);
     Route::post('/ai/generate-recommendations', [\App\Http\Controllers\AIController::class, 'generateRecommendations']);
     Route::post('/ai/comprehensive-analysis', [\App\Http\Controllers\AIController::class, 'comprehensiveAnalysis']);
+    
+    // Card counts routes
+    Route::get('/receipts/count', [\App\Http\Controllers\CardCountsController::class, 'receiptsCount']);
+    Route::get('/write-offs/count', [\App\Http\Controllers\CardCountsController::class, 'writeOffsCount']);
+    Route::get('/inventories/count', [\App\Http\Controllers\CardCountsController::class, 'inventoryCount']);
+    Route::get('/transfers/count', [\App\Http\Controllers\CardCountsController::class, 'transfersCount']);
+    Route::get('/balances/count', [\App\Http\Controllers\CardCountsController::class, 'balancesCount']);
+    Route::get('/warehouses/count', [\App\Http\Controllers\CardCountsController::class, 'warehousesCount']);
+    Route::get('/card-counts/all', [\App\Http\Controllers\CardCountsController::class, 'getAllCounts']);
 });
 
 // Админские маршруты для перемещений
 Route::get('/admin/transfers', [AdminController::class, 'getTransfers']);
 Route::get('/admin/transfers/{id}', [AdminController::class, 'getTransferDetails']);
+
+// Статистика операций
+Route::get('/statistics/operations', [\App\Http\Controllers\StatisticsController::class, 'getOperationsStatistics']);
 
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/categories/{id}/subcategories', [CategoryController::class, 'subcategories']);

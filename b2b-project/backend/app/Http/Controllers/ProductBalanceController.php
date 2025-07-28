@@ -19,7 +19,7 @@ class ProductBalanceController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = ProductBalance::with(['product.images', 'warehouse']);
+        $query = ProductBalance::with(['product.images', 'product.categoryRelation', 'product.subcategoryRelation', 'warehouse']);
 
         // Фильтруем по складам текущего пользователя
         $query->whereHas('warehouse', function ($q) {
@@ -69,8 +69,18 @@ class ProductBalanceController extends Controller
         // Получаем цены из последних оприходований для каждого товара
         $this->addPricesToBalances($balances->getCollection());
         
-        // Преобразуем URL изображений
-        $this->transformImageUrls($balances->getCollection());
+        // Преобразуем URL изображений и добавляем названия категорий
+        $balances->getCollection()->transform(function($balance) {
+            if ($balance->product->images) {
+                $balance->product->images = $this->transformProductImages($balance->product->images);
+            }
+            
+            // Добавляем названия категорий через аксессоры
+            $balance->product->category_name = $balance->product->category_name;
+            $balance->product->subcategory_name = $balance->product->subcategory_name;
+            
+            return $balance;
+        });
 
         return response()->json($balances);
     }
@@ -80,7 +90,7 @@ class ProductBalanceController extends Controller
      */
     public function filter(Request $request): JsonResponse
     {
-        $query = ProductBalance::with(['product.images', 'warehouse']);
+        $query = ProductBalance::with(['product.images', 'product.categoryRelation', 'product.subcategoryRelation', 'warehouse']);
 
         // Фильтруем по складам текущего пользователя
         $query->whereHas('warehouse', function ($q) {
@@ -124,6 +134,146 @@ class ProductBalanceController extends Controller
             Log::info('Applied search filter:', ['search' => $search]);
         }
 
+        // Расширенная фильтрация по полям товара
+        if ($request->has('category') && !empty($request->category)) {
+            $query->whereHas('product', function ($q) use ($request) {
+                $q->where('category', $request->category);
+            });
+        }
+
+        if ($request->has('subcategory') && !empty($request->subcategory)) {
+            $query->whereHas('product', function ($q) use ($request) {
+                $q->where('subcategory', $request->subcategory);
+            });
+        }
+
+        if ($request->has('country') && !empty($request->country)) {
+            $query->whereHas('product', function ($q) use ($request) {
+                $q->where('country', 'like', "%{$request->country}%");
+            });
+        }
+
+        if ($request->has('supplier') && !empty($request->supplier)) {
+            $query->whereHas('product', function ($q) use ($request) {
+                $q->where('supplier', 'like', "%{$request->supplier}%");
+            });
+        }
+
+        if ($request->has('article') && !empty($request->article)) {
+            $query->whereHas('product', function ($q) use ($request) {
+                $q->where('article', 'like', "%{$request->article}%");
+            });
+        }
+
+        if ($request->has('code') && !empty($request->code)) {
+            $query->whereHas('product', function ($q) use ($request) {
+                $q->where('code', 'like', "%{$request->code}%");
+            });
+        }
+
+        if ($request->has('external_code') && !empty($request->external_code)) {
+            $query->whereHas('product', function ($q) use ($request) {
+                $q->where('external_code', 'like', "%{$request->external_code}%");
+            });
+        }
+
+        if ($request->has('unit') && !empty($request->unit)) {
+            $query->whereHas('product', function ($q) use ($request) {
+                $q->where('unit', 'like', "%{$request->unit}%");
+            });
+        }
+
+        if ($request->has('weight') && !empty($request->weight)) {
+            $query->whereHas('product', function ($q) use ($request) {
+                $q->where('weight', 'like', "%{$request->weight}%");
+            });
+        }
+
+        if ($request->has('volume') && !empty($request->volume)) {
+            $query->whereHas('product', function ($q) use ($request) {
+                $q->where('volume', 'like', "%{$request->volume}%");
+            });
+        }
+
+        if ($request->has('vat') && !empty($request->vat)) {
+            $query->whereHas('product', function ($q) use ($request) {
+                $q->where('vat', 'like', "%{$request->vat}%");
+            });
+        }
+
+        if ($request->has('min_stock') && !empty($request->min_stock)) {
+            $query->whereHas('product', function ($q) use ($request) {
+                $q->where('min_stock', 'like', "%{$request->min_stock}%");
+            });
+        }
+
+        if ($request->has('stock_type') && !empty($request->stock_type)) {
+            $query->whereHas('product', function ($q) use ($request) {
+                $q->where('stock_type', 'like', "%{$request->stock_type}%");
+            });
+        }
+
+        if ($request->has('packing') && !empty($request->packing)) {
+            $query->whereHas('product', function ($q) use ($request) {
+                $q->where('packing', 'like', "%{$request->packing}%");
+            });
+        }
+
+        if ($request->has('accounting_type') && !empty($request->accounting_type)) {
+            $query->whereHas('product', function ($q) use ($request) {
+                $q->where('accounting_type', 'like', "%{$request->accounting_type}%");
+            });
+        }
+
+        if ($request->has('traceable') && !empty($request->traceable)) {
+            $query->whereHas('product', function ($q) use ($request) {
+                $q->where('traceable', $request->traceable);
+            });
+        }
+
+        if ($request->has('marking') && !empty($request->marking)) {
+            $query->whereHas('product', function ($q) use ($request) {
+                $q->where('marking', 'like', "%{$request->marking}%");
+            });
+        }
+
+        if ($request->has('product_type') && !empty($request->product_type)) {
+            $query->whereHas('product', function ($q) use ($request) {
+                $q->where('product_type', 'like', "%{$request->product_type}%");
+            });
+        }
+
+        if ($request->has('barcode_type') && !empty($request->barcode_type)) {
+            $query->whereHas('product', function ($q) use ($request) {
+                $q->where('barcode_type', 'like', "%{$request->barcode_type}%");
+            });
+        }
+
+        if ($request->has('barcode') && !empty($request->barcode)) {
+            $query->whereHas('product', function ($q) use ($request) {
+                $q->where('barcode', 'like', "%{$request->barcode}%");
+            });
+        }
+
+        if ($request->has('cash_register_tax') && !empty($request->cash_register_tax)) {
+            $query->whereHas('product', function ($q) use ($request) {
+                $q->where('cash_register_tax', 'like', "%{$request->cash_register_tax}%");
+            });
+        }
+
+        if ($request->has('cash_register_type') && !empty($request->cash_register_type)) {
+            $query->whereHas('product', function ($q) use ($request) {
+                $q->where('cash_register_type', 'like', "%{$request->cash_register_type}%");
+            });
+        }
+
+        // Фильтрация по дате создания
+        if ($request->has('created_at') && !empty($request->created_at)) {
+            $query->whereHas('product', function ($q) use ($request) {
+                $q->whereDate('created_at', $request->created_at);
+            });
+        }
+
         $page = (int) $request->get('page', 1);
         $balances = $query->orderBy('quantity', 'desc')->paginate(50);
 
@@ -133,8 +283,18 @@ class ProductBalanceController extends Controller
         // Получаем цены из последних оприходований для каждого товара
         $this->addPricesToBalances($balances->getCollection());
         
-        // Преобразуем URL изображений
-        $this->transformImageUrls($balances->getCollection());
+        // Преобразуем URL изображений и добавляем названия категорий
+        $balances->getCollection()->transform(function($balance) {
+            if ($balance->product->images) {
+                $balance->product->images = $this->transformProductImages($balance->product->images);
+            }
+            
+            // Добавляем названия категорий через аксессоры
+            $balance->product->category_name = $balance->product->category_name;
+            $balance->product->subcategory_name = $balance->product->subcategory_name;
+            
+            return $balance;
+        });
 
         return response()->json($balances);
     }
@@ -148,7 +308,7 @@ class ProductBalanceController extends Controller
             'warehouse_id' => 'required|exists:warehouses,id'
         ]);
 
-        $balances = ProductBalance::with(['product.images'])
+        $balances = ProductBalance::with(['product.images', 'product.categoryRelation', 'product.subcategoryRelation'])
             ->where('warehouse_id', $request->warehouse_id)
             ->where('quantity', '>', 0)
             ->whereHas('warehouse', function ($q) {
@@ -171,6 +331,10 @@ class ProductBalanceController extends Controller
             } else {
                 $balance->product->price = 0;
             }
+
+            // Добавляем названия категорий через аксессоры
+            $balance->product->category_name = $balance->product->category_name;
+            $balance->product->subcategory_name = $balance->product->subcategory_name;
 
             return $balance;
         });
@@ -452,5 +616,19 @@ class ProductBalanceController extends Controller
         });
         
         return $balances;
+    }
+
+    /**
+     * Преобразовать изображения товара (как в ProductController)
+     */
+    private function transformProductImages($images)
+    {
+        // Автоматически определяем базовый URL из текущего запроса
+        $baseUrl = request()->getSchemeAndHttpHost() . '/storage/';
+        
+        return $images->map(function($image) use ($baseUrl) {
+            $image->image_url = $baseUrl . $image->image_url;
+            return $image;
+        });
     }
 } 

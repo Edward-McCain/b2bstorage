@@ -105,7 +105,7 @@
                 <th class="px-3 py-2 text-left font-semibold text-gray-700">Дата</th>
                 <th class="px-3 py-2 text-left font-semibold text-gray-700">Товар</th>
                 <th class="px-3 py-2 text-left font-semibold text-gray-700">Склад</th>
-                <th class="px-3 py-2 text-center font-semibold text-gray-700">Тип операции</th>
+                <th class="px-3 py-2 text-center font-semibold text-gray-700 min-w-[140px]">Тип операции</th>
                 <th class="px-3 py-2 text-center font-semibold text-gray-700">Количество</th>
                 <th class="px-3 py-2 text-left font-semibold text-gray-700">Пользователь</th>
                 <th class="px-3 py-2 text-left font-semibold text-gray-700">Примечания</th>
@@ -119,7 +119,7 @@
                   <div class="text-xs text-gray-500">{{ log.product_code }}</div>
                 </td>
                 <td class="px-3 py-2">{{ log.warehouse_name }}</td>
-                <td class="px-3 py-2 text-center">
+                <td class="px-3 py-2 text-center whitespace-nowrap">
                   <span :class="`px-2 py-1 rounded-full text-xs font-medium ${getOperationTypeClass(log.operation_type)}`">
                     {{ getOperationTypeText(log.operation_type) }}
                   </span>
@@ -173,8 +173,8 @@ const operationTypeOptions = [
   // { label: 'Расход', value: 'expense' },
   { label: 'Оприходование', value: 'receipt' },
   { label: 'Списание', value: 'write_off' },
-  { label: 'Перемещение (входящее)', value: 'transfer_in' },
-  { label: 'Перемещение (исходящее)', value: 'transfer_out' }
+  { label: 'Вх. перемещение', value: 'transfer_in' },
+  { label: 'Исх. перемещение', value: 'transfer_out' }
 ]
 
 const warehouseOptions = computed(() => {
@@ -207,8 +207,8 @@ function getOperationTypeText(type) {
     'expense': 'Расход',
     'receipt': 'Оприходование',
     'write_off': 'Списание',
-    'transfer_in': 'Перемещение (входящее)',
-    'transfer_out': 'Перемещение (исходящее)'
+    'transfer_in': 'Вх. перемещение',
+    'transfer_out': 'Исх. перемещение'
   }
   return types[type] || type
 }

@@ -105,6 +105,6 @@ button.bg-gray-100 {
 button, input, select, optgroup, textarea, ::file-selector-button {
   box-shadow: none !important;
 }
-*:not(.shadow-2xl) {box-shadow: none !important;}
+*:not(.shadow-2xl):not(.fixed *) {box-shadow: none !important;}
 .bg-white.border {border: none !important;}
 </style>

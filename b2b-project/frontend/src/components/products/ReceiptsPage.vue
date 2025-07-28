@@ -193,14 +193,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
-import ProductsMenu from './ProductsMenu.vue'
-import { apiRequest } from '@/config/api'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { Eye, Edit, Trash2, Loader2, Filter, FunnelX } from 'lucide-vue-next'
-import toastr from 'toastr'
+import { apiRequest } from '@/config/api'
+import ProductsMenu from './ProductsMenu.vue'
+import { Loader2, Plus, Edit, Trash2, Eye, Filter, FunnelX } from 'lucide-vue-next'
 import Multiselect from '@vueform/multiselect'
 import '@vueform/multiselect/themes/default.css'
+import toastr from 'toastr'
 
 // Устанавливаем заголовок страницы
 document.title = 'B2B SKLAD - Оприходования'

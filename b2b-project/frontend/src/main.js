@@ -6,6 +6,7 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
 import toastr from 'toastr'
+import VueApexCharts from 'vue3-apexcharts'
 
 // Настройка toastr
 toastr.options = {
@@ -23,4 +24,5 @@ window.toastr = toastr
 
 const app = createApp(App)
 app.use(router)
+app.component('apexchart', VueApexCharts)
 app.mount('#app')

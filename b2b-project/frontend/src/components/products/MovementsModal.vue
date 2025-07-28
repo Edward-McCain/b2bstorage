@@ -141,6 +141,9 @@ import { Loader2 } from 'lucide-vue-next'
 
 export default {
   name: 'MovementsModal',
+  components: {
+    Loader2
+  },
   props: {
     productId: {
       type: Number,

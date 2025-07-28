@@ -84,3 +84,6 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* Импорт кастомных стилей для календаря */
+@import './custom-date-picker.css';
