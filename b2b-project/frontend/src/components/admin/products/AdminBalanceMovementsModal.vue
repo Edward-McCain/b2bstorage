@@ -166,6 +166,22 @@ export default {
     const productPrice = ref(0)
     const product = ref(null)
 
+    // Получаем валюту пользователя из localStorage
+    const getUserCurrency = () => {
+      const userData = localStorage.getItem('user')
+      if (userData) {
+        try {
+          const user = JSON.parse(userData)
+          return user.currency || 'UZS'
+        } catch (e) {
+          console.error('Ошибка парсинга данных пользователя:', e)
+        }
+      }
+      return 'UZS'
+    }
+
+    const userCurrency = getUserCurrency()
+
     const filters = reactive({
       date_from: '',
       date_to: ''
@@ -226,11 +242,39 @@ export default {
     }
 
     const formatCurrency = (amount) => {
-      if (!amount) return '0 ₽'
-      return new Intl.NumberFormat('ru-RU', {
-        style: 'currency',
-        currency: 'RUB'
+      if (!amount) return `0 ${userCurrency}`
+      
+      // Маппинг символов валют
+      const currencySymbols = {
+        'USD': '$',
+        'EUR': '€',
+        'RUB': '₽',
+        'UZS': 'сум',
+        'GBP': '£',
+        'JPY': '¥',
+        'CNY': '¥',
+        'AUD': 'A$',
+        'CAD': 'C$',
+        'CHF': 'CHF',
+        'HKD': 'HK$',
+        'NZD': 'NZ$'
+      }
+      
+      const symbol = currencySymbols[userCurrency] || userCurrency
+      
+      // Форматирование числа
+      const formattedNumber = new Intl.NumberFormat('ru-RU', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
       }).format(amount)
+      
+      // Для валют с символом справа (например, UZS)
+      if (userCurrency === 'UZS') {
+        return `${formattedNumber} ${symbol}`
+      }
+      
+      // Для валют с символом слева
+      return `${symbol}${formattedNumber}`
     }
 
     const formatDateTime = (dateString) => {

@@ -47,7 +47,7 @@
         <!-- Загрузка товаров -->
         <div v-if="loadingProducts" class="flex items-center justify-center py-12">
           <Loader2 class="animate-spin h-8 w-8 text-blue-600 mr-3" />
-          <span class="text-lg text-gray-600">Загрузка товаров склада...</span>
+          <span class="text-sm text-gray-600">Загрузка товаров склада...</span>
         </div>
 
         <!-- Пустой склад -->
@@ -136,7 +136,7 @@ import toastr from 'toastr'
 const route = useRoute()
 const router = useRouter()
 
-const warehouseId = route.params.id
+const warehouseId = computed(() => Number(route.params.id))
 const warehouse = ref(null)
 const products = ref([])
 const loadingWarehouse = ref(false)
@@ -153,7 +153,7 @@ const totalQuantity = computed(() => {
 const loadWarehouse = async () => {
   loadingWarehouse.value = true
   try {
-    const response = await apiRequest(`/warehouses/${warehouseId}`, { method: 'GET' })
+    const response = await apiRequest(`/warehouses/${warehouseId.value}`, { method: 'GET' })
     if (response.ok && response.data.success) {
       warehouse.value = response.data.data
     } else {
@@ -173,7 +173,7 @@ const loadWarehouseProducts = async () => {
   try {
     const response = await apiRequest(`/transfers/available-products`, { 
       method: 'POST',
-      body: JSON.stringify({ warehouse_id: warehouseId })
+      body: JSON.stringify({ warehouse_id: warehouseId.value })
     })
     if (response.ok) {
       products.value = response.data || []
@@ -209,7 +209,7 @@ const transferProduct = (product) => {
   router.push({
     path: '/products/transfers/create',
     query: {
-      from_warehouse: warehouseId,
+      from_warehouse: warehouseId.value,
       product_id: product.id,
       quantity: product.warehouse_quantity
     }

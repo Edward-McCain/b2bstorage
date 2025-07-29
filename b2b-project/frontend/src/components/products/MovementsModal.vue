@@ -22,11 +22,11 @@
 
         <div v-if="loading" class="text-center py-8">
           <Loader2 class="animate-spin h-8 w-8 text-blue-600 mx-auto mb-2" />
-          <div class="text-gray-600">Загрузка движения товаров...</div>
+          <div class="text-gray-600 text-sm">Загрузка движения товаров...</div>
         </div>
 
         <div v-else-if="movements.length === 0" class="text-center py-8">
-          <div class="text-gray-500">Нет данных о движении товаров</div>
+          <div class="text-gray-500 text-sm">Нет данных о движении товаров</div>
         </div>
 
         <div v-else class="space-y-4">
@@ -162,6 +162,22 @@ export default {
     const productPrice = ref(0)
     const product = ref(null)
 
+    // Получаем валюту пользователя из localStorage
+    const getUserCurrency = () => {
+      const userData = localStorage.getItem('user')
+      if (userData) {
+        try {
+          const user = JSON.parse(userData)
+          return user.currency || 'UZS'
+        } catch (e) {
+          console.error('Ошибка парсинга данных пользователя:', e)
+        }
+      }
+      return 'UZS'
+    }
+
+    const userCurrency = getUserCurrency()
+
     const filters = reactive({
       date_from: '',
       date_to: ''
@@ -224,11 +240,39 @@ export default {
     }
 
     const formatCurrency = (amount) => {
-      if (!amount) return '0 ₽'
-      return new Intl.NumberFormat('ru-RU', {
-        style: 'currency',
-        currency: 'RUB'
+      if (!amount) return `0 ${userCurrency}`
+      
+      // Маппинг символов валют
+      const currencySymbols = {
+        'USD': '$',
+        'EUR': '€',
+        'RUB': '₽',
+        'UZS': 'сум',
+        'GBP': '£',
+        'JPY': '¥',
+        'CNY': '¥',
+        'AUD': 'A$',
+        'CAD': 'C$',
+        'CHF': 'CHF',
+        'HKD': 'HK$',
+        'NZD': 'NZ$'
+      }
+      
+      const symbol = currencySymbols[userCurrency] || userCurrency
+      
+      // Форматирование числа
+      const formattedNumber = new Intl.NumberFormat('ru-RU', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
       }).format(amount)
+      
+      // Для валют с символом справа (например, UZS)
+      if (userCurrency === 'UZS') {
+        return `${formattedNumber} ${symbol}`
+      }
+      
+      // Для валют с символом слева
+      return `${symbol}${formattedNumber}`
     }
 
     onMounted(() => {

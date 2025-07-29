@@ -59,7 +59,9 @@
               placeholder="Все типы"
               :max-height="400"
               class="w-full text-sm multiselect-custom"
-              @change="updateFilters"
+              @input="onTypeChange"
+              @change="onTypeChange"
+              @select="onTypeChange"
             />
           </div>
           
@@ -78,12 +80,14 @@
               placeholder="Все"
               :max-height="400"
               class="w-full text-sm multiselect-custom"
-              @change="updateFilters"
+              @input="onReadStatusChange"
+              @change="onReadStatusChange"
+              @select="onReadStatusChange"
             />
           </div>
           
-          <div class="flex items-center justify-between sm:justify-end">
-            <span v-if="totalCount > 0" class="text-sm text-gray-500">
+          <div class="flex items-center justify-between sm:justify-end hidden">
+            <span v-if="totalCount > 0" class="text-sm text-gray-500 ml-4">
               Всего: {{ totalCount }} | Непрочитанных: {{ unreadCount }}
             </span>
           </div>
@@ -92,7 +96,7 @@
     </div>
 
     <!-- Content -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style="padding-bottom: 16px;">
       <!-- Список уведомлений -->
       <div class="space-y-3 sm:space-y-4 mb-8">
         
@@ -138,11 +142,35 @@ const filters = ref({
 
 // Methods
 const loadNotifications = async () => {
+  console.log('=== loadNotifications вызван ===')
+  console.log('Текущие фильтры:', filters.value)
+  console.log('loading.value:', loading.value)
+  
+  // Защита от множественных запросов
+  if (loading.value) {
+    console.log('Запрос уже выполняется, пропускаем')
+    return
+  }
+  
   loading.value = true
   try {
     const params = new URLSearchParams()
-    if (filters.value.type) params.append('type', filters.value.type)
-    if (filters.value.isRead !== '') params.append('is_read', filters.value.isRead)
+    
+    // Фильтр по типу
+    if (filters.value.type && filters.value.type.value) {
+      params.append('type', filters.value.type.value)
+      console.log('Добавляем фильтр по типу:', filters.value.type.value)
+    } else {
+      console.log('Фильтр по типу не добавлен:', filters.value.type)
+    }
+    
+    // Фильтр по статусу прочтения
+    if (filters.value.isRead && filters.value.isRead.value !== '') {
+      params.append('is_read', filters.value.isRead.value)
+      console.log('Добавляем фильтр по статусу:', filters.value.isRead.value)
+    } else {
+      console.log('Фильтр по статусу не добавлен:', filters.value.isRead)
+    }
     
     console.log('Загружаем уведомления с параметрами:', params.toString())
     const response = await apiRequest(`/notifications?${params.toString()}`)
@@ -162,6 +190,33 @@ const loadNotifications = async () => {
   } finally {
     loading.value = false
   }
+}
+
+// Обработчики изменений фильтров
+const onTypeChange = (value) => {
+  console.log('=== onTypeChange вызван ===')
+  console.log('Полученное значение:', value)
+  console.log('Тип значения:', typeof value)
+  console.log('Значение до изменения:', filters.value.type)
+  
+  filters.value.type = value
+  console.log('Значение после изменения:', filters.value.type)
+  
+  console.log('Вызываем loadNotifications...')
+  loadNotifications()
+}
+
+const onReadStatusChange = (value) => {
+  console.log('=== onReadStatusChange вызван ===')
+  console.log('Полученное значение:', value)
+  console.log('Тип значения:', typeof value)
+  console.log('Значение до изменения:', filters.value.isRead)
+  
+  filters.value.isRead = value
+  console.log('Значение после изменения:', filters.value.isRead)
+  
+  console.log('Вызываем loadNotifications...')
+  loadNotifications()
 }
 
 const markAllAsRead = async () => {
@@ -202,15 +257,17 @@ const getAIRecommendations = async () => {
   }
 }
 
-const updateFilters = () => {
-  loadNotifications()
-}
-
 const clearFilters = () => {
+  console.log('=== clearFilters вызван ===')
+  console.log('Фильтры до очистки:', filters.value)
+  
   filters.value = {
     type: '',
     isRead: ''
   }
+  
+  console.log('Фильтры после очистки:', filters.value)
+  console.log('Вызываем loadNotifications...')
   loadNotifications()
 }
 

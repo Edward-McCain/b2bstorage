@@ -24,6 +24,14 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
+// Notification routes - временно вынесены для тестирования
+Route::get('/notifications', [\App\Http\Controllers\NotificationController::class, 'index']);
+Route::get('/notifications/unread', [\App\Http\Controllers\NotificationController::class, 'unread']);
+Route::get('/notifications/unread-count', [\App\Http\Controllers\NotificationController::class, 'unreadCount']);
+Route::put('/notifications/{id}/mark-read', [\App\Http\Controllers\NotificationController::class, 'markAsRead']);
+Route::put('/notifications/mark-all-read', [\App\Http\Controllers\NotificationController::class, 'markAllAsRead']);
+Route::delete('/notifications/{id}', [\App\Http\Controllers\NotificationController::class, 'destroy']);
+
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
@@ -98,8 +106,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/transfers/filter', [ProductTransferController::class, 'filter']);
     Route::post('/transfers/available-products', [ProductTransferController::class, 'getAvailableProducts']);
     Route::get('/transfers/all-products', [ProductTransferController::class, 'getAllProducts']);
-    Route::post('/transfers', [ProductTransferController::class, 'store']);
     Route::get('/transfers/{id}', [ProductTransferController::class, 'show']);
+    Route::post('/transfers', [ProductTransferController::class, 'store']);
     Route::put('/transfers/{id}', [ProductTransferController::class, 'update']);
     Route::delete('/transfers/{id}', [ProductTransferController::class, 'destroy']);
     Route::post('/transfers/{id}/confirm', [ProductTransferController::class, 'confirm']);
@@ -160,14 +168,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/product-fields/{id}', [\App\Http\Controllers\ProductFieldController::class, 'destroy']);
     // Product fields visibility (стандартные поля)
     Route::put('/user/product-fields-visibility', [\App\Http\Controllers\AuthController::class, 'updateProductFieldsVisibility']);
-    
-    // Notification routes
-    Route::get('/notifications', [\App\Http\Controllers\NotificationController::class, 'index']);
-    Route::get('/notifications/unread', [\App\Http\Controllers\NotificationController::class, 'unread']);
-    Route::get('/notifications/unread-count', [\App\Http\Controllers\NotificationController::class, 'unreadCount']);
-    Route::put('/notifications/{id}/mark-read', [\App\Http\Controllers\NotificationController::class, 'markAsRead']);
-    Route::put('/notifications/mark-all-read', [\App\Http\Controllers\NotificationController::class, 'markAllAsRead']);
-    Route::delete('/notifications/{id}', [\App\Http\Controllers\NotificationController::class, 'destroy']);
     
     // AI routes
     Route::post('/ai/analyze-stock', [\App\Http\Controllers\AIController::class, 'analyzeStockLevels']);
