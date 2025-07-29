@@ -8,12 +8,27 @@ cd b2b-project/backend && php artisan config:clear
 
 #!/bin/bash
 # Быстрое переключение на серверную базу данных
-sed -i '' 's/LOCAL_DB=true/LOCAL_DB=false/g' b2b-project/backend/.env && cd b2b-project/backend && php artisan config:clear && echo "✅ Переключено на серверную БД" 
+sed -i '' 's/LOCAL_DB=true/LOCAL_DB=false/g' b2b-project/backend/.env && cd b2b-project/backend && php artisan config:clear && php artisan config:cache && echo "✅ Переключено на серверную БД" 
+
+php artisan config:cache
 
 
 #!/bin/bash
 # Быстрое переключение на локальную базу данных
-sed -i '' 's/LOCAL_DB=false/LOCAL_DB=true/g' b2b-project/backend/.env && cd b2b-project/backend && php artisan config:clear && echo "✅ Переключено на локальную БД" 
+sed -i '' 's/LOCAL_DB=false/LOCAL_DB=true/g' b2b-project/backend/.env && cd b2b-project/backend && php artisan config:clear && php artisan config:cache && echo "✅ Переключено на локальную БД" 
+
+php artisan config:cache
+
+
+<!-- # На локальную БД
+sed -i '' 's/LOCAL_DB=false/LOCAL_DB=true/g' b2b-project/backend/.env && cd b2b-project/backend && php artisan config:clear && php artisan config:cache
+
+# На серверную БД  
+sed -i '' 's/LOCAL_DB=true/LOCAL_DB=false/g' b2b-project/backend/.env && cd b2b-project/backend && php artisan config:clear && php artisan config:cache -->
+
+
+
+
 
 
 # запуск на локалке фронт и бэк:
