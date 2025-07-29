@@ -525,8 +525,8 @@
                   <h3 class="text-lg font-semibold mb-4">Удалить поле?</h3>
                   <p class="mb-6 text-gray-700">Вы действительно хотите удалить поле <b>{{ fieldToDelete?.field_name }}</b>?</p>
                   <div class="flex justify-end gap-2">
-                    <button @click="cancelDeleteField" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium px-4 py-2 rounded-lg">Нет</button>
-                    <button @click="doDeleteField" class="bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-lg">Да, удалить</button>
+                    <button @click="cancelDeleteField" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium px-4 py-2 rounded-lg text-sm">Нет</button>
+                    <button @click="doDeleteField" class="bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-lg text-sm">Да, удалить</button>
                   </div>
                 </div>
               </div>
@@ -545,8 +545,8 @@
                   </div>
                   <div v-if="errorSaveField" class="text-red-600 text-sm mb-2">{{ errorSaveField }}</div>
                   <div class="flex justify-end gap-2">
-                    <button type="button" @click="closeFieldModal" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium px-4 py-2 rounded-lg">Отмена</button>
-                    <button type="submit" :disabled="savingField" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg flex items-center gap-2">
+                    <button type="button" @click="closeFieldModal" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium px-4 py-2 rounded-lg text-sm">Отмена</button>
+                    <button type="submit" :disabled="savingField" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg flex items-center gap-2 text-sm">
                       <Loader2 v-if="savingField" class="animate-spin w-4 h-4" />
                       Сохранить
                     </button>
@@ -842,7 +842,7 @@
     
     <!-- Модальное окно редактирования подкатегории -->
     <div v-if="editingSubcategory" class="fixed inset-0 bg-white/90 bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+      <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-lg">
         <div class="flex justify-between items-center mb-4">
           <h3 class="text-lg font-semibold">Редактировать подкатегорию</h3>
           <button @click="editingSubcategory = null" class="text-gray-500 hover:text-gray-700">
@@ -863,14 +863,14 @@
         <div class="flex gap-2 justify-end">
           <button 
             @click="editingSubcategory = null"
-            class="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+            class="px-4 py-2 text-gray-600 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
           >
             Отмена
           </button>
           <button 
             @click="saveSubcategoryEdit"
             :disabled="!newSubcategoryName.trim()"
-            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+            class="px-4 py-2 bg-blue-600 text-sm text-white rounded-md hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
             Сохранить
           </button>

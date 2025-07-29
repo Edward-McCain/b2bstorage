@@ -645,46 +645,79 @@ class ProductController extends Controller
 
         DB::beginTransaction();
         try {
-            // Удаляем товар (каскад удалит все связанные записи)
-            $product->delete();
-            DB::table('products')->where('id', $id)->delete();
-
-            // Проверка: остались ли связанные записи (на всякий случай)
-            $tables = [
-                'product_images',
-                'receipt_positions',
-                'write_off_positions',
-                'inventory_items',
-                'product_transfer_positions',
-                'product_operations',
-                'product_balances',
-            ];
-            $leftovers = [];
-            foreach ($tables as $table) {
-                $count = DB::table($table)->where('product_id', $id)->count();
-                if ($count > 0) {
-                    $leftovers[$table] = $count;
+            // Проверяем, есть ли связанные записи, которые могут помешать удалению
+            $relatedRecords = [];
+            
+            // Проверяем позиции списаний
+            $writeOffPositionsCount = DB::table('write_off_positions')->where('product_id', $id)->count();
+            if ($writeOffPositionsCount > 0) {
+                $relatedRecords['write_off_positions'] = $writeOffPositionsCount;
+            }
+            
+            // Проверяем позиции оприходований
+            $receiptPositionsCount = DB::table('receipt_positions')->where('product_id', $id)->count();
+            if ($receiptPositionsCount > 0) {
+                $relatedRecords['receipt_positions'] = $receiptPositionsCount;
+            }
+            
+            // Проверяем позиции инвентаризации
+            $inventoryItemsCount = DB::table('inventory_items')->where('product_id', $id)->count();
+            if ($inventoryItemsCount > 0) {
+                $relatedRecords['inventory_items'] = $inventoryItemsCount;
+            }
+            
+            // Проверяем позиции перемещений
+            $transferPositionsCount = DB::table('product_transfer_positions')->where('product_id', $id)->count();
+            if ($transferPositionsCount > 0) {
+                $relatedRecords['product_transfer_positions'] = $transferPositionsCount;
+            }
+            
+            // Проверяем операции
+            $operationsCount = DB::table('product_operations')->where('product_id', $id)->count();
+            if ($operationsCount > 0) {
+                $relatedRecords['product_operations'] = $operationsCount;
+            }
+            
+            // Проверяем остатки
+            $balancesCount = DB::table('product_balances')->where('product_id', $id)->count();
+            if ($balancesCount > 0) {
+                $relatedRecords['product_balances'] = $balancesCount;
+            }
+            
+            // Если есть связанные записи, удаляем их вручную
+            if (!empty($relatedRecords)) {
+                Log::info('Удаляем связанные записи перед удалением товара', [
+                    'product_id' => $id,
+                    'related_records' => $relatedRecords
+                ]);
+                
+                // Удаляем связанные записи в правильном порядке
+                DB::table('write_off_positions')->where('product_id', $id)->delete();
+                DB::table('receipt_positions')->where('product_id', $id)->delete();
+                DB::table('inventory_items')->where('product_id', $id)->delete();
+                DB::table('product_transfer_positions')->where('product_id', $id)->delete();
+                DB::table('product_operations')->where('product_id', $id)->delete();
+                DB::table('product_balances')->where('product_id', $id)->delete();
+            }
+            
+            // Удаляем изображения товара
+            $images = ProductImage::where('product_id', $id)->get();
+            foreach ($images as $image) {
+                if ($image->image_url && Storage::disk('public')->exists($image->image_url)) {
+                    Storage::disk('public')->delete($image->image_url);
                 }
             }
-
-            if (!empty($leftovers)) {
-                Log::warning('Не все связанные записи удалены при каскадном удалении товара', [
-                    'product_id' => $id,
-                    'leftovers' => $leftovers
-                ]);
-                DB::rollBack();
-                return response()->json([
-                    'success' => false,
-                    'error' => 'Не удалось удалить все связанные записи (каскад не сработал)',
-                    'details' => $leftovers
-                ], 500);
-            }
-
+            DB::table('product_images')->where('product_id', $id)->delete();
+            
+            // Удаляем сам товар
+            $product->delete();
+            
             DB::commit();
             return response()->json([
                 'success' => true,
                 'message' => 'Товар и все связанные данные успешно удалены'
             ]);
+            
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Ошибка при удалении товара', [

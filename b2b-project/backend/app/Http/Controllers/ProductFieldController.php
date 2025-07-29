@@ -75,16 +75,32 @@ class ProductFieldController extends Controller
         if (!$field) {
             return response()->json(['success' => false, 'message' => 'Поле не найдено'], 404);
         }
+        
         // Проверка: используется ли поле в products_sklad.fields у пользователя
-        $used = ProductSklad::where('user_id', $user->id)
-            ->whereRaw("fields::jsonb ? ?", [$field->field_name])
-            ->exists();
+        // Используем более безопасный способ проверки JSONB
+        try {
+            $used = ProductSklad::where('user_id', $user->id)
+                ->whereRaw("fields::jsonb ? ?", [$field->field_name])
+                ->exists();
+        } catch (\Exception $e) {
+            // Если SQL-запрос не работает, используем альтернативный способ
+            $used = ProductSklad::where('user_id', $user->id)
+                ->whereNotNull('fields')
+                ->get()
+                ->filter(function($product) use ($field) {
+                    $fields = $product->fields; // Уже массив благодаря casts
+                    return is_array($fields) && array_key_exists($field->field_name, $fields);
+                })
+                ->count() > 0;
+        }
+            
         if ($used) {
             return response()->json([
                 'success' => false,
                 'message' => 'Нельзя удалить поле: оно используется хотя бы в одном товаре.'
             ], 400);
         }
+        
         $field->delete();
         return response()->json(['success' => true, 'message' => 'Поле удалено']);
     }
