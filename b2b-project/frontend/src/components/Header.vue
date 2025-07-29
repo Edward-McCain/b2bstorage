@@ -1072,7 +1072,7 @@ window.addEventListener('notifications-updated', () => {
               Настройки аккаунта
             </router-link>
             
-            <button
+            <!-- <button
               @click="openSupport"
               class="flex items-center gap-3 text-gray-700 py-2 w-full text-left"
             >
@@ -1084,7 +1084,7 @@ window.addEventListener('notifications-updated', () => {
                 <path d="M14.5 11a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z"/>
               </svg>
               Техническая поддержка
-            </button>
+            </button> -->
             
             <button
               @click="handleLogout"

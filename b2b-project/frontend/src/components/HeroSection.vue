@@ -1,5 +1,14 @@
 <script setup>
 // HeroSection для главной страницы
+import { ref, onMounted } from 'vue'
+
+const isAuthenticated = ref(false)
+
+onMounted(() => {
+  // Проверяем авторизацию пользователя
+  const token = localStorage.getItem('auth_token')
+  isAuthenticated.value = !!token
+})
 </script>
 
 <template>
@@ -13,7 +22,7 @@
         <h1 class="text-5xl font-extrabold tracking-tight text-gray-900 sm:text-7xl">B2B SKLAD — складской учёт нового поколения</h1>
         <p class="mt-8 text-lg font-medium text-gray-600 sm:text-xl">Профессиональная система складского учёта для бизнеса. <br> Часть экосистемы B2B Global: Marketplace, Doc, SKLAD.</p>
         <div class="mt-10 flex items-center justify-center gap-x-6">
-          <a href="/auth" class="rounded-md bg-primary px-6 py-3 text-base font-semibold shadow hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition">Начать бесплатно</a>
+          <a v-if="!isAuthenticated" href="/auth" class="rounded-md bg-primary px-6 py-3 text-base font-semibold shadow hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition">Начать бесплатно</a>
           <a href="#features" class="text-base font-semibold text-primary hover:underline">Узнать больше <span aria-hidden="true">→</span></a>
         </div>
       </div>
