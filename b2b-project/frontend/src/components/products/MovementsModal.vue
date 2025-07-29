@@ -202,6 +202,7 @@ export default {
         }
 
         const response = await api.post('/balances/movements', requestData)
+        
         movements.value = response.data.movements.data
         pagination.value = response.data.movements
         product.value = response.data.product

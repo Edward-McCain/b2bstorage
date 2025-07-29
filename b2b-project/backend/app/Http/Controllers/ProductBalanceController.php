@@ -549,13 +549,36 @@ class ProductBalanceController extends Controller
             ->paginate(50, ['*'], 'page', $page);
 
         // Получаем последнюю цену товара
-        $lastReceiptPosition = \App\Models\ReceiptPosition::where('product_id', $request->product_id)
-            ->whereNotNull('price')
-            ->where('price', '>', 0)
-            ->orderBy('created_at', 'desc')
-            ->first();
+        $productPrice = 0;
+        
+        // Сначала проверяем цену в самом товаре
+        if ($product && $product->price > 0) {
+            $productPrice = (float) $product->price;
+            Log::info('Цена товара взята из products_sklad', [
+                'product_id' => $request->product_id,
+                'price' => $productPrice
+            ]);
+        } else {
+            // Если цены нет в товаре, проверяем последнее оприходование
+            $lastReceiptPosition = \App\Models\ReceiptPosition::where('product_id', $request->product_id)
+                ->whereNotNull('price')
+                ->where('price', '>', 0)
+                ->orderBy('created_at', 'desc')
+                ->first();
 
-        $productPrice = $lastReceiptPosition ? $lastReceiptPosition->price : 0;
+            $productPrice = $lastReceiptPosition ? (float) $lastReceiptPosition->price : 0;
+            
+            Log::info('Цена товара взята из оприходований', [
+                'product_id' => $request->product_id,
+                'price' => $productPrice,
+                'receipt_position_id' => $lastReceiptPosition ? $lastReceiptPosition->id : null
+            ]);
+        }
+        
+        Log::info('Итоговая цена товара для движений', [
+            'product_id' => $request->product_id,
+            'final_price' => $productPrice
+        ]);
 
         return response()->json([
             'movements' => $movements,

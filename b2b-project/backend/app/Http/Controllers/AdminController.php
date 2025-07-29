@@ -1641,14 +1641,22 @@ class AdminController extends Controller
                 ->paginate(50, ['*'], 'page', $page);
 
             // Получаем последнюю цену товара
-            $lastReceiptPosition = DB::table('receipt_positions')
-                ->where('product_id', $request->product_id)
-                ->whereNotNull('price')
-                ->where('price', '>', 0)
-                ->orderBy('created_at', 'desc')
-                ->first();
+            $productPrice = 0;
+            
+            // Сначала проверяем цену в самом товаре
+            if ($product && $product->price > 0) {
+                $productPrice = (float) $product->price;
+            } else {
+                // Если цены нет в товаре, проверяем последнее оприходование
+                $lastReceiptPosition = DB::table('receipt_positions')
+                    ->where('product_id', $request->product_id)
+                    ->whereNotNull('price')
+                    ->where('price', '>', 0)
+                    ->orderBy('created_at', 'desc')
+                    ->first();
 
-            $productPrice = $lastReceiptPosition ? $lastReceiptPosition->price : 0;
+                $productPrice = $lastReceiptPosition ? (float) $lastReceiptPosition->price : 0;
+            }
 
             return response()->json([
                 'success' => true,
