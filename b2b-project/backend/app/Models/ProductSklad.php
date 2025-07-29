@@ -64,24 +64,25 @@ class ProductSklad extends Model
             return null;
         }
         
-        // Проверяем тип категорий пользователя
-        $user = $this->user;
-        if (!$user) {
-            return $this->categoryRelation ? $this->categoryRelation->name_ru : $this->category;
+        // Сначала ищем в системных категориях
+        $systemCategory = \App\Models\Category::where('category_id', $this->category)->first();
+        if ($systemCategory) {
+            return $systemCategory->name_ru;
         }
         
-        $catsType = $user->cats_type ?? 'system';
-        
-        if ($catsType === 'user') {
-            // Для пользовательских категорий
+        // Если не найдено в системных, ищем в пользовательских категориях
+        $user = $this->user;
+        if ($user) {
             $userCategory = \App\Models\UserCategory::where('category_id', $this->category)
                 ->where('user_id', $user->id)
                 ->first();
-            return $userCategory ? $userCategory->name : $this->category;
-        } else {
-            // Для системных категорий
-            return $this->categoryRelation ? $this->categoryRelation->name_ru : $this->category;
+            if ($userCategory) {
+                return $userCategory->name;
+            }
         }
+        
+        // Если не найдено нигде, возвращаем ID
+        return $this->category;
     }
 
     /**
@@ -93,24 +94,25 @@ class ProductSklad extends Model
             return null;
         }
         
-        // Проверяем тип категорий пользователя
-        $user = $this->user;
-        if (!$user) {
-            return $this->subcategoryRelation ? $this->subcategoryRelation->name_ru : $this->subcategory;
+        // Сначала ищем в системных подкатегориях
+        $systemSubcategory = \App\Models\Subcategory::where('subcategory_id', $this->subcategory)->first();
+        if ($systemSubcategory) {
+            return $systemSubcategory->name_ru;
         }
         
-        $catsType = $user->cats_type ?? 'system';
-        
-        if ($catsType === 'user') {
-            // Для пользовательских подкатегорий
+        // Если не найдено в системных, ищем в пользовательских подкатегориях
+        $user = $this->user;
+        if ($user) {
             $userSubcategory = \App\Models\UserSubcategory::where('subcategory_id', $this->subcategory)
                 ->where('user_id', $user->id)
                 ->first();
-            return $userSubcategory ? $userSubcategory->name : $this->subcategory;
-        } else {
-            // Для системных подкатегорий
-            return $this->subcategoryRelation ? $this->subcategoryRelation->name_ru : $this->subcategory;
+            if ($userSubcategory) {
+                return $userSubcategory->name;
+            }
         }
+        
+        // Если не найдено нигде, возвращаем ID
+        return $this->subcategory;
     }
 
     /**

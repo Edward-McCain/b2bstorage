@@ -528,14 +528,14 @@
           <button 
             @click="closeDeleteModal" 
             :disabled="deletingProductId !== null"
-            class="flex-1 bg-gray-100 hover:bg-gray-200 disabled:bg-gray-50 disabled:cursor-not-allowed text-gray-800 font-semibold px-4 py-2 rounded-lg transition-colors"
+            class="flex-1 bg-gray-100 hover:bg-gray-200 disabled:bg-gray-50 disabled:cursor-not-allowed text-gray-800 font-semibold px-4 py-2 rounded-lg transition-colors text-sm cursor-pointer"
           >
             Отмена
           </button>
           <button 
             @click="confirmDelete" 
             :disabled="deletingProductId !== null"
-            class="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-red-400 disabled:cursor-not-allowed text-white font-semibold px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2"
+            class="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-red-400 disabled:cursor-not-allowed text-white font-semibold px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer text-sm"
           >
             <Loader2 v-if="deletingProductId !== null" class="w-4 h-4 animate-spin" />
             {{ deletingProductId !== null ? 'Удаление...' : 'Удалить' }}
