@@ -182,23 +182,21 @@ export async function getCategoriesWithCache() {
   return [];
 }
 
+// Импортируем утилиты для работы с кэшем
+import { getUserCategoriesFromCache, saveUserCategoriesToCache, hasUserCategoriesCache, clearUserCategoriesCache } from '../utils/categoryCacheUtils.js'
+
 /**
  * Получить пользовательские категории с кэшированием
  * @returns {Promise<Array>} массив пользовательских категорий
  */
 export async function getUserCategoriesWithCache() {
-  const cached = localStorage.getItem(USER_CATEGORIES_KEY);
-  if (cached) {
-    try {
-      const { data, timestamp } = JSON.parse(cached);
-      if (Date.now() - timestamp < CATEGORIES_TTL) {
-        console.log('Пользовательские категории загружены из кеша');
-        return data;
-      }
-    } catch (e) {
-      // ignore parse error
-    }
+  // Проверяем кэш из новой утилиты
+  const cachedCategories = getUserCategoriesFromCache();
+  if (cachedCategories) {
+    console.log('Пользовательские категории загружены из кеша');
+    return cachedCategories;
   }
+  
   // Если нет кеша или он устарел — делаем запрос
   console.log('Делаем запрос к API для получения пользовательских категорий...');
   const response = await apiRequest('/user/categories');
@@ -215,10 +213,9 @@ export async function getUserCategoriesWithCache() {
       subcategories: cat.subcategories || []
     }));
     
-    localStorage.setItem(USER_CATEGORIES_KEY, JSON.stringify({
-      data: processedData,
-      timestamp: Date.now()
-    }));
+    // Сохраняем в кэш через новую утилиту
+    saveUserCategoriesToCache(processedData);
+    
     return processedData;
   }
   console.log('Ошибка получения пользовательских категорий с сервера');
@@ -248,5 +245,9 @@ export async function getCategoriesByUserSettings() {
 export function clearCategoriesCache() {
   localStorage.removeItem(CATEGORIES_KEY);
   localStorage.removeItem(USER_CATEGORIES_KEY);
+  
+  // Очищаем новый кэш пользовательских категорий
+  clearUserCategoriesCache();
+  
   console.log('Кэш категорий очищен');
 } 

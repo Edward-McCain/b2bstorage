@@ -1827,6 +1827,9 @@ const toggleCategoriesType = async () => {
   }
 }
 
+// Импортируем утилиты для работы с кэшем
+import { saveUserCategoriesToCache, clearUserCategoriesCache } from '@/utils/categoryCacheUtils'
+
 // Загрузка пользовательских категорий
 const loadUserCategories = async () => {
   loadingUserCategories.value = true
@@ -1834,6 +1837,10 @@ const loadUserCategories = async () => {
     const response = await apiRequest('/user/categories', { method: 'GET' })
     if (response.ok && response.data.success) {
       userCategories.value = response.data.data
+      
+      // Обновляем кэш в localStorage
+      saveUserCategoriesToCache(response.data.data)
+      
       console.log('Пользовательские категории загружены:', {
         count: userCategories.value.length,
         categories: userCategories.value,
@@ -1927,6 +1934,10 @@ const confirmDeleteCategory = async () => {
     
     if (response.ok && response.data.success) {
       console.log('Категория удалена:', response.data)
+      
+      // Очищаем кэш при удалении категории
+      clearUserCategoriesCache()
+      
       await loadUserCategories() // Перезагружаем список
     } else {
       console.error('Ошибка удаления категории:', response.data.message)
@@ -2032,6 +2043,10 @@ const confirmDeleteSubcategory = async () => {
     
     if (response.ok && response.data.success) {
       console.log('Подкатегория удалена:', response.data)
+      
+      // Очищаем кэш при удалении подкатегории
+      clearUserCategoriesCache()
+      
       await loadUserCategories() // Перезагружаем список
     } else {
       console.error('Ошибка удаления подкатегории:', response.data.message)
