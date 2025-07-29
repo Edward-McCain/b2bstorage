@@ -45,6 +45,22 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/user/personal', [AuthController::class, 'updatePersonalData']);
     Route::put('/user/company', [AuthController::class, 'updateCompanyData']);
     Route::put('/user/password', [AuthController::class, 'changePassword']);
+    
+    // User categories type routes
+    Route::get('/user/categories-type', [\App\Http\Controllers\UserCategoriesTypeController::class, 'show']);
+    Route::put('/user/categories-type', [\App\Http\Controllers\UserCategoriesTypeController::class, 'update']);
+    
+    // User categories routes
+    Route::get('/user/categories', [\App\Http\Controllers\UserCategoryController::class, 'index']);
+    Route::post('/user/categories', [\App\Http\Controllers\UserCategoryController::class, 'store']);
+    Route::put('/user/categories/{id}', [\App\Http\Controllers\UserCategoryController::class, 'update']);
+    Route::delete('/user/categories/{id}', [\App\Http\Controllers\UserCategoryController::class, 'destroy']);
+    
+    // User subcategories routes
+    Route::get('/user/categories/{categoryId}/subcategories', [\App\Http\Controllers\UserSubcategoryController::class, 'index']);
+    Route::post('/user/subcategories', [\App\Http\Controllers\UserSubcategoryController::class, 'store']);
+    Route::put('/user/subcategories/{id}', [\App\Http\Controllers\UserSubcategoryController::class, 'update']);
+    Route::delete('/user/subcategories/{id}', [\App\Http\Controllers\UserSubcategoryController::class, 'destroy']);
     // Product routes
     Route::get('/products', [\App\Http\Controllers\ProductController::class, 'index']);
     Route::get('/products/{id}', [\App\Http\Controllers\ProductController::class, 'show']);

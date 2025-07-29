@@ -530,6 +530,7 @@ class AuthController extends Controller
                     'currency' => $user->currency,
                     'avatar_url' => $user->avatar_url,
                     'product_fields_visibility' => $user->product_fields_visibility,
+                    'cats_type' => $user->cats_type ?? 'system',
                 ],
                 'company' => [
                     'name' => $user->company_name,

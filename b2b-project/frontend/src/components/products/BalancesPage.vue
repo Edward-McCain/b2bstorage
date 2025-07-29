@@ -579,9 +579,10 @@
             <p class="text-sm text-gray-500">Поддерживаются файлы .xlsx и .xls</p>
             <div class="text-xs text-gray-600 mt-4 space-y-2">
               <p><strong>Обязательные поля:</strong> Наименование, Стоимость</p>
-              <p><strong>Дополнительные поля:</strong> Категория, Подкатегория, Артикул, Единица измерения, Начальный остаток.</p>
+              <p v-if="areCategoriesEnabled()"><strong>Дополнительные поля:</strong> Категория, Подкатегория, Артикул, Единица измерения, Начальный остаток.</p>
+              <p v-else><strong>Дополнительные поля:</strong> Артикул, Единица измерения, Начальный остаток.</p>
               <p class="text-gray-500">Поддерживаемые названия колонок:</p>
-              <p class="text-gray-500 text-xs">• Категория: "Категория", "Категория товара"</p>
+              <p v-if="areCategoriesEnabled()" class="text-gray-500 text-xs">• Категория: "Категория", "Категория товара"</p>
               <p class="text-gray-500 text-xs">• Единица измерения: "Единица измерения", "Ед. изм.", "Единица"</p>
               <p class="text-gray-500">Если в файле есть эти колонки - они будут автоматически заполнены при загрузке</p>
               <p class="text-gray-500">Остальные поля можно будет заполнить после загрузки файла в форме на сайте</p>
@@ -640,7 +641,7 @@
               <thead class="bg-gray-50">
                 <tr>
                   <th class="px-3 py-2 text-left text-sm font-medium text-gray-500">Наименование</th>
-                  <th class="px-3 py-2 text-left text-sm font-medium text-gray-500">Категория</th>
+                  <th v-if="areCategoriesEnabled()" class="px-3 py-2 text-left text-sm font-medium text-gray-500">Категория</th>
                   <th class="px-3 py-2 text-left text-sm font-medium text-gray-500">Данные</th>
                   <th class="px-3 py-2 text-left text-sm font-medium text-gray-500">Артикул</th>
                   <th class="px-3 py-2 text-left text-sm font-medium text-gray-500">Действия</th>
@@ -651,7 +652,7 @@
                   <td class="px-3 py-2 text-sm text-gray-900 max-w-[200px] truncate" :title="product.name">
                     <input v-model="product.name" type="text" class="w-full text-sm border border-gray-300 rounded px-2 py-1" placeholder="Наименование" />
                   </td>
-                  <td class="px-3 py-2 text-sm text-gray-900">
+                  <td v-if="areCategoriesEnabled()" class="px-3 py-2 text-sm text-gray-900">
                     <div class="space-y-2">
                       <div class="relative">
                         <Multiselect 
@@ -727,6 +728,7 @@ import Multiselect from '@vueform/multiselect'
 import '@vueform/multiselect/themes/default.css'
 import { Filter, FunnelX, Loader2, ArrowRightLeft, Edit, Trash2, Plus } from 'lucide-vue-next'
 import * as XLSX from 'xlsx'
+import { areCategoriesEnabled, isFieldRequired } from '@/utils/productFieldsUtils'
 
 // Импорт для уведомлений
 const showNotification = (message, type = 'success') => {
@@ -1173,12 +1175,16 @@ export default {
             name: product['Название']?.toString() || '',
             price: parseFloat(product['Стоимость']) || 0,
             quantity: parseFloat(product['Начальный остаток'] || product['Остаток'] || 0) || 0,
-            category: product['Категория'] || product['Категория товара'] || '',
             unit: product['Единица измерения'] || product['Ед. изм.'] || product['Единица'] || 'шт.',
             article: product['Артикул'] || '',
             selectedCategory: null,
             selectedSubcategory: null,
             subcategoryOptions: []
+          }
+          
+          // Добавляем категории только если они включены в настройках
+          if (areCategoriesEnabled()) {
+            parsedProduct.category = product['Категория'] || product['Категория товара'] || ''
           }
           
           products.push(parsedProduct)
@@ -1188,8 +1194,8 @@ export default {
           throw new Error('Не найдено товаров для импорта')
         }
         
-        // Убеждаемся, что категории загружены
-        if (!categoryOptions.value || !Array.isArray(categoryOptions.value)) {
+        // Убеждаемся, что категории загружены (только если они включены)
+        if (areCategoriesEnabled() && (!categoryOptions.value || !Array.isArray(categoryOptions.value))) {
           console.warn('Категории не загружены, пропускаем автоматическое заполнение категорий')
           // Попробуем загрузить категории
           try {
@@ -1199,31 +1205,35 @@ export default {
           }
         }
         
-        // Автоматически заполняем категории из Excel файла
-        for (const product of products) {
-          // Заполняем категорию, если она есть в Excel
-          if (product.category) {
-            // Сначала ищем в локальном файле
-            const localCategory = findCategoryByName(product.category)
-            if (localCategory) {
-              // Ищем соответствующую категорию в селекте
-              const foundCategory = categoryOptions.value.find(cat => 
-                String(cat.value) === String(localCategory.category_id)
-              )
-              if (foundCategory) {
-                product.selectedCategory = foundCategory;
-                product.subcategoryOptions = localCategory.subcategories.map(sub => ({
-                  label: sub.name_ru || sub.name || 'Без названия',
-                  value: sub.subcategory_id
-                }))
-                if (product.subcategory) {
-                  const localSubcategory = findSubcategoryByName(localCategory.category_id, product.subcategory)
-                  if (localSubcategory) {
-                    const foundSubcategory = product.subcategoryOptions.find(sub => 
-                      String(sub.value) === String(localSubcategory.subcategory_id)
-                    )
-                    if (foundSubcategory) {
-                      product.selectedSubcategory = foundSubcategory
+        // Автоматически заполняем категории из Excel файла (только если они включены)
+        if (areCategoriesEnabled()) {
+          for (const product of products) {
+            // Заполняем категорию, если она есть в Excel
+            if (product.category) {
+              // Сначала ищем в локальном файле
+              const localCategory = findCategoryByName(product.category)
+              if (localCategory) {
+                // Ищем соответствующую категорию в селекте
+                const foundCategory = categoryOptions.value.find(cat => 
+                  String(cat.value) === String(localCategory.category_id)
+                )
+                if (foundCategory) {
+                  product.selectedCategory = foundCategory;
+                  product.subcategoryOptions = localCategory.subcategories.map(sub => ({
+                    label: sub.name_ru || sub.name || 'Без названия',
+                    value: sub.subcategory_id
+                  }))
+                  if (product.subcategory) {
+                    const localSubcategory = findSubcategoryByName(localCategory.category_id, product.subcategory)
+                    if (localSubcategory) {
+                      const foundSubcategory = product.subcategoryOptions.find(sub => 
+                        String(sub.value) === String(localSubcategory.subcategory_id)
+                      )
+                      if (foundSubcategory) {
+                        product.selectedSubcategory = foundSubcategory
+                      } else {
+                        product.selectedSubcategory = null
+                      }
                     } else {
                       product.selectedSubcategory = null
                     }
@@ -1231,47 +1241,45 @@ export default {
                     product.selectedSubcategory = null
                   }
                 } else {
-                  product.selectedSubcategory = null
+                  product.selectedCategory = null;
+                  product.selectedSubcategory = null;
+                  product.subcategoryOptions = [];
                 }
               } else {
-                product.selectedCategory = null;
-                product.selectedSubcategory = null;
-                product.subcategoryOptions = [];
-              }
-            } else {
-              // Если не найдено в локальном файле, ищем в селекте (старый способ)
-              if (categoryOptions.value && Array.isArray(categoryOptions.value)) {
-                const foundCategory = categoryOptions.value.find(cat => 
-                  cat && cat.label && product.category &&
-                  (cat.label.toLowerCase() === product.category.toLowerCase() ||
-                   cat.label.toLowerCase().includes(product.category.toLowerCase()) ||
-                   product.category.toLowerCase().includes(cat.label.toLowerCase()))
-                )
-                if (foundCategory) {
-                  product.selectedCategory = foundCategory
-                  
-                  // Загружаем подкатегории через API
-                  if (product.subcategory) {
-                    try {
-                      const response = await apiRequest(`/categories/${foundCategory.value}/subcategories`)
-                      if (response.ok && response.data && response.data.data) {
-                        product.subcategoryOptions = response.data.data.map(sub => ({
-                          label: sub.name_ru || sub.name || 'Без названия',
-                          value: sub.subcategory_id || sub.id
-                        }))
-                        
-                        const foundSubcategory = product.subcategoryOptions.find(sub => 
-                          sub && sub.label && product.subcategory &&
-                          (sub.label.toLowerCase() === product.subcategory.toLowerCase() ||
-                           sub.label.toLowerCase().includes(product.subcategory.toLowerCase()) ||
-                           product.subcategory.toLowerCase().includes(sub.label.toLowerCase()))
-                        )
-                        if (foundSubcategory) {
-                          product.selectedSubcategory = foundSubcategory
+                // Если не найдено в локальном файле, ищем в селекте (старый способ)
+                if (categoryOptions.value && Array.isArray(categoryOptions.value)) {
+                  const foundCategory = categoryOptions.value.find(cat => 
+                    cat && cat.label && product.category &&
+                    (cat.label.toLowerCase() === product.category.toLowerCase() ||
+                     cat.label.toLowerCase().includes(product.category.toLowerCase()) ||
+                     product.category.toLowerCase().includes(cat.label.toLowerCase()))
+                  )
+                  if (foundCategory) {
+                    product.selectedCategory = foundCategory
+                    
+                    // Загружаем подкатегории через API
+                    if (product.subcategory) {
+                      try {
+                        const response = await apiRequest(`/categories/${foundCategory.value}/subcategories`)
+                        if (response.ok && response.data && response.data.data) {
+                          product.subcategoryOptions = response.data.data.map(sub => ({
+                            label: sub.name_ru || sub.name || 'Без названия',
+                            value: sub.subcategory_id || sub.id
+                          }))
+                          
+                          const foundSubcategory = product.subcategoryOptions.find(sub => 
+                            sub && sub.label && product.subcategory &&
+                            (sub.label.toLowerCase() === product.subcategory.toLowerCase() ||
+                             sub.label.toLowerCase().includes(product.subcategory.toLowerCase()) ||
+                             product.subcategory.toLowerCase().includes(sub.label.toLowerCase()))
+                          )
+                          if (foundSubcategory) {
+                            product.selectedSubcategory = foundSubcategory
+                          }
                         }
+                      } catch (error) {
+                        console.error('Ошибка загрузки подкатегорий:', error)
                       }
-                    } catch (error) {
-                      console.error('Ошибка загрузки подкатегорий:', error)
                     }
                   }
                 }
@@ -1302,15 +1310,24 @@ export default {
       importError.value = ''
       
       try {
-        const productsToSave = parsedProducts.value.map(product => ({
-          name: product.name,
-          price: productFieldsVisibility.price !== false ? product.price : 0,
-          quantity: product.quantity,
-          category: product.category,
-          unit: product.unit,
-          article: product.article,
-          warehouse_id: selectedWarehouseForImport.value.value
-        }))
+        const productsToSave = parsedProducts.value.map(product => {
+          const productData = {
+            name: product.name,
+            price: productFieldsVisibility.price !== false ? product.price : 0,
+            quantity: product.quantity,
+            unit: product.unit,
+            article: product.article,
+            warehouse_id: selectedWarehouseForImport.value.value
+          }
+          
+          // Добавляем категории только если они включены
+          if (areCategoriesEnabled()) {
+            productData.category = product.category
+            productData.subcategory = product.subcategory
+          }
+          
+          return productData
+        })
         
         const response = await api.post('/products/import-with-receipt', {
           products: productsToSave
@@ -1513,7 +1530,9 @@ export default {
       confirmDelete,
       getCustomFieldValue,
       findCategoryByName,
-      findSubcategoryByName
+      findSubcategoryByName,
+      areCategoriesEnabled,
+      isFieldRequired
     }
   }
 }

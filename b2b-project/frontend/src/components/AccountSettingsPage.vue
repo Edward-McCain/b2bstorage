@@ -454,7 +454,25 @@
                 <div v-if="errorVisibility" class="text-red-600 text-sm mb-2">{{ errorVisibility }}</div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div v-for="field in standardProductFields" :key="field.key" class="flex items-center gap-3 p-2 bg-gray-50 rounded">
-                    <label class="flex-1 text-gray-800 text-sm">{{ field.label }}</label>
+                    <div class="flex-1 flex items-center gap-2">
+                      <span class="text-gray-800 text-sm">{{ field.label }}</span>
+                      <!-- Кнопка "настроить" только для категорий -->
+                      <button 
+                        v-if="field.key === 'categories' && productFieldsVisibility.categories"
+                        @click="openCategoriesModal"
+                        class="text-blue-600 hover:text-blue-700 underline text-xs cursor-pointer"
+                        title="Выбор системных или пользовательских категорий"
+                      >
+                        настроить
+                      </button>
+                      <span 
+                        v-else-if="field.key === 'categories' && !productFieldsVisibility.categories"
+                        class="text-gray-400 text-xs cursor-not-allowed"
+                        title="Выбор системных или пользовательских категорий"
+                      >
+                        настроить
+                      </span>
+                    </div>
                     <button @click="toggleFieldVisibility(field.key)"
                       :class="productFieldsVisibility[field.key] === true ? 'bg-blue-600' : 'bg-gray-300'"
                       class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none">
@@ -549,12 +567,373 @@
       @change="handleFileSelect"
       class="hidden"
     />
+
+    <!-- Модальное окно настроек категорий -->
+    <div v-if="showCategoriesModal" class="fixed inset-0 bg-white/90 bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white/90 rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto shadow-lg">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-semibold">Настройки категорий</h3>
+          <button @click="showCategoriesModal = false" class="text-gray-500 hover:text-gray-700">
+            <X class="w-5 h-5" />
+          </button>
+        </div>
+        
+        <!-- Сообщение о B2B Market -->
+        <div class="mb-6 p-4 bg-blue-50 rounded-lg">
+          <p class="text-sm text-blue-800">
+            Если вам необходим экспорт ваших товаров на B2B Market - выберите Системные категории, 
+            в ином случае вы можете добавить свои категории и подкатегории.
+          </p>
+        </div>
+        
+        <!-- Переключатель типа категорий -->
+        <div class="mb-6">
+          <h4 class="font-medium mb-3">Тип категорий</h4>
+          <div v-if="loadingUserCategories" class="flex items-center justify-center py-4">
+            <Loader2 class="animate-spin w-5 h-5 text-blue-600" />
+            <span class="ml-2 text-sm text-gray-600">Загрузка...</span>
+          </div>
+          <div v-else class="space-y-2">
+            <label class="flex items-center cursor-pointer">
+              <input 
+                type="radio" 
+                v-model="categoriesType"
+                :value="false"
+                @change="toggleCategoriesType"
+                class="mr-3"
+              />
+              <span class="text-sm">
+                Системные категории
+                <span v-if="!categoriesType" class="text-blue-600 font-medium">(активно)</span>
+              </span>
+            </label>
+            <label class="flex items-center cursor-pointer">
+              <input 
+                type="radio" 
+                v-model="categoriesType"
+                :value="true"
+                @change="toggleCategoriesType"
+                class="mr-3"
+              />
+              <span class="text-sm">
+                Пользовательские категории
+                <span v-if="categoriesType" class="text-blue-600 font-medium">(активно)</span>
+              </span>
+            </label>
+          </div>
+        </div>
+        
+        <!-- Блок пользовательских категорий -->
+        <div v-if="categoriesType" class="space-y-6">
+          <!-- Отладочная информация -->
+          <div class="text-xs text-gray-500 p-2 bg-gray-100 rounded hidden">
+            Debug: categories count = {{ userCategories.length }}, 
+            loading = {{ loadingUserCategories }}, 
+            categories = {{ JSON.stringify(userCategories) }}
+          </div>
+          
+          <!-- Создание новой категории -->
+          <div class="border rounded-lg p-4">
+            <h4 class="font-medium mb-3">Добавить новую категорию</h4>
+            <div class="flex gap-2">
+              <input 
+                v-model="newCategoryName"
+                type="text" 
+                placeholder="Название категории"
+                class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                @keyup.enter="createCategory"
+              />
+              <button 
+                @click="createCategory"
+                :disabled="!newCategoryName.trim() || creatingCategory"
+                class="px-4 py-2 bg-blue-600 text-white test-sm rounded-md hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed cursor-pointer flex items-center gap-2"
+                @keyup.enter="createCategory"
+              >
+                <Loader2 v-if="creatingCategory" class="animate-spin w-4 h-4" />
+                <span v-else>Добавить</span>
+              </button>
+            </div>
+          </div>
+          
+          <!-- Индикатор загрузки категорий -->
+          <div v-if="loadingUserCategories" class="flex items-center justify-center py-8">
+            <div class="text-center">
+              <Loader2 class="animate-spin w-8 h-8 text-blue-600 mx-auto mb-4" />
+              <p class="text-gray-600 text-sm">Загрузка пользовательских категорий...</p>
+            </div>
+          </div>
+          
+          <!-- Список категорий в виде аккордеона -->
+          <div v-else-if="userCategories.length > 0" class="space-y-4">
+            <h4 class="font-medium">Ваши категории</h4>
+            <div v-for="category in userCategories" :key="category.id" class="bg-gray-100 rounded-lg overflow-hidden">
+              <!-- Заголовок категории -->
+              <div class="flex items-center justify-between p-4 bg-gray-50">
+                <div class="flex items-center gap-3">
+                  <button 
+                    @click="toggleCategoryAccordion(category.id)"
+                    class="text-gray-600 hover:text-gray-800 cursor-pointer"
+                  >
+                    <ChevronDown 
+                      class="w-4 h-4 transition-transform duration-200"
+                      :class="expandedCategories.includes(category.id) ? 'rotate-180' : ''"
+                    />
+                  </button>
+                  <span class="font-medium">{{ category.name }}</span>
+                  <span class="text-sm text-gray-500">({{ category.products_count }} товаров)</span>
+                </div>
+                <div class="flex gap-2">
+                  <button 
+                    @click="editCategory(category)"
+                    class="text-blue-600 hover:text-blue-700 cursor-pointer"
+                    title="Редактировать категорию"
+                  >
+                    <Pencil class="w-4 h-4" />
+                  </button>
+                  <button 
+                    @click="deleteCategory(category)"
+                    :disabled="category.products_count > 0 || deletingCategory === category.id"
+                    class="text-red-600 hover:text-red-700 disabled:text-gray-400 disabled:cursor-not-allowed cursor-pointer"
+                    :title="category.products_count > 0 ? 'Нельзя удалить категорию с товарами' : 'Удалить категорию'"
+                  >
+                    <Loader2 v-if="deletingCategory === category.id" class="w-4 h-4 animate-spin" />
+                    <Trash2 v-else class="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+              
+              <!-- Содержимое аккордеона -->
+              <div v-if="expandedCategories.includes(category.id)" class="p-4">
+                <!-- Подкатегории для этой категории -->
+                <div class="space-y-3">
+                  <div class="flex items-center justify-between">
+                    <span class="text-sm font-medium">Подкатегории:</span>
+                    <button 
+                      @click="showAddSubcategoryModal(category)"
+                      class="text-blue-600 hover:text-blue-700 text-sm flex items-center gap-1 cursor-pointer"
+                    >
+                      <Plus class="w-3 h-3" />
+                      Добавить подкатегорию
+                    </button>
+                  </div>
+                  
+                  <div v-if="category.subcategories && category.subcategories.length > 0" class="space-y-2">
+                    <div v-for="subcategory in category.subcategories" :key="subcategory.id" class="flex items-center justify-between py-2 px-3 bg-gray-50 rounded">
+                      <div class="flex items-center gap-2">
+                        <span class="text-sm">{{ subcategory.name }}</span>
+                        <span class="text-xs text-gray-500">({{ subcategory.products_count }} товаров)</span>
+                      </div>
+                      <div class="flex gap-1">
+                        <button 
+                          @click="editSubcategory(subcategory)"
+                          class="text-blue-600 hover:text-blue-700 cursor-pointer"
+                          title="Редактировать подкатегорию"
+                        >
+                          <Pencil class="w-3 h-3" />
+                        </button>
+                        <button 
+                          @click="deleteSubcategory(subcategory)"
+                          :disabled="subcategory.products_count > 0 || deletingSubcategory === subcategory.id"
+                          class="text-red-600 hover:text-red-700 disabled:text-gray-400 disabled:cursor-not-allowed cursor-pointer"
+                          :title="subcategory.products_count > 0 ? 'Нельзя удалить подкатегорию с товарами' : 'Удалить подкатегорию'"
+                        >
+                          <Loader2 v-if="deletingSubcategory === subcategory.id" class="w-3 h-3 animate-spin" />
+                          <Trash2 v-else class="w-3 h-3" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div v-else class="text-center py-4 text-gray-500 text-sm">
+                    Нет подкатегорий
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Сообщение если нет категорий -->
+          <div v-else class="text-center py-8 text-gray-500">
+            <p>У вас пока нет пользовательских категорий</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Модальное окно добавления подкатегории -->
+    <div v-if="selectedCategoryForSubcategory" class="fixed inset-0 bg-white/90 bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-lg">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-semibold">Добавить подкатегорию</h3>
+          <button @click="selectedCategoryForSubcategory = null" class="text-gray-500 hover:text-gray-700 cursor-pointer">
+            <X class="w-5 h-5" />
+          </button>
+        </div>
+        
+        <div class="mb-4">
+          <p class="text-sm text-gray-600 mb-2">
+            Категория: <span class="font-medium">{{ selectedCategoryForSubcategory.name }}</span>
+          </p>
+          <input 
+            v-model="newSubcategoryName"
+            type="text" 
+            placeholder="Название подкатегории"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            @keyup.enter="createSubcategory"
+          />
+        </div>
+        
+        <div class="flex gap-2 justify-end">
+          <button 
+            @click="selectedCategoryForSubcategory = null"
+            class="px-4 py-2 text-gray-600 border border-gray-300 text-sm rounded-md hover:bg-gray-50 cursor-pointer"
+          >
+            Отмена
+          </button>
+          <button 
+            @click="createSubcategory"
+            :disabled="!newSubcategoryName.trim() || creatingSubcategory"
+            class="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed cursor-pointer flex items-center gap-2"
+          >
+            <Loader2 v-if="creatingSubcategory" class="animate-spin w-4 h-4" />
+            <span v-else>Добавить</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Модальное окно редактирования категории -->
+    <div v-if="editingCategory" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-semibold">Редактировать категорию</h3>
+          <button @click="editingCategory = null" class="text-gray-500 hover:text-gray-700">
+            <X class="w-5 h-5" />
+          </button>
+        </div>
+        
+        <div class="mb-4">
+          <input 
+            v-model="newCategoryName"
+            type="text" 
+            placeholder="Название категории"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            @keyup.enter="saveCategoryEdit"
+          />
+        </div>
+        
+        <div class="flex gap-2 justify-end">
+          <button 
+            @click="editingCategory = null"
+            class="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+          >
+            Отмена
+          </button>
+          <button 
+            @click="saveCategoryEdit"
+            :disabled="!newCategoryName.trim()"
+            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+          >
+            Сохранить
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Модальное окно редактирования подкатегории -->
+    <div v-if="editingSubcategory" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-semibold">Редактировать подкатегорию</h3>
+          <button @click="editingSubcategory = null" class="text-gray-500 hover:text-gray-700">
+            <X class="w-5 h-5" />
+          </button>
+        </div>
+        
+        <div class="mb-4">
+          <input 
+            v-model="newSubcategoryName"
+            type="text" 
+            placeholder="Название подкатегории"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            @keyup.enter="saveSubcategoryEdit"
+          />
+        </div>
+        
+        <div class="flex gap-2 justify-end">
+          <button 
+            @click="editingSubcategory = null"
+            class="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+          >
+            Отмена
+          </button>
+          <button 
+            @click="saveSubcategoryEdit"
+            :disabled="!newSubcategoryName.trim()"
+            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+          >
+            Сохранить
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Модальное окно удаления категории -->
+    <div v-if="showDeleteCategoryModal" class="fixed inset-0 bg-white/90 bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
+        <h3 class="text-lg font-semibold mb-4">Удалить категорию?</h3>
+        <p class="mb-6 text-gray-700">Вы действительно хотите удалить категорию <b>{{ categoryToDelete?.name }}</b>?</p>
+        <div class="flex justify-end gap-2">
+          <button @click="cancelDeleteCategory" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium px-4 py-2 rounded-lg text-sm">Нет</button>
+          <button 
+            @click="confirmDeleteCategory" 
+            :disabled="deletingCategory"
+            class="bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-lg text-sm flex items-center gap-2"
+          >
+            <Loader2 v-if="deletingCategory" class="animate-spin w-4 h-4" />
+            <span v-else>Да, удалить</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Модальное окно удаления подкатегории -->
+    <div v-if="showDeleteSubcategoryModal" class="fixed inset-0 bg-white/90 bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
+        <h3 class="text-lg font-semibold mb-4">Удалить подкатегорию?</h3>
+        <p class="mb-6 text-gray-700">Вы действительно хотите удалить подкатегорию <b>{{ subcategoryToDelete?.name }}</b>?</p>
+        <div class="flex justify-end gap-2">
+          <button @click="cancelDeleteSubcategory" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium px-4 py-2 rounded-lg text-sm">Нет</button>
+          <button 
+            @click="confirmDeleteSubcategory" 
+            :disabled="deletingSubcategory"
+            class="bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-lg text-sm flex items-center gap-2"
+          >
+            <Loader2 v-if="deletingSubcategory" class="animate-spin w-4 h-4" />
+            <span v-else>Да, удалить</span>
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted, onUnmounted, computed, watch } from 'vue'
-import { User, Building, Lock, Eye, EyeOff, ChevronDown, Loader2, X, Pencil, Trash2, Plus, List } from 'lucide-vue-next'
+import { 
+  User, 
+  Building, 
+  Lock, 
+  Eye, 
+  EyeOff, 
+  ChevronDown, 
+  Loader2,
+  X, 
+  Trash2, 
+  Plus, 
+  Pencil,
+  List
+} from 'lucide-vue-next'
 import Multiselect from '@vueform/multiselect'
 import '@vueform/multiselect/themes/default.css'
 import countriesData from '@/data/countries.json'
@@ -797,6 +1176,7 @@ const standardProductFields = [
   { key: 'cash_register_tax', label: 'Налог ККМ' },
   { key: 'cash_register_type', label: 'Тип ККМ' },
   { key: 'price', label: 'Цена' },
+  { key: 'categories', label: 'Категории' },
 ]
 
 const productFieldsVisibility = reactive({})
@@ -807,6 +1187,28 @@ async function loadProductFieldsVisibility() {
   loadingVisibility.value = true
   errorVisibility.value = ''
   try {
+    // Сначала проверяем localStorage
+    const savedSettings = localStorage.getItem('product_fields_visibility')
+    if (savedSettings) {
+      try {
+        const vis = JSON.parse(savedSettings)
+        const defaults = Object.fromEntries(standardProductFields.map(f => [f.key, true]))
+        Object.assign(productFieldsVisibility, { ...defaults, ...vis })
+        
+        // Инициализируем поле "Категории" на основе настроек category
+        if (productFieldsVisibility.category !== undefined) {
+          productFieldsVisibility.categories = productFieldsVisibility.category
+        }
+        
+        console.log('productFieldsVisibility загружены из localStorage:', JSON.parse(JSON.stringify(productFieldsVisibility)))
+        loadingVisibility.value = false
+        return
+      } catch (e) {
+        console.error('Ошибка парсинга настроек из localStorage:', e)
+      }
+    }
+    
+    // Если в localStorage нет настроек, загружаем с сервера
     const response = await apiRequest('/user/settings', { method: 'GET' })
     if (response.ok && response.data.success) {
       // Гарантируем правильный путь
@@ -825,6 +1227,15 @@ async function loadProductFieldsVisibility() {
       console.log('vis до assign:', vis)
       const defaults = Object.fromEntries(standardProductFields.map(f => [f.key, true]))
       Object.assign(productFieldsVisibility, { ...defaults, ...vis })
+      
+      // Инициализируем поле "Категории" на основе настроек category
+      if (productFieldsVisibility.category !== undefined) {
+        productFieldsVisibility.categories = productFieldsVisibility.category
+      }
+      
+      // Сохраняем настройки в localStorage для будущего использования
+      localStorage.setItem('product_fields_visibility', JSON.stringify(productFieldsVisibility))
+      
       console.log('productFieldsVisibility итог:', JSON.parse(JSON.stringify(productFieldsVisibility)))
     } else {
       errorVisibility.value = response.data.message || 'Ошибка загрузки настроек видимости'
@@ -849,6 +1260,9 @@ async function saveProductFieldsVisibility(key) {
     })
     if (!response.ok || !response.data.success) {
       errorVisibility.value = response.data.message || 'Ошибка сохранения настроек видимости'
+    } else {
+      // Сохраняем настройки в localStorage для быстрого доступа
+      localStorage.setItem('product_fields_visibility', JSON.stringify(productFieldsVisibility))
     }
   } catch (e) {
     errorVisibility.value = 'Ошибка сохранения настроек видимости'
@@ -857,8 +1271,15 @@ async function saveProductFieldsVisibility(key) {
 
 function toggleFieldVisibility(key) {
   productFieldsVisibility[key] = !productFieldsVisibility[key]
-  // Просто отправляем запрос, не перезагружаем настройки и не блокируем UI
-  saveProductFieldsVisibility(key)
+  
+  // Если переключаем категории, синхронизируем category и subcategory
+  if (key === 'categories') {
+    productFieldsVisibility.category = productFieldsVisibility[key]
+    productFieldsVisibility.subcategory = productFieldsVisibility[key]
+  }
+  
+  // Сохраняем настройки на сервере
+  saveProductFieldsVisibility()
 }
 
 // Функции для работы с аватаром
@@ -1324,6 +1745,28 @@ const handleAvatarLoad = (event) => {
 
 const showDeleteModal = ref(false)
 const fieldToDelete = ref(null)
+const showCategoriesModal = ref(false)
+const categoriesType = ref(false)
+const userCategories = ref([])
+const loadingUserCategories = ref(false)
+const newCategoryName = ref('')
+const editingCategory = ref(null)
+const editingSubcategory = ref(null)
+const selectedCategoryForSubcategory = ref(null)
+const newSubcategoryName = ref('')
+const expandedCategories = ref([])
+
+// Состояния загрузки
+const creatingCategory = ref(false)
+const creatingSubcategory = ref(false)
+const deletingCategory = ref(null) // ID категории, которую удаляем
+const deletingSubcategory = ref(null) // ID подкатегории, которую удаляем
+
+// Модальные окна удаления
+const showDeleteCategoryModal = ref(false)
+const showDeleteSubcategoryModal = ref(null)
+const categoryToDelete = ref(null)
+const subcategoryToDelete = ref(null)
 
 function confirmDeleteField(field) {
   fieldToDelete.value = field
@@ -1347,6 +1790,274 @@ async function doDeleteField() {
   } finally {
     showDeleteModal.value = false
     fieldToDelete.value = null
+  }
+}
+
+// Функции для работы с пользовательскими категориями
+const toggleCategoriesType = async () => {
+  try {
+    const newCatsType = categoriesType.value ? 'user' : 'system'
+    
+    const response = await apiRequest('/user/categories-type', {
+      method: 'PUT',
+      body: JSON.stringify({
+        cats_type: newCatsType
+      })
+    })
+    
+    if (response.ok && response.data.success) {
+      console.log('Тип категорий обновлен:', response.data)
+      
+      // Сохраняем в localStorage
+      localStorage.setItem('user_cats_type', newCatsType)
+      
+      // Если переключились на пользовательские, загружаем их
+      if (categoriesType.value) {
+        await loadUserCategories()
+      }
+    } else {
+      console.error('Ошибка обновления типа категорий:', response.data.message)
+      // Откатываем переключатель
+      categoriesType.value = !categoriesType.value
+    }
+  } catch (error) {
+    console.error('Ошибка обновления типа категорий:', error)
+    // Откатываем переключатель
+    categoriesType.value = !categoriesType.value
+  }
+}
+
+// Загрузка пользовательских категорий
+const loadUserCategories = async () => {
+  loadingUserCategories.value = true
+  try {
+    const response = await apiRequest('/user/categories', { method: 'GET' })
+    if (response.ok && response.data.success) {
+      userCategories.value = response.data.data
+      console.log('Пользовательские категории загружены:', {
+        count: userCategories.value.length,
+        categories: userCategories.value,
+        rawResponse: response.data
+      })
+    } else {
+      console.error('Ошибка загрузки категорий:', response.data.message)
+    }
+  } catch (error) {
+    console.error('Ошибка загрузки категорий:', error)
+  } finally {
+    loadingUserCategories.value = false
+  }
+}
+
+const createCategory = async () => {
+  if (!newCategoryName.value.trim()) return
+  
+  creatingCategory.value = true
+  try {
+    const response = await apiRequest('/user/categories', {
+      method: 'POST',
+      body: JSON.stringify({
+        name: newCategoryName.value.trim()
+      })
+    })
+    
+    if (response.ok && response.data.success) {
+      console.log('Категория создана:', response.data)
+      newCategoryName.value = ''
+      await loadUserCategories() // Перезагружаем список
+    } else {
+      console.error('Ошибка создания категории:', response.data.message)
+    }
+  } catch (error) {
+    console.error('Ошибка создания категории:', error)
+  } finally {
+    creatingCategory.value = false
+  }
+}
+
+const editCategory = (category) => {
+  editingCategory.value = category
+  newCategoryName.value = category.name
+}
+
+const saveCategoryEdit = async () => {
+  if (!editingCategory.value || !newCategoryName.value.trim()) return
+  
+  try {
+    const response = await apiRequest(`/user/categories/${editingCategory.value.id}`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        name: newCategoryName.value.trim()
+      })
+    })
+    
+    if (response.ok && response.data.success) {
+      console.log('Категория обновлена:', response.data)
+      editingCategory.value = null
+      newCategoryName.value = ''
+      await loadUserCategories() // Перезагружаем список
+    } else {
+      console.error('Ошибка обновления категории:', response.data.message)
+    }
+  } catch (error) {
+    console.error('Ошибка обновления категории:', error)
+  }
+}
+
+// Удаление категории
+const deleteCategory = (category) => {
+  if (category.products_count > 0) {
+    alert('Нельзя удалить категорию, в которой есть товары')
+    return
+  }
+  
+  categoryToDelete.value = category
+  showDeleteCategoryModal.value = true
+}
+
+// Подтверждение удаления категории
+const confirmDeleteCategory = async () => {
+  if (!categoryToDelete.value) return
+  
+  deletingCategory.value = categoryToDelete.value.id
+  try {
+    const response = await apiRequest(`/user/categories/${categoryToDelete.value.id}`, {
+      method: 'DELETE'
+    })
+    
+    if (response.ok && response.data.success) {
+      console.log('Категория удалена:', response.data)
+      await loadUserCategories() // Перезагружаем список
+    } else {
+      console.error('Ошибка удаления категории:', response.data.message)
+    }
+  } catch (error) {
+    console.error('Ошибка удаления категории:', error)
+  } finally {
+    deletingCategory.value = null
+    categoryToDelete.value = null
+    showDeleteCategoryModal.value = false
+  }
+}
+
+// Отмена удаления категории
+const cancelDeleteCategory = () => {
+  categoryToDelete.value = null
+  showDeleteCategoryModal.value = false
+}
+
+const showAddSubcategoryModal = (category) => {
+  selectedCategoryForSubcategory.value = category
+  newSubcategoryName.value = ''
+}
+
+// Создание новой подкатегории
+const createSubcategory = async () => {
+  if (!selectedCategoryForSubcategory.value || !newSubcategoryName.value.trim()) return
+  
+  creatingSubcategory.value = true
+  try {
+    const response = await apiRequest('/user/subcategories', {
+      method: 'POST',
+      body: JSON.stringify({
+        name: newSubcategoryName.value.trim(),
+        category_id: selectedCategoryForSubcategory.value.category_id
+      })
+    })
+    
+    if (response.ok && response.data.success) {
+      console.log('Подкатегория создана:', response.data)
+      newSubcategoryName.value = ''
+      selectedCategoryForSubcategory.value = null
+      await loadUserCategories() // Перезагружаем список
+    } else {
+      console.error('Ошибка создания подкатегории:', response.data.message)
+    }
+  } catch (error) {
+    console.error('Ошибка создания подкатегории:', error)
+  } finally {
+    creatingSubcategory.value = false
+  }
+}
+
+const editSubcategory = (subcategory) => {
+  editingSubcategory.value = subcategory
+  newSubcategoryName.value = subcategory.name
+}
+
+const saveSubcategoryEdit = async () => {
+  if (!editingSubcategory.value || !newSubcategoryName.value.trim()) return
+  
+  try {
+    const response = await apiRequest(`/user/subcategories/${editingSubcategory.value.id}`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        name: newSubcategoryName.value.trim()
+      })
+    })
+    
+    if (response.ok && response.data.success) {
+      console.log('Подкатегория обновлена:', response.data)
+      editingSubcategory.value = null
+      newSubcategoryName.value = ''
+      await loadUserCategories() // Перезагружаем список
+    } else {
+      console.error('Ошибка обновления подкатегории:', response.data.message)
+    }
+  } catch (error) {
+    console.error('Ошибка обновления подкатегории:', error)
+  }
+}
+
+// Удаление подкатегории
+const deleteSubcategory = (subcategory) => {
+  if (subcategory.products_count > 0) {
+    alert('Нельзя удалить подкатегорию, в которой есть товары')
+    return
+  }
+  
+  subcategoryToDelete.value = subcategory
+  showDeleteSubcategoryModal.value = true
+}
+
+// Подтверждение удаления подкатегории
+const confirmDeleteSubcategory = async () => {
+  if (!subcategoryToDelete.value) return
+  
+  deletingSubcategory.value = subcategoryToDelete.value.id
+  try {
+    const response = await apiRequest(`/user/subcategories/${subcategoryToDelete.value.id}`, {
+      method: 'DELETE'
+    })
+    
+    if (response.ok && response.data.success) {
+      console.log('Подкатегория удалена:', response.data)
+      await loadUserCategories() // Перезагружаем список
+    } else {
+      console.error('Ошибка удаления подкатегории:', response.data.message)
+    }
+  } catch (error) {
+    console.error('Ошибка удаления подкатегории:', error)
+  } finally {
+    deletingSubcategory.value = null
+    subcategoryToDelete.value = null
+    showDeleteSubcategoryModal.value = false
+  }
+}
+
+// Отмена удаления подкатегории
+const cancelDeleteSubcategory = () => {
+  subcategoryToDelete.value = null
+  showDeleteSubcategoryModal.value = false
+}
+
+// Переключение аккордеона категории
+const toggleCategoryAccordion = (categoryId) => {
+  const index = expandedCategories.value.indexOf(categoryId)
+  if (index > -1) {
+    expandedCategories.value.splice(index, 1)
+  } else {
+    expandedCategories.value.push(categoryId)
   }
 }
 
@@ -1418,6 +2129,44 @@ onUnmounted(() => {
   // Удаляем обработчик кликов
   document.removeEventListener('click', handleClickOutside)
 })
+
+const openCategoriesModal = async () => {
+  showCategoriesModal.value = true
+  
+  // Проверяем localStorage для cats_type
+  const storedCatsType = localStorage.getItem('user_cats_type')
+  
+  if (storedCatsType) {
+    // Если есть в localStorage, используем его
+    categoriesType.value = storedCatsType === 'user'
+    console.log('Тип категорий загружен из localStorage:', storedCatsType)
+    
+    // Если пользовательские категории, загружаем их
+    if (categoriesType.value) {
+      await loadUserCategories()
+    }
+  } else {
+    // Если нет в localStorage, загружаем с сервера
+    try {
+      const response = await apiRequest('/user/settings', { method: 'GET' })
+      if (response.ok && response.data.success) {
+        const catsType = response.data.data.personal?.cats_type || 'system'
+        categoriesType.value = catsType === 'user'
+        
+        // Сохраняем в localStorage
+        localStorage.setItem('user_cats_type', catsType)
+        console.log('Тип категорий загружен с сервера и сохранен в localStorage:', catsType)
+        
+        // Если пользовательские категории, загружаем их
+        if (categoriesType.value) {
+          await loadUserCategories()
+        }
+      }
+    } catch (error) {
+      console.error('Ошибка загрузки типа категорий:', error)
+    }
+  }
+}
 </script>
 
 <style scoped>
@@ -1430,4 +2179,4 @@ onUnmounted(() => {
 .multiselect__content-wrapper {
   max-height: 400px !important;
 }
-</style> 
+</style>

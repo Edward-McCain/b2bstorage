@@ -346,7 +346,7 @@ window.addEventListener('notifications-updated', () => {
             aria-expanded="false"
             aria-haspopup="true"
           >
-            Товары
+            Главная
             <svg v-if="!isOnProductsPage" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
             </svg>
@@ -369,7 +369,7 @@ window.addEventListener('notifications-updated', () => {
                 tabindex="-1"
                 @click="closeProductsMenu"
               >
-                Товары
+                Главная
               </router-link>
               <router-link
                 to="/products/receipts"
@@ -685,11 +685,11 @@ window.addEventListener('notifications-updated', () => {
         </router-link> -->
       </div>
       <!-- Справа: кнопки авторизации -->
-      <div class="hidden lg:flex lg:flex-1 lg:justify-end items-center gap-4">
+      <div class="hidden lg:flex lg:flex-1 lg:justify-end items-center gap-4 hidden">
         <!-- Иконка уведомлений -->
         <router-link
           to="/notifications"
-          class="relative p-2 text-gray-700 hover:text-blue-600 transition-colors"
+          class="relative p-2 text-gray-700 hover:text-blue-600 transition-colors hidden"
           title="Уведомления"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" class="h-6 w-6">
@@ -855,7 +855,7 @@ window.addEventListener('notifications-updated', () => {
                 class="block text-sm text-gray-700 hover:text-blue-600 py-2 pl-4"
                 @click="toggleMobileMenu"
               >
-                Товары
+                Главная
               </router-link>
               <router-link
                 to="/products/receipts"
@@ -917,7 +917,7 @@ window.addEventListener('notifications-updated', () => {
           </div>
 
           <!-- Отдельный пункт для уведомлений -->
-          <div>
+          <!-- <div>
             <router-link
               to="/notifications"
               class="block text-sm text-gray-700 hover:text-blue-600 py-2 pl-4"
@@ -925,7 +925,7 @@ window.addEventListener('notifications-updated', () => {
             >
               Уведомления
             </router-link>
-          </div>
+          </div> -->
 
           <!-- Закупки -->
           <div style="display: none;">

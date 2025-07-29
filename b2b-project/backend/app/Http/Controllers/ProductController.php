@@ -148,12 +148,19 @@ class ProductController extends Controller
         // Сохраняем старое значение start_count для сравнения
         $oldStartCount = $product->start_count;
         
+        // Проверяем настройки пользователя для категорий
+        $productFieldsVisibility = $user->personal->product_fields_visibility ?? '{}';
+        if (is_string($productFieldsVisibility)) {
+            $productFieldsVisibility = json_decode($productFieldsVisibility, true) ?: [];
+        }
+        
+        // Определяем, включены ли категории
+        $categoriesEnabled = $productFieldsVisibility['category'] ?? true;
+        
         // Валидация данных
-        $request->validate([
+        $validationRules = [
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'category_id' => 'nullable|string',
-            'subcategory_id' => 'nullable|string',
             'country' => 'nullable|string',
             'supplier' => 'nullable|string|max:255',
             'article' => 'nullable|string|max:255',
@@ -173,15 +180,20 @@ class ProductController extends Controller
             'barcode' => 'nullable|string|max:255',
             'cash_register_tax' => 'nullable|string|max:255',
             'cash_register_type' => 'nullable|string|max:255',
-            // 'warehouse_id' => 'required|integer', // warehouse_id больше не обязателен
-        ]);
+        ];
+        
+        // Добавляем валидацию категорий только если они включены
+        if ($categoriesEnabled) {
+            $validationRules['category_id'] = 'nullable|string';
+            $validationRules['subcategory_id'] = 'nullable|string';
+        }
+        
+        $request->validate($validationRules);
 
         // Обновляем товар
         $updateData = [
             'name' => $request->name,
             'description' => $request->description,
-            'category' => $request->category_id,
-            'subcategory' => $request->subcategory_id,
             'country' => $request->country,
             'supplier' => $request->supplier,
             'article' => $request->article,
@@ -202,6 +214,13 @@ class ProductController extends Controller
             'start_count' => $request->start_count,
             'price' => $request->price,
         ];
+        
+        // Добавляем категории только если они включены
+        if ($categoriesEnabled) {
+            $updateData['category'] = $request->category_id;
+            $updateData['subcategory'] = $request->subcategory_id;
+        }
+        
         if ($request->has('warehouse_id') && $request->warehouse_id) {
             $updateData['warehouse_id'] = $request->warehouse_id;
         }
@@ -676,17 +695,24 @@ class ProductController extends Controller
             return response()->json(['success' => false, 'error' => 'warehouse_id и products обязательны'], 422);
         }
 
+        // Проверяем настройки пользователя для категорий
+        $productFieldsVisibility = $user->personal->product_fields_visibility ?? '{}';
+        if (is_string($productFieldsVisibility)) {
+            $productFieldsVisibility = json_decode($productFieldsVisibility, true) ?: [];
+        }
+        
+        // Определяем, включены ли категории
+        $categoriesEnabled = $productFieldsVisibility['category'] ?? true;
+
         DB::beginTransaction();
         try {
             // 1. Массовое создание товаров с начальными остатками
             $createdProducts = [];
             foreach ($products as $prod) {
-                $product = \App\Models\ProductSklad::create([
+                $productData = [
                     'user_id' => $user->id,
                     'name' => $prod['name'],
                     'description' => $prod['description'] ?? null,
-                    'category' => $prod['category'] ?? null,
-                    'subcategory' => $prod['subcategory'] ?? null,
                     'country' => $prod['country'] ?? null,
                     'supplier' => $prod['supplier'] ?? null,
                     'article' => $prod['article'] ?? null,
@@ -706,7 +732,15 @@ class ProductController extends Controller
                     'cash_register_type' => $prod['cash_register_type'] ?? null,
                     'price' => $prod['price'] ?? 0,
                     'start_count' => $prod['start_count'] ?? 0, // Используем start_count вместо quantity
-                ]);
+                ];
+                
+                // Добавляем категории только если они включены
+                if ($categoriesEnabled) {
+                    $productData['category'] = $prod['category'] ?? null;
+                    $productData['subcategory'] = $prod['subcategory'] ?? null;
+                }
+                
+                $product = \App\Models\ProductSklad::create($productData);
                 $createdProducts[] = [
                     'model' => $product,
                     'input' => $prod,

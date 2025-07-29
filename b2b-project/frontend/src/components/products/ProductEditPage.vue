@@ -5,7 +5,7 @@
       <div class="flex flex-col gap-3 sm:inline-flex sm:flex-row sm:items-center w-full px-4">
         <input v-model="product.name" @blur="handleNameBlur" type="text" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" placeholder="Наименование товара *" />
         <div class="flex gap-2 mt-3 sm:mt-0">
-          <button @click="handleSave" :disabled="!product.name || !selectedCategory || !selectedSubcategory || !product.unit || !product.quantity || isSavingProduct" class="bg-lime-500 hover:bg-lime-600 text-white font-semibold px-6 py-2 rounded-lg shadow transition text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+          <button @click="handleSave" :disabled="!product.name || (areCategoriesEnabled() && (!selectedCategory || !selectedSubcategory)) || !product.unit || !product.quantity || isSavingProduct" class="bg-lime-500 hover:bg-lime-600 text-white font-semibold px-6 py-2 rounded-lg shadow transition text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
             <svg v-if="isSavingProduct" class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
@@ -42,7 +42,7 @@
         <div class="font-semibold mb-2">Общие данные</div>
         <div class="flex flex-col gap-3">
           <!-- Категория и подкатегория -->
-          <div class="flex flex-col gap-2 w-full">
+          <div v-if="areCategoriesEnabled()" class="flex flex-col gap-2 w-full">
             <div class="w-full">
               <label class="block text-xs text-gray-700 mb-1">Категория <span class="text-red-500">*</span></label>
               <template v-if="loadingProduct">
@@ -230,13 +230,13 @@
           <template v-else>
             <!-- Активные стандартные поля -->
             <template v-for="field in standardProductFields" :key="field.key">
-              <div v-if="productFieldsVisibility[field.key] === true && field.key !== 'price'">
+              <div v-if="isFieldRequired(field.key) && field.key !== 'price'">
                 <label class="block text-xs text-gray-700 mb-1">{{ field.label }}</label>
                 <input v-model="product[field.key]" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" />
               </div>
             </template>
             <!-- Цена отдельным блоком -->
-            <div v-if="productFieldsVisibility.price === true">
+            <div v-if="isFieldRequired('price')">
               <label class="block text-xs text-gray-700 mb-1">Стоимость за единицу</label>
               <input v-model="product.price" type="number" min="0" step="0.01" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" />
             </div>
@@ -273,7 +273,8 @@ import { useRouter, useRoute } from 'vue-router'
 const route = useRoute()
 import Multiselect from '@vueform/multiselect'
 import '@vueform/multiselect/themes/default.css'
-import { apiRequest, getCategoriesWithCache } from '@/config/api'
+import { apiRequest, getFileUrl } from '@/config/api'
+import { areCategoriesEnabled, isFieldRequired } from '@/utils/productFieldsUtils'
 import ImageDropzone from './ImageDropzone.vue'
 import countriesData from '@/data/countries.json'
 import toastr from 'toastr'
@@ -400,14 +401,24 @@ const loadingProductFields = ref(true)
 async function loadProductFieldsVisibilityAndCustomFields() {
   loadingProductFields.value = true
   try {
-    // Загрузка стандартных полей
-    const settingsResp = await apiRequest('/user/settings', { method: 'GET' })
-    let vis = settingsResp.data?.data?.personal?.product_fields_visibility
-    if (typeof vis === 'string') {
-      try { vis = JSON.parse(vis) } catch (e) { vis = null }
+    // Сначала проверяем localStorage
+    const savedSettings = localStorage.getItem('product_fields_visibility')
+    if (savedSettings) {
+      try {
+        const vis = JSON.parse(savedSettings)
+        const defaults = Object.fromEntries(standardProductFields.map(f => [f.key, true]))
+        Object.assign(productFieldsVisibility, { ...defaults, ...vis })
+        console.log('Настройки полей загружены из localStorage')
+      } catch (e) {
+        console.error('Ошибка парсинга настроек из localStorage:', e)
+        // Если ошибка парсинга, загружаем с сервера
+        await loadSettingsFromServer()
+      }
+    } else {
+      // Если в localStorage нет настроек, загружаем с сервера
+      await loadSettingsFromServer()
     }
-    const defaults = Object.fromEntries(standardProductFields.map(f => [f.key, true]))
-    Object.assign(productFieldsVisibility, { ...defaults, ...(vis || {}) })
+    
     // Загрузка пользовательских полей
     const fieldsResp = await apiRequest('/product-fields', { method: 'GET' })
     if (fieldsResp.ok && fieldsResp.data.success) {
@@ -415,10 +426,25 @@ async function loadProductFieldsVisibilityAndCustomFields() {
       customFields.value.forEach(f => { if (!(f.field_name in customFieldValues)) customFieldValues[f.field_name] = '' })
     }
   } catch (e) {
+    console.error('Ошибка загрузки настроек полей:', e)
     Object.assign(productFieldsVisibility, Object.fromEntries(standardProductFields.map(f => [f.key, true])))
   } finally {
     loadingProductFields.value = false
   }
+}
+
+async function loadSettingsFromServer() {
+  const settingsResp = await apiRequest('/user/settings', { method: 'GET' })
+  let vis = settingsResp.data?.data?.personal?.product_fields_visibility
+  if (typeof vis === 'string') {
+    try { vis = JSON.parse(vis) } catch (e) { vis = null }
+  }
+  const defaults = Object.fromEntries(standardProductFields.map(f => [f.key, true]))
+  Object.assign(productFieldsVisibility, { ...defaults, ...(vis || {}) })
+  
+  // Сохраняем настройки в localStorage для будущего использования
+  localStorage.setItem('product_fields_visibility', JSON.stringify(productFieldsVisibility))
+  console.log('Настройки полей загружены с сервера и сохранены в localStorage')
 }
 
 const countries = computed(() =>
@@ -939,7 +965,7 @@ const subcategoryOptions = computed(() =>
 function closeModalAndGo() {
   showCloseModal.value = false
   hasUnsavedChanges.value = false
-  router.push('/products')
+  router.push('/products/balances')
 }
 
 function handleBeforeUnload(event) {
@@ -964,11 +990,16 @@ async function handleSave() {
     if (productId.value) productData.id = productId.value
     // Обязательные поля
     productData.name = product.name
-    productData.category_id = product.category
-    productData.subcategory_id = product.subcategory
     productData.unit = (product.unit && typeof product.unit === 'object' && product.unit.value) ? product.unit.value : product.unit
     productData.start_count = product.quantity // Количество (отображается, не редактируется)
     productData.price = product.price // Стоимость (отображается, не редактируется)
+    
+    // Добавляем категории только если они включены
+    if (areCategoriesEnabled()) {
+      productData.category_id = product.category
+      productData.subcategory_id = product.subcategory
+    }
+    
     // Остальные поля, если заполнены
     if (product.description) productData.description = product.description
     if (product.country && typeof product.country === 'object' && product.country.value) productData.country = product.country.value
@@ -999,8 +1030,8 @@ async function handleSave() {
       hasUnsavedChanges.value = false
       toastr.success('Товар успешно сохранен')
       console.log('Сохраненные данные:', productData)
-      // Перенаправляем на страницу всех товаров
-      router.push('/products')
+      // Перенаправляем на страницу Остатки
+      router.push('/products/balances')
     } else {
       toastr.error('Ошибка при сохранении товара: ' + (response.error || 'Неизвестная ошибка'))
     }

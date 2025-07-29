@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест настроек полей</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .result { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+        .true { background-color: #d4edda; color: #155724; }
+        .false { background-color: #f8d7da; color: #721c24; }
+        pre { background-color: #f8f9fa; padding: 10px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>Тест настроек полей товаров</h1>
+    
+    <div>
+        <h2>Текущие настройки в localStorage:</h2>
+        <pre id="currentSettings"></pre>
+    </div>
+    
+    <div>
+        <h2>Результаты проверок:</h2>
+        <div id="results"></div>
+    </div>
+    
+    <script>
+        // Симулируем настройки из API (как у пользователя)
+        const apiSettings = {
+            "categories": false,
+            "description": true,
+            "country": false,
+            "supplier": false,
+            "article": true,
+            "code": false,
+            "external_code": false,
+            "weight": false,
+            "volume": false,
+            "vat": false,
+            "min_stock": false,
+            "stock_type": false,
+            "packing": false,
+            "accounting_type": false,
+            "traceable": false,
+            "marking": false,
+            "product_type": false,
+            "barcode_type": false,
+            "barcode": false,
+            "cash_register_tax": false,
+            "cash_register_type": false,
+            "price": true,
+            "unit": false,
+            "category": false,
+            "subcategory": false
+        };
+        
+        // Сохраняем в localStorage
+        localStorage.setItem('product_fields_visibility', JSON.stringify(apiSettings));
+        
+        // Функции из productFieldsUtils.js
+        function areCategoriesEnabled() {
+            try {
+                const productFieldsVisibility = JSON.parse(localStorage.getItem('product_fields_visibility') || '{}')
+                // Проверяем явно на false, так как undefined/null должны возвращать true
+                return productFieldsVisibility.categories !== false
+            } catch (error) {
+                console.error('Ошибка при проверке настроек категорий:', error)
+                return true
+            }
+        }
+        
+        function isFieldRequired(fieldKey) {
+            // Категории и подкатегории управляются одним переключателем
+            if (fieldKey === 'category' || fieldKey === 'subcategory') {
+                return areCategoriesEnabled()
+            }
+            
+            // Для остальных полей проверяем настройки видимости
+            try {
+                const productFieldsVisibility = JSON.parse(localStorage.getItem('product_fields_visibility') || '{}')
+                // Проверяем явно на false, так как undefined/null должны возвращать true
+                return productFieldsVisibility[fieldKey] !== false
+            } catch (error) {
+                console.error('Ошибка при проверке обязательности поля:', error)
+                return true
+            }
+        }
+        
+        // Отображаем результаты
+        document.getElementById('currentSettings').textContent = JSON.stringify(apiSettings, null, 2);
+        
+        const results = document.getElementById('results');
+        const fields = ['categories', 'category', 'subcategory', 'price', 'description', 'article'];
+        
+        fields.forEach(field => {
+            const isRequired = isFieldRequired(field);
+            const apiValue = apiSettings[field];
+            const div = document.createElement('div');
+            div.className = `result ${isRequired ? 'true' : 'false'}`;
+            div.innerHTML = `
+                <strong>${field}:</strong><br>
+                - API значение: ${apiValue}<br>
+                - isFieldRequired('${field}'): ${isRequired}<br>
+                - Должно отображаться: ${isRequired ? 'ДА' : 'НЕТ'}
+            `;
+            results.appendChild(div);
+        });
+        
+        const categoriesDiv = document.createElement('div');
+        const categoriesEnabled = areCategoriesEnabled();
+        categoriesDiv.className = `result ${categoriesEnabled ? 'true' : 'false'}`;
+        categoriesDiv.innerHTML = `
+            <strong>areCategoriesEnabled():</strong> ${categoriesEnabled}<br>
+            - Категории должны отображаться: ${categoriesEnabled ? 'ДА' : 'НЕТ'}
+        `;
+        results.appendChild(categoriesDiv);
+        
+        // Добавляем общий результат
+        const summaryDiv = document.createElement('div');
+        summaryDiv.style.marginTop = '20px';
+        summaryDiv.style.padding = '15px';
+        summaryDiv.style.backgroundColor = '#e2e3e5';
+        summaryDiv.style.borderRadius = '4px';
+        summaryDiv.innerHTML = `
+            <h3>Ожидаемый результат:</h3>
+            <ul>
+                <li>Категории: НЕ отображаются (categories: false)</li>
+                <li>Цена: ОТОБРАЖАЕТСЯ (price: true)</li>
+                <li>Описание: ОТОБРАЖАЕТСЯ (description: true)</li>
+                <li>Артикул: ОТОБРАЖАЕТСЯ (article: true)</li>
+            </ul>
+        `;
+        results.appendChild(summaryDiv);
+    </script>
+</body>
+</html> 
