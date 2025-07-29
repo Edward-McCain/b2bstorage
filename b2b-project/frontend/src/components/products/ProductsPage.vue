@@ -5,7 +5,7 @@
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <!-- Создать товар -->
         <router-link 
-          to="/products/create" 
+          to="/products" 
           class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-all duration-200 cursor-pointer group relative" style="background: linear-gradient(45deg, #d0dfff, #ddfcef);"
         >
           <div class="flex items-center justify-center h-full">
