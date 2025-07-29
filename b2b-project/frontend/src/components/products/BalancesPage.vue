@@ -721,7 +721,7 @@
 
 <script>
 import { ref, reactive, onMounted, computed, watch } from 'vue'
-import api, { apiRequest, getCategoriesWithCache } from '@/config/api'
+import api, { apiRequest, getCategoriesByUserSettings } from '@/config/api'
 import ProductsMenu from './ProductsMenu.vue'
 import MovementsModal from './MovementsModal.vue'
 import Multiselect from '@vueform/multiselect'
@@ -729,6 +729,7 @@ import '@vueform/multiselect/themes/default.css'
 import { Filter, FunnelX, Loader2, ArrowRightLeft, Edit, Trash2, Plus } from 'lucide-vue-next'
 import * as XLSX from 'xlsx'
 import { areCategoriesEnabled, isFieldRequired } from '@/utils/productFieldsUtils'
+import { getSubcategoriesApiEndpoint } from '@/utils/categoryTypeUtils'
 
 // Импорт для уведомлений
 const showNotification = (message, type = 'success') => {
@@ -869,7 +870,7 @@ export default {
       loadingCategories.value = true
       try {
         console.log('Загружаем категории...')
-        const categoriesData = await getCategoriesWithCache()
+        const categoriesData = await getCategoriesByUserSettings()
         console.log('Получены категории:', categoriesData)
         
         // Проверяем структуру данных
@@ -1086,7 +1087,7 @@ export default {
       
       // Загружаем полные данные категорий для поиска
       try {
-        categoriesData.value = await getCategoriesWithCache()
+        categoriesData.value = await getCategoriesByUserSettings()
         console.log('Категории загружены для импорта:', categoriesData.value)
       } catch (error) {
         console.error('Ошибка загрузки полных данных категорий:', error)

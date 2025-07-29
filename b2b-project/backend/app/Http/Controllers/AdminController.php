@@ -431,15 +431,17 @@ class AdminController extends Controller
     }
 
     /**
-     * Получить подкатегории по ID категории
+     * Получить подкатегории по ID категории (для админки)
      */
     public function getSubcategories(Request $request): JsonResponse
     {
         try {
             $categoryId = $request->get('category_id');
+            $categoryType = $request->get('category_type', 'system'); // system или user
             
             Log::info('AdminController getSubcategories called', [
                 'category_id' => $categoryId,
+                'category_type' => $categoryType,
                 'request_params' => $request->all()
             ]);
             
@@ -451,13 +453,24 @@ class AdminController extends Controller
                 ], 400);
             }
             
-            $subcategories = Subcategory::where('category_id', $categoryId)
-                ->select('subcategory_id', 'name_ru as name')
-                ->orderBy('name_ru')
-                ->get();
+            if ($categoryType === 'user') {
+                // Получаем пользовательские подкатегории
+                $subcategories = DB::table('user_subcategories')
+                    ->select('subcategory_id', 'name')
+                    ->where('category_id', $categoryId)
+                    ->orderBy('name')
+                    ->get();
+            } else {
+                // Получаем системные подкатегории
+                $subcategories = Subcategory::where('category_id', $categoryId)
+                    ->select('subcategory_id', 'name_ru as name')
+                    ->orderBy('name_ru')
+                    ->get();
+            }
             
             Log::info('AdminController getSubcategories result', [
                 'category_id' => $categoryId,
+                'category_type' => $categoryType,
                 'subcategories_count' => $subcategories->count(),
                 'subcategories' => $subcategories->toArray()
             ]);
@@ -1606,8 +1619,8 @@ class AdminController extends Controller
                 'date_to' => 'nullable|date'
             ]);
 
-            // Получаем информацию о товаре
-            $product = \App\Models\ProductSklad::with('user')->find($request->product_id);
+            // Получаем информацию о товаре с категориями
+            $product = \App\Models\ProductSklad::with(['user', 'categoryRelation', 'subcategoryRelation'])->find($request->product_id);
             
             $query = DB::table('product_operations as po')
                 ->leftJoin('products_sklad as p', 'po.product_id', '=', 'p.id')
@@ -1666,6 +1679,10 @@ class AdminController extends Controller
                         'id' => $product->id,
                         'name' => $product->name,
                         'article' => $product->article,
+                        'category' => $product->category,
+                        'subcategory' => $product->subcategory,
+                        'category_name' => $product->category_name,
+                        'subcategory_name' => $product->subcategory_name,
                         'user' => [
                             'user_name' => $product->user->user_name,
                             'first_name' => $product->user->first_name,

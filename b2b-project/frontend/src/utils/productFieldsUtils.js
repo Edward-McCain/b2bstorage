@@ -1,3 +1,5 @@
+import { getUserCategoryType, isUserCategoriesEnabled, areCategoriesVisible } from './categoryTypeUtils.js'
+
 /**
  * Проверяет, включены ли категории товаров для пользователя
  * @returns {boolean} true если категории включены, false если выключены
@@ -83,5 +85,42 @@ export function getProductFieldsVisibility() {
   } catch (error) {
     console.error('Ошибка при получении настроек полей товаров:', error)
     return {}
+  }
+}
+
+/**
+ * Проверяет, нужно ли показывать поля категорий с учетом типа категорий
+ * @returns {boolean} true если категории должны отображаться
+ */
+export function shouldShowCategoryFields() {
+  // Сначала проверяем, включены ли категории вообще
+  if (!areCategoriesEnabled()) {
+    return false
+  }
+  
+  // Затем проверяем, есть ли у пользователя категории выбранного типа
+  const categoryType = getUserCategoryType()
+  
+  if (categoryType === 'user') {
+    // Для пользовательских категорий проверяем, есть ли они у пользователя
+    // Это будет проверяться на уровне API
+    return true
+  }
+  
+  // Для системных категорий всегда показываем, если они включены
+  return true
+}
+
+/**
+ * Получает полную информацию о настройках категорий
+ * @returns {Object} объект с информацией о настройках категорий
+ */
+export function getCategoryFieldSettings() {
+  return {
+    enabled: areCategoriesEnabled(),
+    visible: areCategoriesVisible(),
+    type: getUserCategoryType(),
+    isUser: isUserCategoriesEnabled(),
+    shouldShow: shouldShowCategoryFields()
   }
 } 

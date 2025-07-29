@@ -8,6 +8,11 @@
             <div v-if="product" class="text-sm text-gray-600 mt-1">
               {{ product.name }}
               <span v-if="product.article" class="text-gray-500">({{ product.article }})</span>
+              <div v-if="product.category_name || product.subcategory_name" class="text-xs text-gray-500 mt-1">
+                <span v-if="product.category_name">{{ product.category_name }}</span>
+                <span v-if="product.category_name && product.subcategory_name"> → </span>
+                <span v-if="product.subcategory_name">{{ product.subcategory_name }}</span>
+              </div>
             </div>
             <div v-if="product?.user" class="text-xs text-gray-500 mt-1">
               Пользователь: {{ product.user.user_name || product.user.first_name }}

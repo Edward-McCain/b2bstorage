@@ -57,10 +57,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/user/categories/{id}', [\App\Http\Controllers\UserCategoryController::class, 'destroy']);
     
     // User subcategories routes
-    Route::get('/user/categories/{categoryId}/subcategories', [\App\Http\Controllers\UserSubcategoryController::class, 'index']);
-    Route::post('/user/subcategories', [\App\Http\Controllers\UserSubcategoryController::class, 'store']);
-    Route::put('/user/subcategories/{id}', [\App\Http\Controllers\UserSubcategoryController::class, 'update']);
-    Route::delete('/user/subcategories/{id}', [\App\Http\Controllers\UserSubcategoryController::class, 'destroy']);
+Route::get('/user/categories/{categoryId}/subcategories', [\App\Http\Controllers\UserSubcategoryController::class, 'index']);
+Route::post('/user/subcategories', [\App\Http\Controllers\UserSubcategoryController::class, 'store']);
+Route::put('/user/subcategories/{id}', [\App\Http\Controllers\UserSubcategoryController::class, 'update']);
+Route::delete('/user/subcategories/{id}', [\App\Http\Controllers\UserSubcategoryController::class, 'destroy']);
+
+// Category migration routes
+Route::get('/user/categories/check', [\App\Http\Controllers\CategoryMigrationController::class, 'checkAndFixCategories']);
+Route::post('/user/categories/fix', [\App\Http\Controllers\CategoryMigrationController::class, 'fixCategories']);
+Route::get('/user/categories/stats', [\App\Http\Controllers\CategoryMigrationController::class, 'getCategoryStats']);
     // Product routes
     Route::get('/products', [\App\Http\Controllers\ProductController::class, 'index']);
     Route::get('/products/{id}', [\App\Http\Controllers\ProductController::class, 'show']);

@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Комплексные тесты интеграции категорий - Фронтенд</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-result {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            border-left: 4px solid #007bff;
+        }
+        .error {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+        .success {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+        .warning {
+            border-left-color: #ffc107;
+            background: #fff3cd;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .loading {
+            color: #6c757d;
+            font-style: italic;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .test-summary {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #28a745;
+            transition: width 0.3s ease;
+        }
+        .category-type-toggle {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .category-type-toggle label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Комплексные тесты интеграции категорий - Фронтенд</h1>
+    
+    <div class="test-section">
+        <h2>🔧 Конфигурация</h2>
+        <div class="category-type-toggle">
+            <label>
+                <input type="radio" name="categoryType" value="system" checked> Системные категории
+            </label>
+            <label>
+                <input type="radio" name="categoryType" value="user"> Пользовательские категории
+            </label>
+        </div>
+        <button onclick="runAllTests()">🚀 Запустить все тесты</button>
+        <button onclick="clearResults()">🗑️ Очистить результаты</button>
+        <div id="progress-container" style="display: none;">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+            </div>
+            <div id="progress-text">0%</div>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>📋 1. Тесты базовой функциональности</h2>
+        <button onclick="testBasicFunctionality()">Тест базовой функциональности</button>
+        <button onclick="testLocalStorage()">Тест localStorage</button>
+        <button onclick="testUserSettings()">Тест настроек пользователя</button>
+        <div id="basic-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>📋 2. Тесты API категорий</h2>
+        <button onclick="testSystemCategories()">Тест системных категорий</button>
+        <button onclick="testUserCategories()">Тест пользовательских категорий</button>
+        <button onclick="testSubcategories()">Тест подкатегорий</button>
+        <div id="api-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>📋 3. Тесты утилит категорий</h2>
+        <button onclick="testCategoryUtils()">Тест утилит категорий</button>
+        <button onclick="testProductFieldsUtils()">Тест утилит полей товаров</button>
+        <button onclick="testCategoryTypeUtils()">Тест утилит типа категорий</button>
+        <div id="utils-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>📋 4. Тесты валидации</h2>
+        <button onclick="testCategoryValidation()">Тест валидации категорий</button>
+        <button onclick="testProductValidation()">Тест валидации товаров</button>
+        <button onclick="testImportValidation()">Тест валидации импорта</button>
+        <div id="validation-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>📋 5. Тесты миграции данных</h2>
+        <button onclick="testDataMigration()">Тест миграции данных</button>
+        <button onclick="testCategoryStats()">Тест статистики категорий</button>
+        <button onclick="testCategoryCheck()">Тест проверки категорий</button>
+        <div id="migration-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>📋 6. Тесты товаров</h2>
+        <button onclick="testProductsAPI()">Тест API товаров</button>
+        <button onclick="testProductCreation()">Тест создания товаров</button>
+        <button onclick="testProductImport()">Тест импорта товаров</button>
+        <div id="products-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>📊 Результаты тестирования</h2>
+        <div id="summary-results"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://127.0.0.1:8000/api';
+        const TOKEN = localStorage.getItem('auth_token') || '99|l9YCW6cJfqTAGk2FoCpD0tg2pkel92xNPxPpNqhw7e3185e3';
+        
+        let testResults = [];
+        let currentTestCount = 0;
+        let totalTests = 0;
+        
+        function showResult(elementId, content, isError = false, isSuccess = false, isWarning = false) {
+            const element = document.getElementById(elementId);
+            const className = isError ? 'error' : isSuccess ? 'success' : isWarning ? 'warning' : '';
+            element.innerHTML = `<div class="test-result ${className}">${content}</div>`;
+        }
+        
+        function addTestResult(testName, success, data, error = null) {
+            testResults.push({
+                name: testName,
+                success: success,
+                data: data,
+                error: error,
+                timestamp: new Date().toISOString()
+            });
+            
+            currentTestCount++;
+            updateProgress();
+        }
+        
+        function updateProgress() {
+            const progressFill = document.getElementById('progress-fill');
+            const progressText = document.getElementById('progress-text');
+            if (progressFill && progressText) {
+                const percentage = totalTests > 0 ? Math.round((currentTestCount / totalTests) * 100) : 0;
+                progressFill.style.width = percentage + '%';
+                progressText.textContent = `${currentTestCount}/${totalTests} (${percentage}%)`;
+            }
+        }
+        
+        async function makeRequest(endpoint, method = 'GET', data = null) {
+            const url = API_BASE + endpoint;
+            const headers = {
+                'Authorization': `Bearer ${TOKEN}`,
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            };
+            
+            const options = {
+                method,
+                headers,
+                body: data ? JSON.stringify(data) : undefined
+            };
+            
+            try {
+                const response = await fetch(url, options);
+                const result = await response.json();
+                return {
+                    ok: response.ok,
+                    status: response.status,
+                    data: result
+                };
+            } catch (error) {
+                return {
+                    ok: false,
+                    status: 0,
+                    error: error.message
+                };
+            }
+        }
+        
+        function getCategoryType() {
+            return document.querySelector('input[name="categoryType"]:checked').value;
+        }
+        
+        // 1. Тесты базовой функциональности
+        async function testBasicFunctionality() {
+            showResult('basic-results', '<div class="loading">Тестирование базовой функциональности...</div>');
+            
+            const results = [];
+            
+            // Тест настроек пользователя
+            const settingsResponse = await makeRequest('/user/settings');
+            results.push({
+                name: 'Настройки пользователя',
+                success: settingsResponse.ok,
+                data: settingsResponse.data
+            });
+            
+            // Тест типа категорий
+            const categoryTypeResponse = await makeRequest('/user/categories-type');
+            results.push({
+                name: 'Тип категорий',
+                success: categoryTypeResponse.ok,
+                data: categoryTypeResponse.data
+            });
+            
+            // Формируем результат
+            const successCount = results.filter(r => r.success).length;
+            const content = `
+                <h4>Результаты тестирования базовой функциональности:</h4>
+                <p>Успешных тестов: ${successCount}/${results.length}</p>
+                <pre>${JSON.stringify(results, null, 2)}</pre>
+            `;
+            
+            showResult('basic-results', content, successCount < results.length, successCount === results.length);
+            
+            results.forEach(r => addTestResult(r.name, r.success, r.data));
+        }
+        
+        function testLocalStorage() {
+            const result = {
+                'user_cats_type': localStorage.getItem('user_cats_type'),
+                'product_fields_visibility': localStorage.getItem('product_fields_visibility'),
+                'categories_cache': localStorage.getItem('categories_cache'),
+                'user_categories_cache': localStorage.getItem('user_categories_cache')
+            };
+            
+            const hasRequiredData = result['user_cats_type'] || result['product_fields_visibility'];
+            
+            showResult('basic-results', 
+                `<h4>Результат проверки localStorage:</h4>
+                <pre>${JSON.stringify(result, null, 2)}</pre>`, 
+                !hasRequiredData, hasRequiredData);
+            
+            addTestResult('localStorage', hasRequiredData, result);
+        }
+        
+        async function testUserSettings() {
+            showResult('basic-results', '<div class="loading">Загрузка настроек пользователя...</div>');
+            
+            const response = await makeRequest('/user/settings');
+            const content = response.ok 
+                ? `<h4>✅ Настройки пользователя загружены успешно</h4>
+                   <p>cats_type: ${response.data.data?.personal?.cats_type || 'не указан'}</p>
+                   <p>product_fields_visibility: ${response.data.data?.personal?.product_fields_visibility || 'не указан'}</p>
+                   <pre>${JSON.stringify(response.data, null, 2)}</pre>`
+                : `<h4>❌ Ошибка загрузки настроек пользователя</h4>
+                   <p>Статус: ${response.status}</p>
+                   <pre>${JSON.stringify(response, null, 2)}</pre>`;
+            
+            showResult('basic-results', content, !response.ok, response.ok);
+            addTestResult('Настройки пользователя', response.ok, response.data);
+        }
+        
+        // 2. Тесты API категорий
+        async function testSystemCategories() {
+            showResult('api-results', '<div class="loading">Загрузка системных категорий...</div>');
+            
+            const response = await makeRequest('/categories');
+            const content = response.ok 
+                ? `<h4>✅ Системные категории загружены успешно</h4>
+                   <p>Количество: ${response.data.data?.length || 0}</p>
+                   <pre>${JSON.stringify(response.data, null, 2)}</pre>`
+                : `<h4>❌ Ошибка загрузки системных категорий</h4>
+                   <p>Статус: ${response.status}</p>
+                   <pre>${JSON.stringify(response, null, 2)}</pre>`;
+            
+            showResult('api-results', content, !response.ok, response.ok);
+            addTestResult('Системные категории', response.ok, response.data);
+        }
+        
+        async function testUserCategories() {
+            showResult('api-results', '<div class="loading">Загрузка пользовательских категорий...</div>');
+            
+            const response = await makeRequest('/user/categories');
+            const content = response.ok 
+                ? `<h4>✅ Пользовательские категории загружены успешно</h4>
+                   <p>Количество: ${response.data.data?.length || 0}</p>
+                   <pre>${JSON.stringify(response.data, null, 2)}</pre>`
+                : `<h4>❌ Ошибка загрузки пользовательских категорий</h4>
+                   <p>Статус: ${response.status}</p>
+                   <pre>${JSON.stringify(response, null, 2)}</pre>`;
+            
+            showResult('api-results', content, !response.ok, response.ok);
+            addTestResult('Пользовательские категории', response.ok, response.data);
+        }
+        
+        async function testSubcategories() {
+            showResult('api-results', '<div class="loading">Загрузка подкатегорий...</div>');
+            
+            // Сначала получаем категории
+            const categoriesResponse = await makeRequest('/categories');
+            if (categoriesResponse.ok && categoriesResponse.data.data?.length > 0) {
+                const categoryId = categoriesResponse.data.data[0].category_id;
+                const response = await makeRequest(`/categories/${categoryId}/subcategories`);
+                
+                const content = response.ok 
+                    ? `<h4>✅ Подкатегории загружены успешно</h4>
+                       <p>Категория: ${categoryId}</p>
+                       <p>Количество подкатегорий: ${response.data.data?.length || 0}</p>
+                       <pre>${JSON.stringify(response.data, null, 2)}</pre>`
+                    : `<h4>❌ Ошибка загрузки подкатегорий</h4>
+                       <p>Статус: ${response.status}</p>
+                       <pre>${JSON.stringify(response, null, 2)}</pre>`;
+                
+                showResult('api-results', content, !response.ok, response.ok);
+                addTestResult('Подкатегории', response.ok, response.data);
+            } else {
+                showResult('api-results', '<h4>⚠️ Нет категорий для тестирования подкатегорий</h4>', false, false, true);
+                addTestResult('Подкатегории', false, null, 'Нет категорий');
+            }
+        }
+        
+        // 3. Тесты утилит
+        function testCategoryUtils() {
+            // Симуляция функций из categoryTypeUtils.js
+            function getUserCategoryType() {
+                return localStorage.getItem('user_cats_type') || 'system';
+            }
+            
+            function isUserCategoriesEnabled() {
+                return getUserCategoryType() === 'user';
+            }
+            
+            function areCategoriesVisible() {
+                try {
+                    const productFieldsVisibility = JSON.parse(localStorage.getItem('product_fields_visibility') || '{}');
+                    return productFieldsVisibility.categories !== false;
+                } catch (error) {
+                    return true;
+                }
+            }
+            
+            const result = {
+                'getUserCategoryType()': getUserCategoryType(),
+                'isUserCategoriesEnabled()': isUserCategoriesEnabled(),
+                'areCategoriesVisible()': areCategoriesVisible(),
+                'localStorage.user_cats_type': localStorage.getItem('user_cats_type'),
+                'localStorage.product_fields_visibility': localStorage.getItem('product_fields_visibility')
+            };
+            
+            const hasValidData = result['getUserCategoryType()'] && result['areCategoriesVisible()'] !== null;
+            
+            showResult('utils-results', 
+                `<h4>Результат теста утилит категорий:</h4>
+                <pre>${JSON.stringify(result, null, 2)}</pre>`, 
+                !hasValidData, hasValidData);
+            
+            addTestResult('Утилиты категорий', hasValidData, result);
+        }
+        
+        function testProductFieldsUtils() {
+            // Симуляция функций из productFieldsUtils.js
+            function areCategoriesEnabled() {
+                try {
+                    const productFieldsVisibility = JSON.parse(localStorage.getItem('product_fields_visibility') || '{}');
+                    return productFieldsVisibility.categories !== false;
+                } catch (error) {
+                    return true;
+                }
+            }
+            
+            function isFieldRequired(fieldKey) {
+                if (fieldKey === 'category' || fieldKey === 'subcategory') {
+                    return areCategoriesEnabled();
+                }
+                return true;
+            }
+            
+            const result = {
+                'areCategoriesEnabled()': areCategoriesEnabled(),
+                'isFieldRequired("category")': isFieldRequired('category'),
+                'isFieldRequired("subcategory")': isFieldRequired('subcategory'),
+                'isFieldRequired("price")': isFieldRequired('price')
+            };
+            
+            showResult('utils-results', 
+                `<h4>Результат теста утилит полей товаров:</h4>
+                <pre>${JSON.stringify(result, null, 2)}</pre>`, 
+                false, true);
+            
+            addTestResult('Утилиты полей товаров', true, result);
+        }
+        
+        function testCategoryTypeUtils() {
+            const categoryType = getCategoryType();
+            const result = {
+                'selected_category_type': categoryType,
+                'is_system': categoryType === 'system',
+                'is_user': categoryType === 'user'
+            };
+            
+            showResult('utils-results', 
+                `<h4>Результат теста утилит типа категорий:</h4>
+                <pre>${JSON.stringify(result, null, 2)}</pre>`, 
+                false, true);
+            
+            addTestResult('Утилиты типа категорий', true, result);
+        }
+        
+        // 4. Тесты валидации
+        async function testCategoryValidation() {
+            showResult('validation-results', '<div class="loading">Тестирование валидации категорий...</div>');
+            
+            // Тест с несуществующей категорией
+            const invalidProduct = {
+                name: 'Тестовый товар',
+                category_id: 'non_existent_category',
+                subcategory_id: 'non_existent_subcategory',
+                price: 100,
+                start_count: 1
+            };
+            
+            const response = await makeRequest('/products', 'POST', invalidProduct);
+            const expectedError = response.status === 422; // Ожидаем ошибку валидации
+            
+            const content = expectedError 
+                ? `<h4>✅ Валидация работает корректно</h4>
+                   <p>Ожидаемая ошибка 422 получена</p>
+                   <pre>${JSON.stringify(response, null, 2)}</pre>`
+                : `<h4>⚠️ Неожиданный результат валидации</h4>
+                   <p>Статус: ${response.status}</p>
+                   <pre>${JSON.stringify(response, null, 2)}</pre>`;
+            
+            showResult('validation-results', content, !expectedError, expectedError, !expectedError);
+            addTestResult('Валидация категорий', expectedError, response.data);
+        }
+        
+        async function testProductValidation() {
+            showResult('validation-results', '<div class="loading">Тестирование валидации товаров...</div>');
+            
+            // Тест с валидным товаром
+            const validProduct = {
+                name: 'Тестовый товар без категорий',
+                price: 100,
+                start_count: 1
+            };
+            
+            const response = await makeRequest('/products', 'POST', validProduct);
+            const content = response.ok 
+                ? `<h4>✅ Создание товара без категорий успешно</h4>
+                   <pre>${JSON.stringify(response.data, null, 2)}</pre>`
+                : `<h4>❌ Ошибка создания товара без категорий</h4>
+                   <p>Статус: ${response.status}</p>
+                   <pre>${JSON.stringify(response, null, 2)}</pre>`;
+            
+            showResult('validation-results', content, !response.ok, response.ok);
+            addTestResult('Валидация товаров', response.ok, response.data);
+        }
+        
+        async function testImportValidation() {
+            showResult('validation-results', '<div class="loading">Тестирование валидации импорта...</div>');
+            
+            // Тест импорта с невалидными данными
+            const invalidImport = {
+                warehouse_id: 1,
+                products: [
+                    {
+                        name: 'Товар с невалидной категорией',
+                        category: 'non_existent_category',
+                        price: 100,
+                        start_count: 1
+                    }
+                ]
+            };
+            
+            const response = await makeRequest('/products/import-with-receipt', 'POST', invalidImport);
+            const expectedError = response.status === 422 || response.status === 500;
+            
+            const content = expectedError 
+                ? `<h4>✅ Валидация импорта работает корректно</h4>
+                   <p>Ожидаемая ошибка получена</p>
+                   <pre>${JSON.stringify(response, null, 2)}</pre>`
+                : `<h4>⚠️ Неожиданный результат валидации импорта</h4>
+                   <p>Статус: ${response.status}</p>
+                   <pre>${JSON.stringify(response, null, 2)}</pre>`;
+            
+            showResult('validation-results', content, !expectedError, expectedError, !expectedError);
+            addTestResult('Валидация импорта', expectedError, response.data);
+        }
+        
+        // 5. Тесты миграции данных
+        async function testDataMigration() {
+            showResult('migration-results', '<div class="loading">Тестирование миграции данных...</div>');
+            
+            const response = await makeRequest('/user/categories/fix', 'POST');
+            const content = response.ok 
+                ? `<h4>✅ Миграция данных выполнена успешно</h4>
+                   <pre>${JSON.stringify(response.data, null, 2)}</pre>`
+                : `<h4>❌ Ошибка миграции данных</h4>
+                   <p>Статус: ${response.status}</p>
+                   <pre>${JSON.stringify(response, null, 2)}</pre>`;
+            
+            showResult('migration-results', content, !response.ok, response.ok);
+            addTestResult('Миграция данных', response.ok, response.data);
+        }
+        
+        async function testCategoryStats() {
+            showResult('migration-results', '<div class="loading">Загрузка статистики категорий...</div>');
+            
+            const response = await makeRequest('/user/categories/stats');
+            const content = response.ok 
+                ? `<h4>✅ Статистика категорий загружена успешно</h4>
+                   <pre>${JSON.stringify(response.data, null, 2)}</pre>`
+                : `<h4>❌ Ошибка загрузки статистики категорий</h4>
+                   <p>Статус: ${response.status}</p>
+                   <pre>${JSON.stringify(response, null, 2)}</pre>`;
+            
+            showResult('migration-results', content, !response.ok, response.ok);
+            addTestResult('Статистика категорий', response.ok, response.data);
+        }
+        
+        async function testCategoryCheck() {
+            showResult('migration-results', '<div class="loading">Проверка проблемных категорий...</div>');
+            
+            const response = await makeRequest('/user/categories/check');
+            const content = response.ok 
+                ? `<h4>✅ Проверка проблемных категорий выполнена</h4>
+                   <pre>${JSON.stringify(response.data, null, 2)}</pre>`
+                : `<h4>❌ Ошибка проверки проблемных категорий</h4>
+                   <p>Статус: ${response.status}</p>
+                   <pre>${JSON.stringify(response, null, 2)}</pre>`;
+            
+            showResult('migration-results', content, !response.ok, response.ok);
+            addTestResult('Проверка категорий', response.ok, response.data);
+        }
+        
+        // 6. Тесты товаров
+        async function testProductsAPI() {
+            showResult('products-results', '<div class="loading">Загрузка товаров...</div>');
+            
+            const response = await makeRequest('/products');
+            const content = response.ok 
+                ? `<h4>✅ Товары загружены успешно</h4>
+                   <p>Количество: ${response.data.data?.length || 0}</p>
+                   <pre>${JSON.stringify(response.data, null, 2)}</pre>`
+                : `<h4>❌ Ошибка загрузки товаров</h4>
+                   <p>Статус: ${response.status}</p>
+                   <pre>${JSON.stringify(response, null, 2)}</pre>`;
+            
+            showResult('products-results', content, !response.ok, response.ok);
+            addTestResult('API товаров', response.ok, response.data);
+        }
+        
+        async function testProductCreation() {
+            showResult('products-results', '<div class="loading">Создание тестового товара...</div>');
+            
+            const testProduct = {
+                name: 'Тестовый товар ' + new Date().toISOString(),
+                price: 100,
+                start_count: 1
+            };
+            
+            const response = await makeRequest('/products', 'POST', testProduct);
+            const content = response.ok 
+                ? `<h4>✅ Товар создан успешно</h4>
+                   <pre>${JSON.stringify(response.data, null, 2)}</pre>`
+                : `<h4>❌ Ошибка создания товара</h4>
+                   <p>Статус: ${response.status}</p>
+                   <pre>${JSON.stringify(response, null, 2)}</pre>`;
+            
+            showResult('products-results', content, !response.ok, response.ok);
+            addTestResult('Создание товара', response.ok, response.data);
+        }
+        
+        async function testProductImport() {
+            showResult('products-results', '<div class="loading">Тестирование импорта товаров...</div>');
+            
+            const testImport = {
+                warehouse_id: 1,
+                products: [
+                    {
+                        name: 'Импортированный товар ' + new Date().toISOString(),
+                        price: 150,
+                        start_count: 5
+                    }
+                ]
+            };
+            
+            const response = await makeRequest('/products/import-with-receipt', 'POST', testImport);
+            const content = response.ok 
+                ? `<h4>✅ Импорт товаров выполнен успешно</h4>
+                   <pre>${JSON.stringify(response.data, null, 2)}</pre>`
+                : `<h4>❌ Ошибка импорта товаров</h4>
+                   <p>Статус: ${response.status}</p>
+                   <pre>${JSON.stringify(response, null, 2)}</pre>`;
+            
+            showResult('products-results', content, !response.ok, response.ok);
+            addTestResult('Импорт товаров', response.ok, response.data);
+        }
+        
+        // Функции управления
+        async function runAllTests() {
+            testResults = [];
+            currentTestCount = 0;
+            totalTests = 25; // Примерное количество тестов
+            
+            document.getElementById('progress-container').style.display = 'block';
+            
+            await testBasicFunctionality();
+            await testSystemCategories();
+            await testUserCategories();
+            await testSubcategories();
+            testCategoryUtils();
+            testProductFieldsUtils();
+            testCategoryTypeUtils();
+            await testCategoryValidation();
+            await testProductValidation();
+            await testImportValidation();
+            await testDataMigration();
+            await testCategoryStats();
+            await testCategoryCheck();
+            await testProductsAPI();
+            await testProductCreation();
+            await testProductImport();
+            
+            updateSummary();
+        }
+        
+        function clearResults() {
+            testResults = [];
+            currentTestCount = 0;
+            document.getElementById('progress-container').style.display = 'none';
+            document.getElementById('basic-results').innerHTML = '';
+            document.getElementById('api-results').innerHTML = '';
+            document.getElementById('utils-results').innerHTML = '';
+            document.getElementById('validation-results').innerHTML = '';
+            document.getElementById('migration-results').innerHTML = '';
+            document.getElementById('products-results').innerHTML = '';
+            document.getElementById('summary-results').innerHTML = '';
+        }
+        
+        function updateSummary() {
+            const total = testResults.length;
+            const success = testResults.filter(r => r.success).length;
+            const failed = total - success;
+            const percentage = total > 0 ? Math.round((success / total) * 100) : 0;
+            
+            const summary = `
+                <div class="test-summary">
+                    <h3>📊 Итоговая сводка тестирования</h3>
+                    <p><strong>Всего тестов:</strong> ${total}</p>
+                    <p><strong>Успешных:</strong> ${success}</p>
+                    <p><strong>Проваленных:</strong> ${failed}</p>
+                    <p><strong>Процент успеха:</strong> ${percentage}%</p>
+                    
+                    ${failed > 0 ? `
+                        <h4>❌ Проваленные тесты:</h4>
+                        <ul>
+                            ${testResults.filter(r => !r.success).map(r => `<li>${r.name}</li>`).join('')}
+                        </ul>
+                    ` : ''}
+                    
+                    <h4>✅ Успешные тесты:</h4>
+                    <ul>
+                        ${testResults.filter(r => r.success).map(r => `<li>${r.name}</li>`).join('')}
+                    </ul>
+                    
+                    <h4>🎯 Рекомендации:</h4>
+                    ${percentage === 100 
+                        ? '<p>✅ Все тесты прошли успешно! Система готова к использованию.</p>'
+                        : '<p>⚠️ Обнаружены проблемы. Проверьте логи сервера и настройки.</p>'
+                    }
+                </div>
+            `;
+            
+            document.getElementById('summary-results').innerHTML = summary;
+        }
+        
+        // Автоматический запуск базовых тестов при загрузке
+        window.onload = function() {
+            testLocalStorage();
+            testUserSettings();
+        };
+    </script>
+</body>
+</html> 

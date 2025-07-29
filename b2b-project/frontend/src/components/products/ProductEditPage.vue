@@ -273,8 +273,9 @@ import { useRouter, useRoute } from 'vue-router'
 const route = useRoute()
 import Multiselect from '@vueform/multiselect'
 import '@vueform/multiselect/themes/default.css'
-import { apiRequest, getFileUrl } from '@/config/api'
+import { apiRequest, getFileUrl, getCategoriesByUserSettings } from '@/config/api'
 import { areCategoriesEnabled, isFieldRequired } from '@/utils/productFieldsUtils'
+import { getUserCategoryType, getSubcategoriesApiEndpoint } from '@/utils/categoryTypeUtils'
 import ImageDropzone from './ImageDropzone.vue'
 import countriesData from '@/data/countries.json'
 import toastr from 'toastr'
@@ -520,7 +521,8 @@ onMounted(async () => {
   // 1. Загружаем категории
   loadingCategories.value = true
   try {
-    categories.value = await getCategoriesWithCache()
+    // Загружаем категории в зависимости от настроек пользователя
+    categories.value = await getCategoriesByUserSettings()
   } catch (e) {
     categoryError.value = 'Ошибка загрузки категорий'
   } finally {
@@ -773,7 +775,9 @@ async function loadSubcategories(categoryId) {
   
   loadingSubcategories.value = true
   try {
-    const response = await apiRequest(`/subcategories?category_id=${encodeURIComponent(categoryId)}`)
+    // Получаем правильный endpoint для подкатегорий
+    const endpoint = getSubcategoriesApiEndpoint(categoryId)
+    const response = await apiRequest(endpoint)
     if (response.ok && response.data.success) {
       subcategories.value = response.data.data || []
     } else {

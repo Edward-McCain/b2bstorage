@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\ReceiptPosition;
+use App\Models\UserCategory;
+use App\Models\UserSubcategory;
 
 class ProductSklad extends Model
 {
@@ -58,7 +60,28 @@ class ProductSklad extends Model
      */
     public function getCategoryNameAttribute()
     {
-        return $this->categoryRelation ? $this->categoryRelation->name_ru : $this->category;
+        if (!$this->category) {
+            return null;
+        }
+        
+        // Проверяем тип категорий пользователя
+        $user = $this->user;
+        if (!$user) {
+            return $this->categoryRelation ? $this->categoryRelation->name_ru : $this->category;
+        }
+        
+        $catsType = $user->cats_type ?? 'system';
+        
+        if ($catsType === 'user') {
+            // Для пользовательских категорий
+            $userCategory = \App\Models\UserCategory::where('category_id', $this->category)
+                ->where('user_id', $user->id)
+                ->first();
+            return $userCategory ? $userCategory->name : $this->category;
+        } else {
+            // Для системных категорий
+            return $this->categoryRelation ? $this->categoryRelation->name_ru : $this->category;
+        }
     }
 
     /**
@@ -66,7 +89,28 @@ class ProductSklad extends Model
      */
     public function getSubcategoryNameAttribute()
     {
-        return $this->subcategoryRelation ? $this->subcategoryRelation->name_ru : $this->subcategory;
+        if (!$this->subcategory) {
+            return null;
+        }
+        
+        // Проверяем тип категорий пользователя
+        $user = $this->user;
+        if (!$user) {
+            return $this->subcategoryRelation ? $this->subcategoryRelation->name_ru : $this->subcategory;
+        }
+        
+        $catsType = $user->cats_type ?? 'system';
+        
+        if ($catsType === 'user') {
+            // Для пользовательских подкатегорий
+            $userSubcategory = \App\Models\UserSubcategory::where('subcategory_id', $this->subcategory)
+                ->where('user_id', $user->id)
+                ->first();
+            return $userSubcategory ? $userSubcategory->name : $this->subcategory;
+        } else {
+            // Для системных подкатегорий
+            return $this->subcategoryRelation ? $this->subcategoryRelation->name_ru : $this->subcategory;
+        }
     }
 
     /**

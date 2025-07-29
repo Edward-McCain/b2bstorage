@@ -157,6 +157,9 @@ class ProductController extends Controller
         // Определяем, включены ли категории
         $categoriesEnabled = $productFieldsVisibility['category'] ?? true;
         
+        // Получаем тип категорий пользователя
+        $catsType = $user->cats_type ?? 'system';
+        
         // Валидация данных
         $validationRules = [
             'name' => 'required|string|max:255',
@@ -189,6 +192,66 @@ class ProductController extends Controller
         }
         
         $request->validate($validationRules);
+
+        // Валидация существования категорий если они включены
+        if ($categoriesEnabled && $request->has('category_id') && $request->category_id) {
+            if ($catsType === 'user') {
+                // Проверяем существование в пользовательских категориях
+                $categoryExists = DB::table('user_categories')
+                    ->where('category_id', $request->category_id)
+                    ->where('user_id', $user->id)
+                    ->exists();
+                    
+                if (!$categoryExists) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Указанная категория не существует в ваших пользовательских категориях'
+                    ], 422);
+                }
+            } else {
+                // Проверяем существование в системных категориях
+                $categoryExists = DB::table('categories')
+                    ->where('category_id', $request->category_id)
+                    ->exists();
+                    
+                if (!$categoryExists) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Указанная категория не существует в системных категориях'
+                    ], 422);
+                }
+            }
+        }
+
+        // Валидация существования подкатегорий если они включены
+        if ($categoriesEnabled && $request->has('subcategory_id') && $request->subcategory_id) {
+            if ($catsType === 'user') {
+                // Проверяем существование в пользовательских подкатегориях
+                $subcategoryExists = DB::table('user_subcategories')
+                    ->where('subcategory_id', $request->subcategory_id)
+                    ->where('user_id', $user->id)
+                    ->exists();
+                    
+                if (!$subcategoryExists) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Указанная подкатегория не существует в ваших пользовательских подкатегориях'
+                    ], 422);
+                }
+            } else {
+                // Проверяем существование в системных подкатегориях
+                $subcategoryExists = DB::table('subcategories')
+                    ->where('subcategory_id', $request->subcategory_id)
+                    ->exists();
+                    
+                if (!$subcategoryExists) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Указанная подкатегория не существует в системных подкатегориях'
+                    ], 422);
+                }
+            }
+        }
 
         // Обновляем товар
         $updateData = [
@@ -703,6 +766,9 @@ class ProductController extends Controller
         
         // Определяем, включены ли категории
         $categoriesEnabled = $productFieldsVisibility['category'] ?? true;
+        
+        // Получаем тип категорий пользователя
+        $catsType = $user->cats_type ?? 'system';
 
         DB::beginTransaction();
         try {
@@ -736,8 +802,55 @@ class ProductController extends Controller
                 
                 // Добавляем категории только если они включены
                 if ($categoriesEnabled) {
-                    $productData['category'] = $prod['category'] ?? null;
-                    $productData['subcategory'] = $prod['subcategory'] ?? null;
+                    $category = $prod['category'] ?? null;
+                    $subcategory = $prod['subcategory'] ?? null;
+                    
+                    // Валидация существования категорий
+                    if ($category) {
+                        if ($catsType === 'user') {
+                            $categoryExists = DB::table('user_categories')
+                                ->where('category_id', $category)
+                                ->where('user_id', $user->id)
+                                ->exists();
+                                
+                            if (!$categoryExists) {
+                                throw new \Exception("Категория '{$category}' не существует в ваших пользовательских категориях");
+                            }
+                        } else {
+                            $categoryExists = DB::table('categories')
+                                ->where('category_id', $category)
+                                ->exists();
+                                
+                            if (!$categoryExists) {
+                                throw new \Exception("Категория '{$category}' не существует в системных категориях");
+                            }
+                        }
+                    }
+                    
+                    // Валидация существования подкатегорий
+                    if ($subcategory) {
+                        if ($catsType === 'user') {
+                            $subcategoryExists = DB::table('user_subcategories')
+                                ->where('subcategory_id', $subcategory)
+                                ->where('user_id', $user->id)
+                                ->exists();
+                                
+                            if (!$subcategoryExists) {
+                                throw new \Exception("Подкатегория '{$subcategory}' не существует в ваших пользовательских подкатегориях");
+                            }
+                        } else {
+                            $subcategoryExists = DB::table('subcategories')
+                                ->where('subcategory_id', $subcategory)
+                                ->exists();
+                                
+                            if (!$subcategoryExists) {
+                                throw new \Exception("Подкатегория '{$subcategory}' не существует в системных подкатегориях");
+                            }
+                        }
+                    }
+                    
+                    $productData['category'] = $category;
+                    $productData['subcategory'] = $subcategory;
                 }
                 
                 $product = \App\Models\ProductSklad::create($productData);

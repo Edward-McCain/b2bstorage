@@ -355,7 +355,7 @@ import { Search, Package, User, X, Loader2 } from 'lucide-vue-next'
 import api from '../../../config/api.js'
 import Multiselect from '@vueform/multiselect'
 import '@vueform/multiselect/themes/default.css'
-import { getCategoriesWithCache } from '../../../config/api.js'
+import { getCategoriesByUserSettings } from '../../../config/api.js'
 
 // Данные
 const products = ref([])
@@ -444,7 +444,7 @@ const loadWarehouses = async () => {
 const loadCategories = async () => {
   try {
     loadingCategories.value = true
-    categories.value = await getCategoriesWithCache()
+    categories.value = await getCategoriesByUserSettings()
     categoryOptions.value = categories.value.map(c => ({
       label: c.name_ru || c.name,
       value: c.category_id

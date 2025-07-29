@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест интеграции категорий - Фронтенд</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-result {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            border-left: 4px solid #007bff;
+        }
+        .error {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+        .success {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .loading {
+            color: #6c757d;
+            font-style: italic;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Тест интеграции категорий - Фронтенд</h1>
+    
+    <div class="test-section">
+        <h2>1. Проверка localStorage</h2>
+        <button onclick="checkLocalStorage()">Проверить localStorage</button>
+        <div id="localStorage-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Тест API категорий</h2>
+        <button onclick="testCategoriesAPI()">Тест системных категорий</button>
+        <button onclick="testUserCategoriesAPI()">Тест пользовательских категорий</button>
+        <div id="api-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Тест утилит категорий</h2>
+        <button onclick="testCategoryUtils()">Тест утилит</button>
+        <div id="utils-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. Тест настроек пользователя</h2>
+        <button onclick="testUserSettings()">Тест настроек</button>
+        <div id="settings-result"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://127.0.0.1:8000/api';
+        const TOKEN = localStorage.getItem('auth_token') || '99|l9YCW6cJfqTAGk2FoCpD0tg2pkel92xNPxPpNqhw7e3185e3';
+        
+        function showResult(elementId, content, isError = false, isSuccess = false) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="test-result ${isError ? 'error' : isSuccess ? 'success' : ''}">${content}</div>`;
+        }
+        
+        async function makeRequest(endpoint, method = 'GET', data = null) {
+            const url = API_BASE + endpoint;
+            const headers = {
+                'Authorization': `Bearer ${TOKEN}`,
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            };
+            
+            const options = {
+                method,
+                headers,
+                body: data ? JSON.stringify(data) : undefined
+            };
+            
+            try {
+                const response = await fetch(url, options);
+                const result = await response.json();
+                return {
+                    ok: response.ok,
+                    status: response.status,
+                    data: result
+                };
+            } catch (error) {
+                return {
+                    ok: false,
+                    status: 0,
+                    error: error.message
+                };
+            }
+        }
+        
+        function checkLocalStorage() {
+            const result = {
+                'user_cats_type': localStorage.getItem('user_cats_type'),
+                'product_fields_visibility': localStorage.getItem('product_fields_visibility'),
+                'categories_cache': localStorage.getItem('categories_cache'),
+                'user_categories_cache': localStorage.getItem('user_categories_cache')
+            };
+            
+            showResult('localStorage-result', 
+                `<h4>Результат проверки localStorage:</h4>
+                <pre>${JSON.stringify(result, null, 2)}</pre>`, false, true);
+        }
+        
+        async function testCategoriesAPI() {
+            showResult('api-result', '<div class="loading">Загрузка системных категорий...</div>');
+            
+            const response = await makeRequest('/categories');
+            const content = response.ok 
+                ? `<h4>✅ Системные категории загружены успешно</h4>
+                   <p>Количество: ${response.data.data?.length || 0}</p>
+                   <pre>${JSON.stringify(response.data, null, 2)}</pre>`
+                : `<h4>❌ Ошибка загрузки системных категорий</h4>
+                   <p>Статус: ${response.status}</p>
+                   <pre>${JSON.stringify(response, null, 2)}</pre>`;
+            
+            showResult('api-result', content, !response.ok, response.ok);
+        }
+        
+        async function testUserCategoriesAPI() {
+            showResult('api-result', '<div class="loading">Загрузка пользовательских категорий...</div>');
+            
+            const response = await makeRequest('/user/categories');
+            const content = response.ok 
+                ? `<h4>✅ Пользовательские категории загружены успешно</h4>
+                   <p>Количество: ${response.data.data?.length || 0}</p>
+                   <pre>${JSON.stringify(response.data, null, 2)}</pre>`
+                : `<h4>❌ Ошибка загрузки пользовательских категорий</h4>
+                   <p>Статус: ${response.status}</p>
+                   <pre>${JSON.stringify(response, null, 2)}</pre>`;
+            
+            showResult('api-result', content, !response.ok, response.ok);
+        }
+        
+        function testCategoryUtils() {
+            // Симуляция функций из categoryTypeUtils.js
+            function getUserCategoryType() {
+                return localStorage.getItem('user_cats_type') || 'system';
+            }
+            
+            function isUserCategoriesEnabled() {
+                return getUserCategoryType() === 'user';
+            }
+            
+            function areCategoriesVisible() {
+                try {
+                    const productFieldsVisibility = JSON.parse(localStorage.getItem('product_fields_visibility') || '{}');
+                    return productFieldsVisibility.categories !== false;
+                } catch (error) {
+                    return true;
+                }
+            }
+            
+            const result = {
+                'getUserCategoryType()': getUserCategoryType(),
+                'isUserCategoriesEnabled()': isUserCategoriesEnabled(),
+                'areCategoriesVisible()': areCategoriesVisible(),
+                'localStorage.user_cats_type': localStorage.getItem('user_cats_type'),
+                'localStorage.product_fields_visibility': localStorage.getItem('product_fields_visibility')
+            };
+            
+            showResult('utils-result', 
+                `<h4>Результат теста утилит категорий:</h4>
+                <pre>${JSON.stringify(result, null, 2)}</pre>`, false, true);
+        }
+        
+        async function testUserSettings() {
+            showResult('settings-result', '<div class="loading">Загрузка настроек пользователя...</div>');
+            
+            const response = await makeRequest('/user/settings');
+            const content = response.ok 
+                ? `<h4>✅ Настройки пользователя загружены успешно</h4>
+                   <p>cats_type: ${response.data.data?.personal?.cats_type || 'не указан'}</p>
+                   <p>product_fields_visibility: ${response.data.data?.personal?.product_fields_visibility || 'не указан'}</p>
+                   <pre>${JSON.stringify(response.data, null, 2)}</pre>`
+                : `<h4>❌ Ошибка загрузки настроек пользователя</h4>
+                   <p>Статус: ${response.status}</p>
+                   <pre>${JSON.stringify(response, null, 2)}</pre>`;
+            
+            showResult('settings-result', content, !response.ok, response.ok);
+        }
+        
+        // Автоматический запуск базовых тестов при загрузке
+        window.onload = function() {
+            checkLocalStorage();
+            testUserSettings();
+        };
+    </script>
+</body>
+</html> 

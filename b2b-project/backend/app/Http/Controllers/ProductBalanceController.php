@@ -517,8 +517,8 @@ class ProductBalanceController extends Controller
             'date_to' => 'nullable|date'
         ]);
 
-        // Получаем информацию о товаре
-        $product = \App\Models\ProductSklad::find($request->product_id);
+        // Получаем информацию о товаре с категориями
+        $product = \App\Models\ProductSklad::with(['categoryRelation', 'subcategoryRelation'])->find($request->product_id);
         
         $query = DB::table('product_operations as po')
             ->leftJoin('products_sklad as p', 'po.product_id', '=', 'p.id')
@@ -585,7 +585,11 @@ class ProductBalanceController extends Controller
             'product' => [
                 'id' => $product->id,
                 'name' => $product->name,
-                'article' => $product->article
+                'article' => $product->article,
+                'category' => $product->category,
+                'subcategory' => $product->subcategory,
+                'category_name' => $product->category_name,
+                'subcategory_name' => $product->subcategory_name
             ],
             'product_price' => $productPrice
         ]);

@@ -140,15 +140,20 @@ const api = {
 export default api
 
 const CATEGORIES_KEY = 'categories_cache';
+const USER_CATEGORIES_KEY = 'user_categories_cache';
 const CATEGORIES_TTL = 24 * 60 * 60 * 1000; // сутки
 
+/**
+ * Получить системные категории с кэшированием
+ * @returns {Promise<Array>} массив системных категорий
+ */
 export async function getCategoriesWithCache() {
   const cached = localStorage.getItem(CATEGORIES_KEY);
   if (cached) {
     try {
       const { data, timestamp } = JSON.parse(cached);
       if (Date.now() - timestamp < CATEGORIES_TTL) {
-        console.log('Категории загружены из кеша');
+        console.log('Системные категории загружены из кеша');
         return data;
       }
     } catch (e) {
@@ -156,10 +161,10 @@ export async function getCategoriesWithCache() {
     }
   }
   // Если нет кеша или он устарел — делаем запрос
-  console.log('Делаем запрос к API для получения категорий...');
+  console.log('Делаем запрос к API для получения системных категорий...');
   const response = await apiRequest('/categories');
   if (response.ok) {
-    console.log('Категории получены с сервера:', response.data.data);
+    console.log('Системные категории получены с сервера:', response.data.data);
     
     // Преобразуем данные для совместимости
     const processedData = response.data.data.map(cat => ({
@@ -173,6 +178,75 @@ export async function getCategoriesWithCache() {
     }));
     return processedData;
   }
-  console.log('Ошибка получения категорий с сервера');
+  console.log('Ошибка получения системных категорий с сервера');
   return [];
+}
+
+/**
+ * Получить пользовательские категории с кэшированием
+ * @returns {Promise<Array>} массив пользовательских категорий
+ */
+export async function getUserCategoriesWithCache() {
+  const cached = localStorage.getItem(USER_CATEGORIES_KEY);
+  if (cached) {
+    try {
+      const { data, timestamp } = JSON.parse(cached);
+      if (Date.now() - timestamp < CATEGORIES_TTL) {
+        console.log('Пользовательские категории загружены из кеша');
+        return data;
+      }
+    } catch (e) {
+      // ignore parse error
+    }
+  }
+  // Если нет кеша или он устарел — делаем запрос
+  console.log('Делаем запрос к API для получения пользовательских категорий...');
+  const response = await apiRequest('/user/categories');
+  if (response.ok) {
+    console.log('Пользовательские категории получены с сервера:', response.data.data);
+    
+    // Преобразуем данные для совместимости с системными категориями
+    const processedData = response.data.data.map(cat => ({
+      id: cat.id,
+      category_id: cat.category_id,
+      name: cat.name,
+      name_ru: cat.name, // Для пользовательских категорий используем name как name_ru
+      products_count: cat.products_count,
+      subcategories: cat.subcategories || []
+    }));
+    
+    localStorage.setItem(USER_CATEGORIES_KEY, JSON.stringify({
+      data: processedData,
+      timestamp: Date.now()
+    }));
+    return processedData;
+  }
+  console.log('Ошибка получения пользовательских категорий с сервера');
+  return [];
+}
+
+/**
+ * Получить категории в зависимости от настроек пользователя
+ * @returns {Promise<Array>} массив категорий (системных или пользовательских)
+ */
+export async function getCategoriesByUserSettings() {
+  // Импортируем функцию здесь, чтобы избежать циклических зависимостей
+  const { getUserCategoryType } = await import('../utils/categoryTypeUtils.js');
+  
+  const categoryType = getUserCategoryType();
+  
+  if (categoryType === 'user') {
+    return await getUserCategoriesWithCache();
+  } else {
+    return await getCategoriesWithCache();
+  }
+}
+
+/**
+ * Очистить кэш категорий
+ */
+export function clearCategoriesCache() {
+  localStorage.removeItem(CATEGORIES_KEY);
+  localStorage.removeItem(USER_CATEGORIES_KEY);
+  console.log('Кэш категорий очищен');
 } 

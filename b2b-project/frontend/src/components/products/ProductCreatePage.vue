@@ -250,8 +250,9 @@ import { ref, reactive, computed, onMounted, watch, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import Multiselect from '@vueform/multiselect'
 import '@vueform/multiselect/themes/default.css'
-import { apiRequest, getFileUrl } from '@/config/api'
+import { apiRequest, getFileUrl, getCategoriesByUserSettings } from '@/config/api'
 import { areCategoriesEnabled, isFieldRequired } from '@/utils/productFieldsUtils'
+import { getUserCategoryType, getSubcategoriesApiEndpoint } from '@/utils/categoryTypeUtils'
 import { useWarehouseCheck } from '@/composables/useWarehouseCheck'
 import ImageDropzone from './ImageDropzone.vue'
 import NoWarehousesModal from '../NoWarehousesModal.vue'
@@ -540,7 +541,8 @@ function goToCreateWarehouse() {
 onMounted(async () => {
   loadingCategories.value = true
   try {
-    categories.value = await getCategoriesWithCache()
+    // Загружаем категории в зависимости от настроек пользователя
+    categories.value = await getCategoriesByUserSettings()
   } catch (e) {
     categoryError.value = 'Ошибка загрузки категорий'
   } finally {
@@ -582,7 +584,9 @@ watch(selectedCategory, async (cat) => {
   if (cat && cat.value) {
     loadingSubcategories.value = true
     try {
-      const response = await apiRequest(`/subcategories?category_id=${encodeURIComponent(cat.value)}`)
+      // Получаем правильный endpoint для подкатегорий
+      const endpoint = getSubcategoriesApiEndpoint(cat.value)
+      const response = await apiRequest(endpoint)
       if (response.ok && response.data.success) {
         subcategories.value = response.data.data || []
       } else {
