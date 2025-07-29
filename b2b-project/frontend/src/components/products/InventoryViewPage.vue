@@ -22,34 +22,58 @@
         <!-- Контент -->
         <div v-else>
           <div class="mb-6">
-            <h1 class="text-xl font-bold text-gray-900 mb-1">{{ inventory.name }}</h1>
-            <div class="text-gray-500 text-sm">от {{ formatDate(inventory.created_at) }}</div>
+            <div class="flex items-center justify-between">
+              <div>
+                <h1 class="text-xl font-bold text-gray-900 mb-1">{{ inventory.name }}</h1>
+                <div class="text-gray-500 text-sm">от {{ formatDate(inventory.created_at) }}</div>
+              </div>
+              <div class="flex items-center gap-2">
+                <button 
+                  @click="downloadPDF"
+                  class="flex items-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-700 p-2 rounded transition group relative cursor-pointer"
+                >
+                  <Download class="w-4 h-4" />
+                  <span class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                    Скачать PDF
+                  </span>
+                </button>
+                <button 
+                  @click="printDocument"
+                  class="flex items-center gap-2 bg-gray-50 hover:bg-gray-100 text-gray-700 p-2 rounded transition group relative cursor-pointer"
+                >
+                  <Printer class="w-4 h-4" />
+                  <span class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                    Печать
+                  </span>
+                </button>
+              </div>
+            </div>
           </div>
           
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <div>
-              <div class="text-gray-500 text-xs mb-1">Статус</div>
-              <div class="text-gray-900 text-sm">
-                <span :class="getStatusClass(inventory.status)">
-                  {{ getStatusText(inventory.status) }}
-                </span>
-              </div>
+              <div class="text-gray-500 text-xs mb-1">Название</div>
+              <div class="text-gray-900 text-sm">{{ inventory.name }}</div>
             </div>
             <div>
               <div class="text-gray-500 text-xs mb-1">Склад</div>
-              <div class="text-gray-900 text-sm">{{ inventory.warehouse_name || `Склад #${inventory.warehouse_id}` }}</div>
+              <div class="text-gray-900 text-sm">{{ inventory.warehouse_name }}</div>
             </div>
             <div>
-              <div class="text-gray-500 text-xs mb-1">Создал</div>
-              <div class="text-gray-900 text-sm">{{ inventory.created_by_name || '-' }}</div>
+              <div class="text-gray-500 text-xs mb-1">Статус</div>
+              <div class="text-gray-900 text-sm">{{ getStatusText(inventory.status) }}</div>
             </div>
-            <div v-if="inventory.completed_at">
-              <div class="text-gray-500 text-xs mb-1">Завершена</div>
-              <div class="text-gray-900 text-sm">{{ formatDate(inventory.completed_at) }}</div>
+            <div>
+              <div class="text-gray-500 text-xs mb-1">Создано</div>
+              <div class="text-gray-900 text-sm">{{ inventory.created_by || '-' }}</div>
             </div>
-            <div v-if="inventory.description">
-              <div class="text-gray-500 text-xs mb-1">Описание</div>
-              <div class="text-gray-900 text-sm">{{ inventory.description }}</div>
+            <div>
+              <div class="text-gray-500 text-xs mb-1">Комментарий</div>
+              <div class="text-gray-900 text-sm">{{ inventory.comment || '-' }}</div>
+            </div>
+            <div>
+              <div class="text-gray-500 text-xs mb-1">Валюта</div>
+              <div class="text-gray-900 text-sm">{{ userCurrency }}</div>
             </div>
           </div>
 
@@ -192,8 +216,10 @@ import { ref, onMounted, computed } from 'vue'
 import ProductsMenu from './ProductsMenu.vue'
 import { apiRequest } from '@/config/api'
 import { useRouter, useRoute } from 'vue-router'
-import { Loader2, Pencil, MessageSquare } from 'lucide-vue-next'
+import { Loader2, Pencil, MessageSquare, Download, Printer } from 'lucide-vue-next'
 import toastr from 'toastr'
+import { generatePDF, printElement, generatePDFSimple, generatePDFWithCanvas, generateSimplePDF, generateReceiptPDFWithCanvas, printReceipt, generateWriteOffPDFWithCanvas, generateInventoryPDFWithCanvas } from '@/utils/printUtils'
+import { getUserCurrency, updateUserCurrency } from '@/utils/currencyUtils'
 
 // Устанавливаем заголовок страницы
 document.title = 'B2B SKLAD - Просмотр инвентаризации'
@@ -202,13 +228,24 @@ const router = useRouter()
 const route = useRoute()
 
 // Загрузка данных
-const loading = ref(false)
+const loading = ref(true)
 const inventoryId = route.params.id
 
 // Данные
 const inventory = ref({})
 const items = ref([])
 const files = ref([])
+const userCurrency = ref('UZS')
+
+// Получаем валюту пользователя
+const fetchUserCurrency = async () => {
+  try {
+    const currency = await getUserCurrency()
+    userCurrency.value = currency
+  } catch (error) {
+    console.error('Ошибка получения валюты пользователя:', error)
+  }
+}
 
 // Модальное окно для комментария
 const showCommentDialogVisible = ref(false)
@@ -361,5 +398,37 @@ async function loadInventory() {
 
 onMounted(() => {
   loadInventory()
+  fetchUserCurrency()
 })
+
+// Функция для скачивания PDF
+async function downloadPDF() {
+  try {
+    if (inventory.value) {
+      const filename = `inventory-${inventory.value.name || inventoryId}.pdf`
+      generateInventoryPDFWithCanvas(inventory.value, filename, userCurrency.value)
+      toastr.success('PDF успешно скачан')
+    } else {
+      console.error('Не удалось найти данные инвентаризации')
+    }
+  } catch (error) {
+    console.error('Ошибка скачивания PDF:', error)
+    toastr.error('Ошибка при скачивании PDF')
+  }
+}
+
+// Функция для печати
+function printDocument() {
+  try {
+    const contentElement = document.querySelector('.bg-white.rounded-xl.shadow.p-6')
+    if (contentElement) {
+      printElement(contentElement)
+    } else {
+      toastr.error('Не удалось найти контент для печати')
+    }
+  } catch (error) {
+    console.error('Ошибка печати:', error)
+    toastr.error('Ошибка печати')
+  }
+}
 </script>

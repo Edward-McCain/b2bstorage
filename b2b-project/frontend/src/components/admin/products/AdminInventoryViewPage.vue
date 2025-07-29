@@ -8,12 +8,14 @@
             <h1 class="text-3xl font-bold text-gray-900">{{ inventory?.name }}</h1>
             <p class="mt-2 text-gray-600">Детальная информация об инвентаризации</p>
           </div>
-          <button 
-            @click="goBack"
-            class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium px-4 py-2 rounded-lg text-sm transition"
-          >
-            Назад к списку
-          </button>
+          <div class="flex items-center gap-2">
+            <button 
+              @click="goBack"
+              class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium px-4 py-2 rounded-lg text-sm transition"
+            >
+              Назад к списку
+            </button>
+          </div>
         </div>
       </div>
       
@@ -247,7 +249,8 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AdminLayout from '../AdminLayout.vue'
 import { apiRequest } from '@/config/api'
-import { Loader2, AlertCircle, MessageSquare } from 'lucide-vue-next'
+import { Loader2, AlertCircle, MessageSquare, Download, Printer } from 'lucide-vue-next'
+import { generatePDF, printElement, generatePDFSimple, generatePDFWithCanvas } from '@/utils/printUtils'
 
 // Устанавливаем заголовок страницы
 document.title = 'B2B SKLAD - Админ - Просмотр инвентаризации'
@@ -374,4 +377,32 @@ async function fetchInventory() {
 onMounted(() => {
   fetchInventory()
 })
+
+async function downloadPDF() {
+  try {
+    const contentElement = document.querySelector('.space-y-6')
+    if (contentElement) {
+      const filename = `admin-inventory-${inventory.value?.name || 'inventory'}.pdf`
+      const title = `Инвентаризация: ${inventory.value?.name}`
+      await generatePDFWithCanvas(contentElement, filename, title)
+    } else {
+      console.error('Не удалось найти контент для скачивания')
+    }
+  } catch (error) {
+    console.error('Ошибка скачивания PDF:', error)
+  }
+}
+
+function printDocument() {
+  try {
+    const contentElement = document.querySelector('.space-y-6')
+    if (contentElement) {
+      printElement(contentElement)
+    } else {
+      console.error('Не удалось найти контент для печати')
+    }
+  } catch (error) {
+    console.error('Ошибка печати:', error)
+  }
+}
 </script> 

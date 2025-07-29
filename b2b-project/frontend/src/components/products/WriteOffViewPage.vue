@@ -15,8 +15,32 @@
         <!-- Контент -->
         <div v-else>
           <div class="mb-6">
-            <h1 class="text-xl font-bold text-gray-900 mb-1">Списание номер {{ writeOff.number }}</h1>
-            <div class="text-gray-500 text-sm">от {{ formatDate(writeOff.date) }}</div>
+            <div class="flex items-center justify-between">
+              <div>
+                <h1 class="text-xl font-bold text-gray-900 mb-1">Списание номер {{ writeOff.number }}</h1>
+                <div class="text-gray-500 text-sm">от {{ formatDate(writeOff.date) }}</div>
+              </div>
+              <div class="flex items-center gap-2">
+                <button 
+                  @click="downloadPDF"
+                  class="flex items-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-700 p-2 rounded transition group relative cursor-pointer"
+                >
+                  <Download class="w-4 h-4" />
+                  <span class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                    Скачать PDF
+                  </span>
+                </button>
+                <button 
+                  @click="printDocument"
+                  class="flex items-center gap-2 bg-gray-50 hover:bg-gray-100 text-gray-700 p-2 rounded transition group relative cursor-pointer"
+                >
+                  <Printer class="w-4 h-4" />
+                  <span class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                    Печать
+                  </span>
+                </button>
+              </div>
+            </div>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <div>
@@ -41,7 +65,11 @@
             </div>
             <div>
               <div class="text-gray-500 text-xs mb-1">Накладные расходы</div>
-              <div class="text-gray-900 text-sm">{{ writeOff.overhead_costs || '0.00' }}</div>
+              <div class="text-gray-900 text-sm">{{ writeOff.overhead_costs }}</div>
+            </div>
+            <div>
+              <div class="text-gray-500 text-xs mb-1">Валюта</div>
+              <div class="text-gray-900 text-sm">{{ userCurrency }}</div>
             </div>
           </div>
           
@@ -49,27 +77,25 @@
           <div class="mb-6">
             <div class="font-semibold text-gray-800 mb-2">Товары</div>
             <div v-if="writeOff.positions && writeOff.positions.length > 0">
-              <table class="min-w-full divide-y divide-gray-200 text-xs">
+              <table class="min-w-full divide-y divide-gray-200 text-sm">
                 <thead class="bg-gray-50">
                   <tr>
-                    <th class="px-2 py-1.5 text-left font-semibold text-gray-700">Наименование</th>
-                    <th class="px-1 py-1.5 text-center font-semibold text-gray-700">Кол-во</th>
-                    <th class="px-1 py-1.5 text-center font-semibold text-gray-700">Цена</th>
-                    <th class="px-1 py-1.5 text-center font-semibold text-gray-700">Сумма</th>
-                    <th class="px-1 py-1.5 text-center font-semibold text-gray-700">Причина</th>
+                    <th class="px-3 py-2 text-left font-semibold text-gray-700">Наименование</th>
+                    <th class="px-3 py-2 text-center font-semibold text-gray-700">Количество</th>
+                    <th class="px-3 py-2 text-center font-semibold text-gray-700">Цена</th>
+                    <th class="px-3 py-2 text-center font-semibold text-gray-700">Сумма</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="pos in writeOff.positions" :key="pos.id" class="hover:bg-gray-50">
-                    <td class="px-2 py-1.5">{{ pos.name }}</td>
-                    <td class="px-1 py-1.5 text-center">{{ parseFloat(pos.quantity) }}</td>
-                    <td class="px-1 py-1.5 text-center">{{ parseFloat(pos.price).toFixed(2) }}</td>
-                    <td class="px-1 py-1.5 text-center">{{ (parseFloat(pos.quantity) * parseFloat(pos.price)).toFixed(2) }}</td>
-                    <td class="px-1 py-1.5 text-center">{{ pos.reason || '-' }}</td>
+                  <tr v-for="pos in positions" :key="pos.id" class="hover:bg-gray-50">
+                    <td class="px-3 py-2">{{ pos.name }}</td>
+                    <td class="px-3 py-2 text-center">{{ parseFloat(pos.quantity) }}</td>
+                    <td class="px-3 py-2 text-center">{{ pos.price }} {{ userCurrency }}</td>
+                    <td class="px-3 py-2 text-center">{{ pos.amount }} {{ userCurrency }}</td>
                   </tr>
                 </tbody>
               </table>
-              <div class="text-right mt-2 text-base font-semibold text-gray-900">Итого: {{ parseFloat(writeOff.total).toFixed(2) }}</div>
+              <div class="text-right mt-2 text-base font-semibold text-gray-900">Итого: {{ writeOff.total }} {{ userCurrency }}</div>
             </div>
             <div v-else class="text-center text-gray-500 py-8">
               Товары не найдены
@@ -98,7 +124,9 @@ import { useRouter, useRoute } from 'vue-router'
 import { ref, onMounted } from 'vue'
 import { apiRequest } from '@/config/api'
 import toastr from 'toastr'
-import { Loader2, Pencil } from 'lucide-vue-next'
+import { Loader2, Pencil, Download, Printer } from 'lucide-vue-next'
+import { generatePDF, printElement, generatePDFSimple, generatePDFWithCanvas, generateSimplePDF, generateReceiptPDFWithCanvas, printReceipt, generateWriteOffPDFWithCanvas } from '@/utils/printUtils'
+import { getUserCurrency, updateUserCurrency } from '@/utils/currencyUtils'
 
 // Устанавливаем заголовок страницы
 document.title = 'B2B SKLAD - Списания'
@@ -107,8 +135,23 @@ const router = useRouter()
 const route = useRoute()
 const writeOffId = route.params.id
 
-const loading = ref(true)
 const writeOff = ref({})
+const positions = ref([])
+const files = ref([])
+const loading = ref(true)
+const loadingPositions = ref(true)
+const loadingFiles = ref(true)
+const userCurrency = ref('UZS')
+
+// Получаем валюту пользователя
+const fetchUserCurrency = async () => {
+  try {
+    const currency = await getUserCurrency()
+    userCurrency.value = currency
+  } catch (error) {
+    console.error('Ошибка получения валюты пользователя:', error)
+  }
+}
 
 function formatDate(dateString) {
   if (!dateString) return ''
@@ -137,6 +180,7 @@ async function loadWriteOff() {
     const response = await apiRequest(`/write-offs/${writeOffId}`, { method: 'GET' })
     if (response.ok && response.data.success) {
       writeOff.value = response.data.data
+      positions.value = writeOff.value.positions || []
     } else {
       toastr.error('Списание не найдено')
       router.push('/products/write-offs')
@@ -152,5 +196,32 @@ async function loadWriteOff() {
 
 onMounted(() => {
   loadWriteOff()
+  fetchUserCurrency()
 })
+
+async function downloadPDF() {
+  try {
+    if (writeOff.value) {
+      const filename = `writeoff-${writeOff.value.number || 'writeoff'}.pdf`
+      generateWriteOffPDFWithCanvas(writeOff.value, filename, userCurrency.value)
+    } else {
+      console.error('Не удалось найти данные списания')
+    }
+  } catch (error) {
+    console.error('Ошибка скачивания PDF:', error)
+  }
+}
+
+function printDocument() {
+  try {
+    const contentElement = document.querySelector('.bg-white.rounded-xl.shadow.p-6')
+    if (contentElement) {
+      printElement(contentElement)
+    } else {
+      console.error('Не удалось найти контент для печати')
+    }
+  } catch (error) {
+    console.error('Ошибка печати:', error)
+  }
+}
 </script> 
