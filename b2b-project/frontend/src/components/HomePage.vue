@@ -1,7 +1,7 @@
 <script setup>
 import Footer from './Footer.vue'
 import HeroSection from './HeroSection.vue'
-import { Package, FileText, BarChart3, Users, Smartphone, Shield, Zap, CheckCircle, TrendingUp, Heart, ShoppingCart, FolderOpen, ArrowRight, Star, Clock, Globe } from 'lucide-vue-next'
+import { Package, FileText, BarChart3, Search, Smartphone, Shield, Zap, CheckCircle, TrendingUp, Heart, ShoppingCart, FolderOpen, ArrowRight, Star, Clock, Globe } from 'lucide-vue-next'
 </script>
 
 <template>
@@ -75,12 +75,12 @@ import { Package, FileText, BarChart3, Users, Smartphone, Shield, Zap, CheckCirc
             <div class="absolute inset-0 bg-gradient-to-br from-orange-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             <div class="relative text-center">
               <div class="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
-                <Users class="w-8 h-8 text-white" />
+                <Search class="w-8 h-8 text-white" />
               </div>
-              <h3 class="text-2xl font-bold mb-4 text-gray-900">Многопользовательский доступ</h3>
+              <h3 class="text-2xl font-bold mb-4 text-gray-900">Быстрый поиск</h3>
               <p class="text-gray-600 leading-relaxed">
-                Гибкая система ролей и прав доступа для разных сотрудников. 
-                Каждый пользователь видит только свои данные и имеет ограниченные права.
+                Мгновенный поиск товаров по названию, артикулу или категории. 
+                Фильтрация по складам, остаткам и датам с сохранением настроек.
               </p>
             </div>
           </div>
@@ -155,8 +155,8 @@ import { Package, FileText, BarChart3, Users, Smartphone, Shield, Zap, CheckCirc
             <div class="relative">
               <div class="absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full blur-xl opacity-20 group-hover:opacity-40 transition-opacity duration-300"></div>
               <div class="relative bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-                <div class="text-4xl md:text-5xl font-bold text-purple-400 mb-2">99.9%</div>
-                <div class="text-gray-300 text-lg">Время работы</div>
+                <div class="text-4xl md:text-5xl font-bold text-purple-400 mb-2">12000+</div>
+                <div class="text-gray-300 text-lg">Складов</div>
               </div>
             </div>
           </div>
