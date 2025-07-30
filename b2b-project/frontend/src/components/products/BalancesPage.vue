@@ -674,13 +674,14 @@
                       placeholder="Выберите категорию"
                       :max-height="200"
                       class="w-32 text-xs multiselect-custom"
+                      @update:model-value="(val) => handleCategoryChange(product, val)"
                     />
                   </td>
                   
                   <td v-if="areCategoriesEnabled()" class="px-3 py-2 text-sm text-gray-900 whitespace-nowrap">
                     <Multiselect 
                       v-model="product.selectedSubcategory"
-                      :options="subcategoryOptions"
+                      :options="product.subcategoryOptions"
                       label="label"
                       value="value"
                       :object="true"
@@ -1351,27 +1352,17 @@ export default {
                     product.selectedCategory = foundCategory
                     
                     // Загружаем подкатегории через API
+                    await loadSubcategoriesForProduct(product, foundCategory.value)
+                    
                     if (product.subcategory) {
-                      try {
-                        const response = await apiRequest(`/categories/${foundCategory.value}/subcategories`)
-                        if (response.ok && response.data && response.data.data) {
-                          product.subcategoryOptions = response.data.data.map(sub => ({
-                            label: sub.name_ru || sub.name || 'Без названия',
-                            value: sub.subcategory_id || sub.id
-                          }))
-                          
-                          const foundSubcategory = product.subcategoryOptions.find(sub => 
-                            sub && sub.label && product.subcategory &&
-                            (sub.label.toLowerCase() === product.subcategory.toLowerCase() ||
-                             sub.label.toLowerCase().includes(product.subcategory.toLowerCase()) ||
-                             product.subcategory.toLowerCase().includes(sub.label.toLowerCase()))
-                          )
-                          if (foundSubcategory) {
-                            product.selectedSubcategory = foundSubcategory
-                          }
-                        }
-                      } catch (error) {
-                        console.error('Ошибка загрузки подкатегорий:', error)
+                      const foundSubcategory = product.subcategoryOptions.find(sub => 
+                        sub && sub.label && product.subcategory &&
+                        (sub.label.toLowerCase() === product.subcategory.toLowerCase() ||
+                         sub.label.toLowerCase().includes(product.subcategory.toLowerCase()) ||
+                         product.subcategory.toLowerCase().includes(sub.label.toLowerCase()))
+                      )
+                      if (foundSubcategory) {
+                        product.selectedSubcategory = foundSubcategory
                       }
                     }
                   }
@@ -1600,6 +1591,36 @@ export default {
       }))
     }
 
+    // Функция для загрузки подкатегорий для товара в модалке импорта
+    const loadSubcategoriesForProduct = async (product, categoryId) => {
+      if (!categoryId) {
+        product.subcategoryOptions = []
+        product.selectedSubcategory = null
+        return
+      }
+      
+      try {
+        console.log('Загружаем подкатегории для товара, категория:', categoryId)
+        const res = await apiRequest(`/subcategories?category_id=${categoryId}`)
+        console.log('Ответ API подкатегорий для товара:', res)
+        
+        if (res.ok && res.data && res.data.data && Array.isArray(res.data.data)) {
+          product.subcategoryOptions = res.data.data.map(subcat => ({ 
+            label: subcat.name_ru || subcat.name || 'Без названия', 
+            value: subcat.subcategory_id || subcat.id,
+            subcategory_id: subcat.subcategory_id || subcat.id
+          }))
+          console.log('Подкатегории для товара загружены:', product.subcategoryOptions)
+        } else {
+          console.error('Неверная структура данных подкатегорий для товара:', res.data)
+          product.subcategoryOptions = []
+        }
+      } catch (error) {
+        console.error('Ошибка загрузки подкатегорий для товара:', error)
+        product.subcategoryOptions = []
+      }
+    }
+
     // Функции для быстрого поиска категории в локальном файле
     const findCategoryByName = (categoryName) => {
       if (!categoryName || !Array.isArray(categoriesData)) return null
@@ -1612,6 +1633,22 @@ export default {
         (cat.name_en && cat.name_en.toLowerCase().includes(normalizedName)) ||
         (cat.name_uz && cat.name_uz.toLowerCase().includes(normalizedName))
       )
+    }
+
+    // Функция для обработки изменения категории в модалке импорта
+    const handleCategoryChange = async (product, selectedCategory) => {
+      console.log('Изменение категории для товара:', product.name, 'Новая категория:', selectedCategory)
+      
+      // Сбрасываем подкатегорию при изменении категории
+      product.selectedSubcategory = null
+      
+      if (selectedCategory && selectedCategory.value) {
+        // Загружаем подкатегории для выбранной категории
+        await loadSubcategoriesForProduct(product, selectedCategory.value)
+      } else {
+        // Если категория не выбрана, очищаем подкатегории
+        product.subcategoryOptions = []
+      }
     }
 
     // Функция для быстрого поиска подкатегории в локальном файле
@@ -1697,6 +1734,7 @@ export default {
       getCustomFieldValue,
       findCategoryByName,
       findSubcategoryByName,
+      handleCategoryChange,
       areCategoriesEnabled,
       isFieldRequired
     }
