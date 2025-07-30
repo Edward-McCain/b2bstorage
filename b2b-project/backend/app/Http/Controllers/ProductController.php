@@ -833,6 +833,11 @@ class ProductController extends Controller
                     'start_count' => $prod['start_count'] ?? 0, // Используем start_count вместо quantity
                 ];
                 
+                // Добавляем кастомные поля, если они есть
+                if (isset($prod['fields']) && is_array($prod['fields']) && !empty($prod['fields'])) {
+                    $productData['fields'] = json_encode($prod['fields']);
+                }
+                
                 // Добавляем категории только если они включены
                 if ($categoriesEnabled) {
                     $category = $prod['category'] ?? null;

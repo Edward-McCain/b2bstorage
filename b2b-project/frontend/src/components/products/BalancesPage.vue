@@ -642,73 +642,122 @@
             <table class="min-w-full divide-y divide-gray-200 text-sm">
               <thead class="bg-gray-50">
                 <tr>
-                  <th class="px-3 py-2 text-left text-sm font-medium text-gray-500">Наименование</th>
-                  <th v-if="areCategoriesEnabled()" class="px-3 py-2 text-left text-sm font-medium text-gray-500">Категория</th>
-                  <th class="px-3 py-2 text-left text-sm font-medium text-gray-500">Данные</th>
-                  <th class="px-3 py-2 text-left text-sm font-medium text-gray-500">Артикул</th>
-                  <th class="px-3 py-2 text-left text-sm font-medium text-gray-500">Действия</th>
+                  <th class="px-3 py-2 text-left text-sm font-medium text-gray-500 whitespace-nowrap">Наименование</th>
+                  <th v-if="areCategoriesEnabled()" class="px-3 py-2 text-left text-sm font-medium text-gray-500 whitespace-nowrap">Категория</th>
+                  <th v-if="areCategoriesEnabled()" class="px-3 py-2 text-left text-sm font-medium text-gray-500 whitespace-nowrap">Подкатегория</th>
+                  <th class="px-3 py-2 text-left text-sm font-medium text-gray-500 whitespace-nowrap">Остаток</th>
+                  <th v-if="productFieldsVisibility.price !== false" class="px-3 py-2 text-left text-sm font-medium text-gray-500 whitespace-nowrap">Цена</th>
+                  <th class="px-3 py-2 text-left text-sm font-medium text-gray-500 whitespace-nowrap">Ед.изм</th>
+                  <th v-if="productFieldsVisibility.article === true" class="px-3 py-2 text-left text-sm font-medium text-gray-500 whitespace-nowrap">Артикул</th>
+                  
+                  <!-- Кастомные поля в заголовке -->
+                  <th v-for="field in customFields" :key="field.id" class="px-3 py-2 text-left text-sm font-medium text-gray-500 whitespace-nowrap">
+                    {{ field.field_name }}
+                  </th>
+                  
+                  <th class="px-3 py-2 text-left text-sm font-medium text-gray-500 whitespace-nowrap">Действия</th>
                 </tr>
               </thead>
               <tbody class="bg-white divide-y divide-gray-200">
                 <tr v-for="(product, index) in parsedProducts" :key="index" class="hover:bg-gray-50">
-                  <td class="px-3 py-2 text-sm text-gray-900 max-w-[200px] truncate" :title="product.name">
-                    <input v-model="product.name" type="text" class="w-full text-sm border border-gray-300 rounded px-2 py-1" placeholder="Наименование" />
+                  <td class="px-3 py-2 text-sm text-gray-900 whitespace-nowrap">
+                    <input v-model="product.name" type="text" class="w-32 text-sm border border-gray-300 rounded px-2 py-1" placeholder="Наименование" />
                   </td>
-                  <td v-if="areCategoriesEnabled()" class="px-3 py-2 text-sm text-gray-900">
-                    <div class="space-y-2">
-                      <div class="relative">
-                        <Multiselect 
-                          style="margin-bottom: 5px;" 
-                          v-model="product.selectedCategory"
-                          :options="categoryOptions"
-                          label="label"
-                          value="value"
-                          :object="true"
-                          placeholder="Выберите категорию"
-                          :max-height="200"
-                          class="w-full text-xs multiselect-custom"
-                        />
-                      </div>
-                      <div class="relative">
-                        <Multiselect 
-                          v-model="product.selectedSubcategory"
-                          :options="subcategoryOptions"
-                          label="label"
-                          value="value"
-                          :object="true"
-                          placeholder="Выберите подкатегорию"
-                          :max-height="200"
-                          :disabled="!product.selectedCategory"
-                          class="w-full text-xs multiselect-custom"
-                        />
-                      </div>
-                    </div>
+                  
+                  <td v-if="areCategoriesEnabled()" class="px-3 py-2 text-sm text-gray-900 whitespace-nowrap">
+                    <Multiselect 
+                      v-model="product.selectedCategory"
+                      :options="categoryOptions"
+                      label="label"
+                      value="value"
+                      :object="true"
+                      placeholder="Выберите категорию"
+                      :max-height="200"
+                      class="w-32 text-xs multiselect-custom"
+                    />
                   </td>
-                  <td class="px-3 py-2 text-sm text-gray-900">
-                    <div class="space-y-2">
-                      <div class="flex items-center gap-2">
-                        <label class="text-xs text-gray-600 w-16">Остаток:</label>
-                        <input v-model.number="product.quantity" type="number" min="0" step="0.01" class="w-20 text-xs border border-gray-300 rounded px-2 py-1" />
-                      </div>
-                      <div v-if="productFieldsVisibility.price !== false" class="flex items-center gap-2">
-                        <label class="text-xs text-gray-600 w-16">Цена:</label>
-                        <input v-model.number="product.price" type="number" min="0" step="0.01" class="w-20 text-xs border border-gray-300 rounded px-2 py-1" />
-                      </div>
-                      <div class="flex items-center gap-2">
-                        <label class="text-xs text-gray-600 w-16">Ед.изм:</label>
-                        <input v-model="product.unit" type="text" class="w-20 text-xs border border-gray-300 rounded px-2 py-1" />
-                      </div>
-                    </div>
+                  
+                  <td v-if="areCategoriesEnabled()" class="px-3 py-2 text-sm text-gray-900 whitespace-nowrap">
+                    <Multiselect 
+                      v-model="product.selectedSubcategory"
+                      :options="subcategoryOptions"
+                      label="label"
+                      value="value"
+                      :object="true"
+                      placeholder="Выберите подкатегорию"
+                      :max-height="200"
+                      :disabled="!product.selectedCategory"
+                      class="w-32 text-xs multiselect-custom"
+                    />
                   </td>
-                  <td class="px-3 py-2 text-sm text-gray-900">
-                    <input v-model="product.article" type="text" class="w-full text-sm border border-gray-300 rounded px-2 py-1" placeholder="Артикул" />
+                  
+                  <td class="px-3 py-2 text-sm text-gray-900 whitespace-nowrap">
+                    <input v-model.number="product.quantity" type="number" min="0" step="0.01" class="w-20 text-sm border border-gray-300 rounded px-2 py-1" />
                   </td>
-                  <td class="px-3 py-2 text-sm text-gray-900">
+                  
+                  <td v-if="productFieldsVisibility.price !== false" class="px-3 py-2 text-sm text-gray-900 whitespace-nowrap">
+                    <input v-model.number="product.price" type="number" min="0" step="0.01" class="w-20 text-sm border border-gray-300 rounded px-2 py-1" />
+                  </td>
+                  
+                  <td class="px-3 py-2 text-sm text-gray-900 whitespace-nowrap">
+                    <input v-model="product.unit" type="text" class="w-20 text-sm border border-gray-300 rounded px-2 py-1" />
+                  </td>
+                  
+                  <td v-if="productFieldsVisibility.article === true" class="px-3 py-2 text-sm text-gray-900 whitespace-nowrap">
+                    <input v-model="product.article" type="text" class="w-24 text-sm border border-gray-300 rounded px-2 py-1" placeholder="Артикул" />
+                  </td>
+                  
+                  <!-- Кастомные поля в строках -->
+                  <td v-for="field in customFields" :key="field.id" class="px-3 py-2 text-sm text-gray-900 whitespace-nowrap">
+                    <!-- Текстовое поле -->
+                    <input 
+                      v-if="field.field_type === 'text'" 
+                      v-model="product.customFields[field.field_name]" 
+                      type="text" 
+                      class="w-24 text-sm border border-gray-300 rounded px-2 py-1" 
+                    />
+                    <!-- Числовое поле -->
+                    <input 
+                      v-else-if="field.field_type === 'number'" 
+                      v-model.number="product.customFields[field.field_name]" 
+                      type="number" 
+                      step="0.01"
+                      class="w-20 text-sm border border-gray-300 rounded px-2 py-1" 
+                    />
+                    <!-- Поле даты -->
+                    <input 
+                      v-else-if="field.field_type === 'date'" 
+                      v-model="product.customFields[field.field_name]" 
+                      type="date" 
+                      class="w-28 text-sm border border-gray-300 rounded px-2 py-1" 
+                    />
+                    <!-- Поле списка -->
+                    <Multiselect
+                      v-else-if="field.field_type === 'list'"
+                      v-model="product.customFields[field.field_name]"
+                      :options="getListOptionsForMultiselect(field)"
+                      label="label"
+                      value="value"
+                      :object="false"
+                      placeholder="Выберите"
+                      :max-height="200"
+                      class="w-24 text-xs multiselect-custom"
+                    />
+                    <!-- По умолчанию текстовое поле -->
+                    <input 
+                      v-else 
+                      v-model="product.customFields[field.field_name]" 
+                      type="text" 
+                      class="w-24 text-sm border border-gray-300 rounded px-2 py-1" 
+                    />
+                  </td>
+                  
+                  <td class="px-3 py-2 text-sm text-gray-900 whitespace-nowrap">
                     <button 
                       @click="parsedProducts.splice(index, 1)" 
-                      class="text-red-600 hover:text-red-800 text-xs"
+                      class="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50 transition-colors"
                     >
-                      Удалить
+                      <Trash2 class="w-4 h-4" />
                     </button>
                   </td>
                 </tr>
@@ -991,8 +1040,11 @@ export default {
       try {
         // Загрузка стандартных полей
         const userResponse = await api.get('/user/settings')
+        console.log('Ответ настроек пользователя:', userResponse.data)
         if (userResponse.data.success && userResponse.data.data.product_fields_visibility) {
           Object.assign(productFieldsVisibility, userResponse.data.data.product_fields_visibility)
+          console.log('Настройки видимости полей загружены:', productFieldsVisibility)
+          console.log('Значение article:', productFieldsVisibility.article)
         }
         
         // Загрузка кастомных полей
@@ -1111,6 +1163,10 @@ export default {
       importError.value = ''
       importFile.value = null
       
+      // Отладочная информация о настройках полей
+      console.log('Настройки полей при открытии модалки:', productFieldsVisibility)
+      console.log('Значение article при открытии модалки:', productFieldsVisibility.article)
+      
       // Загружаем категории если еще не загружены
       if (!categoryOptions.value || categoryOptions.value.length === 0) {
         try {
@@ -1215,7 +1271,8 @@ export default {
             article: product['Артикул'] || '',
             selectedCategory: null,
             selectedSubcategory: null,
-            subcategoryOptions: []
+            subcategoryOptions: [],
+            customFields: {}
           }
           
           // Добавляем категории только если они включены в настройках
@@ -1362,6 +1419,22 @@ export default {
             productData.subcategory = product.subcategory
           }
           
+          // Добавляем кастомные поля
+          if (product.customFields && Object.keys(product.customFields).length > 0) {
+            // Фильтруем только непустые значения
+            const nonEmptyCustomFields = {}
+            Object.keys(product.customFields).forEach(key => {
+              const value = product.customFields[key]
+              if (value !== null && value !== undefined && value !== '') {
+                nonEmptyCustomFields[key] = value
+              }
+            })
+            
+            if (Object.keys(nonEmptyCustomFields).length > 0) {
+              productData.fields = nonEmptyCustomFields
+            }
+          }
+          
           return productData
         })
         
@@ -1504,6 +1577,29 @@ export default {
       }
     }
 
+    // Функции для работы с кастомными полями
+    const getListOptions = (field) => {
+      if (field.field_type === 'list' && field.list_options) {
+        try {
+          return typeof field.list_options === 'string' 
+            ? JSON.parse(field.list_options) 
+            : field.list_options
+        } catch (e) {
+          console.error('Ошибка парсинга опций списка:', e)
+          return []
+        }
+      }
+      return []
+    }
+
+    const getListOptionsForMultiselect = (field) => {
+      const options = getListOptions(field)
+      return options.map(option => ({
+        label: option,
+        value: option
+      }))
+    }
+
     // Функции для быстрого поиска категории в локальном файле
     const findCategoryByName = (categoryName) => {
       if (!categoryName || !Array.isArray(categoriesData)) return null
@@ -1544,6 +1640,8 @@ export default {
     })
 
     return {
+      getListOptions,
+      getListOptionsForMultiselect,
       balances,
       warehouses,
       summary,
