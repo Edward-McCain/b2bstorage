@@ -14,6 +14,8 @@ class ProductField extends Model
     protected $fillable = [
         'user_id',
         'field_name',
+        'field_type',
+        'list_options',
     ];
 
     public $timestamps = false;

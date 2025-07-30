@@ -29,6 +29,15 @@
               </div>
               <div class="flex items-center gap-2">
                 <button 
+                  @click="exportToExcel"
+                  class="flex items-center gap-2 bg-green-50 hover:bg-green-100 text-green-700 p-2 rounded transition group relative cursor-pointer"
+                >
+                  <FileSpreadsheet class="w-4 h-4" />
+                  <span class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                    Экспорт в Excel
+                  </span>
+                </button>
+                <button 
                   @click="downloadPDF"
                   class="flex items-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-700 p-2 rounded transition group relative cursor-pointer"
                 >
@@ -65,7 +74,7 @@
             </div>
             <div>
               <div class="text-gray-500 text-xs mb-1">Создано</div>
-              <div class="text-gray-900 text-sm">{{ inventory.created_by || '-' }}</div>
+              <div class="text-gray-900 text-sm">{{ inventory.created_by_name || inventory.created_by || '-' }}</div>
             </div>
             <div>
               <div class="text-gray-500 text-xs mb-1">Комментарий</div>
@@ -216,10 +225,11 @@ import { ref, onMounted, computed } from 'vue'
 import ProductsMenu from './ProductsMenu.vue'
 import { apiRequest } from '@/config/api'
 import { useRouter, useRoute } from 'vue-router'
-import { Loader2, Pencil, MessageSquare, Download, Printer } from 'lucide-vue-next'
+import { Loader2, Pencil, MessageSquare, Download, Printer, FileSpreadsheet } from 'lucide-vue-next'
 import toastr from 'toastr'
 import { generatePDF, printElement, generatePDFSimple, generatePDFWithCanvas, generateSimplePDF, generateReceiptPDFWithCanvas, printReceipt, generateWriteOffPDFWithCanvas, generateInventoryPDFWithCanvas } from '@/utils/printUtils'
 import { getUserCurrency, updateUserCurrency } from '@/utils/currencyUtils'
+import * as XLSX from 'xlsx'
 
 // Устанавливаем заголовок страницы
 document.title = 'B2B SKLAD - Просмотр инвентаризации'
@@ -429,6 +439,89 @@ function printDocument() {
   } catch (error) {
     console.error('Ошибка печати:', error)
     toastr.error('Ошибка печати')
+  }
+}
+
+// Функция для экспорта в Excel
+async function exportToExcel() {
+  try {
+    if (!inventory.value || !items.value.length) {
+      toastr.error('Нет данных для экспорта')
+      return
+    }
+
+    // Создаем рабочую книгу Excel
+    const workbook = XLSX.utils.book_new()
+    
+    // 1. Лист с общей информацией об инвентаризации
+    const headerData = [
+      { 'Параметр': 'Название', 'Значение': inventory.value.name || '-' },
+      { 'Параметр': 'Статус', 'Значение': getStatusText(inventory.value.status) },
+      { 'Параметр': 'Комментарий', 'Значение': inventory.value.comment || '-' },
+      { 'Параметр': 'Склад', 'Значение': inventory.value.warehouse_name || '-' },
+      { 'Параметр': 'Создано', 'Значение': inventory.value.created_by_name || inventory.value.created_by || '-' },
+      { 'Параметр': 'Валюта', 'Значение': userCurrency.value },
+      { 'Параметр': 'Дата создания', 'Значение': formatDate(inventory.value.created_at) },
+      { 'Параметр': '', 'Значение': '' }, // Пустая строка для разделения
+      { 'Параметр': 'Всего товаров', 'Значение': inventory.value.items_count || 0 },
+      { 'Параметр': 'Норма', 'Значение': normalCount.value },
+      { 'Параметр': 'Недостача', 'Значение': shortageCount.value },
+      { 'Параметр': 'Избыток', 'Значение': excessCount.value }
+    ]
+    
+    const headerWorksheet = XLSX.utils.json_to_sheet(headerData)
+    headerWorksheet['!cols'] = [
+      { wch: 20 }, // Параметр
+      { wch: 40 }  // Значение
+    ]
+    XLSX.utils.book_append_sheet(workbook, headerWorksheet, 'Информация')
+    
+    // 2. Лист со списком товаров
+    const itemsData = items.value.map(item => ({
+      'Наименование': item.product_name || '-',
+      'Артикул': item.product_sku || '-',
+      'Расчетный остаток': formatNumber(item.calculated_quantity),
+      'Фактический остаток': formatNumber(item.actual_quantity),
+      'Разница': formatNumber(item.difference_quantity),
+      'Статус': getExcessShortageText(item),
+      'Единица измерения': item.product_unit || '-',
+      'Стоимость': item.product_price ? `${item.product_price} ${userCurrency.value}` : '-',
+      'Комментарий': item.notes || '-'
+    }))
+
+    const itemsWorksheet = XLSX.utils.json_to_sheet(itemsData)
+    
+    // Устанавливаем ширину столбцов для товаров
+    const columnWidths = [
+      { wch: 40 }, // Наименование
+      { wch: 20 }, // Артикул
+      { wch: 15 }, // Расчетный остаток
+      { wch: 15 }, // Фактический остаток
+      { wch: 12 }, // Разница
+      { wch: 12 }, // Статус
+      { wch: 15 }, // Единица измерения
+      { wch: 15 }, // Стоимость
+      { wch: 30 }  // Комментарий
+    ]
+    itemsWorksheet['!cols'] = columnWidths
+    
+    // Добавляем лист с товарами
+    XLSX.utils.book_append_sheet(workbook, itemsWorksheet, 'Товары')
+    
+    // Генерируем имя файла с текущей датой и названием инвентаризации
+    const now = new Date()
+    const dateStr = now.toISOString().split('T')[0]
+    const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '-')
+    const inventoryName = inventory.value.name ? inventory.value.name.replace(/[^a-zA-Zа-яА-Я0-9\s-]/g, '') : 'inventory'
+    const fileName = `инвентаризация_${inventoryName}_${dateStr}_${timeStr}.xlsx`
+    
+    // Скачиваем файл
+    XLSX.writeFile(workbook, fileName)
+    
+    toastr.success('Excel файл успешно экспортирован')
+  } catch (error) {
+    console.error('Ошибка экспорта в Excel:', error)
+    toastr.error('Ошибка при экспорте в Excel')
   }
 }
 </script>

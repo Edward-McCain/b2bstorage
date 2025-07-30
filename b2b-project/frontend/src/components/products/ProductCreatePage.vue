@@ -218,7 +218,52 @@
             <template v-for="field in customFields" :key="field.id">
               <div>
                 <label class="block text-xs text-gray-700 mb-1">{{ field.field_name }}</label>
-                <input v-model="customFieldValues[field.field_name]" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" />
+                
+                <!-- Текстовое поле -->
+                <input 
+                  v-if="field.field_type === 'text'" 
+                  v-model="customFieldValues[field.field_name]" 
+                  type="text" 
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" 
+                />
+                
+                <!-- Числовое поле -->
+                <input 
+                  v-else-if="field.field_type === 'number'" 
+                  v-model="customFieldValues[field.field_name]" 
+                  type="number" 
+                  step="0.01"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" 
+                />
+                
+                <!-- Поле даты -->
+                <input 
+                  v-else-if="field.field_type === 'date'" 
+                  v-model="customFieldValues[field.field_name]" 
+                  type="date" 
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" 
+                />
+                
+                <!-- Поле списка -->
+                <Multiselect
+                  v-else-if="field.field_type === 'list'"
+                  v-model="customFieldValues[field.field_name]"
+                  :options="getListOptionsForMultiselect(field)"
+                  label="label"
+                  value="value"
+                  :object="false"
+                  placeholder="Выберите опцию"
+                  :max-height="400"
+                  class="w-full text-xs multiselect-custom bg-white"
+                />
+                
+                <!-- По умолчанию текстовое поле -->
+                <input 
+                  v-else 
+                  v-model="customFieldValues[field.field_name]" 
+                  type="text" 
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" 
+                />
               </div>
             </template>
           </template>
@@ -438,6 +483,30 @@ async function loadSettingsFromServer() {
   // Сохраняем настройки в localStorage для будущего использования
   localStorage.setItem('product_fields_visibility', JSON.stringify(productFieldsVisibility))
   console.log('Настройки полей загружены с сервера и сохранены в localStorage')
+}
+
+// Функция для получения опций списка из поля
+function getListOptions(field) {
+  if (field.field_type === 'list' && field.list_options) {
+    try {
+      return typeof field.list_options === 'string' 
+        ? JSON.parse(field.list_options) 
+        : field.list_options
+    } catch (e) {
+      console.error('Ошибка парсинга опций списка:', e)
+      return []
+    }
+  }
+  return []
+}
+
+// Функция для получения опций списка в формате для Multiselect
+function getListOptionsForMultiselect(field) {
+  const options = getListOptions(field)
+  return options.map(option => ({
+    label: option,
+    value: option
+  }))
 }
 
 async function handleNameBlur() {

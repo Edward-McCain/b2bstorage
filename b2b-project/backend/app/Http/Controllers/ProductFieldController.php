@@ -31,14 +31,24 @@ class ProductFieldController extends Controller
         }
         $validator = Validator::make($request->all(), [
             'field_name' => 'required|string|max:255',
+            'field_type' => 'required|string|in:text,number,date,list',
+            'list_options' => 'required_if:field_type,list|array',
         ]);
         if ($validator->fails()) {
             return response()->json(['success' => false, 'message' => 'Ошибка валидации', 'errors' => $validator->errors()], 422);
         }
-        $field = ProductField::create([
+        
+        $fieldData = [
             'user_id' => $user->id,
             'field_name' => $request->field_name,
-        ]);
+            'field_type' => $request->field_type,
+        ];
+        
+        if ($request->field_type === 'list' && $request->has('list_options')) {
+            $fieldData['list_options'] = json_encode($request->list_options);
+        }
+        
+        $field = ProductField::create($fieldData);
         return response()->json(['success' => true, 'data' => $field], 201);
     }
 
@@ -55,11 +65,20 @@ class ProductFieldController extends Controller
         }
         $validator = Validator::make($request->all(), [
             'field_name' => 'required|string|max:255',
+            'field_type' => 'required|string|in:text,number,date,list',
+            'list_options' => 'required_if:field_type,list|array',
         ]);
         if ($validator->fails()) {
             return response()->json(['success' => false, 'message' => 'Ошибка валидации', 'errors' => $validator->errors()], 422);
         }
         $field->field_name = $request->field_name;
+        $field->field_type = $request->field_type;
+        
+        if ($request->field_type === 'list' && $request->has('list_options')) {
+            $field->list_options = json_encode($request->list_options);
+        } else {
+            $field->list_options = null;
+        }
         $field->save();
         return response()->json(['success' => true, 'data' => $field]);
     }

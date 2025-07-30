@@ -492,7 +492,7 @@
                   @click="openAddFieldModal"
                   class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors flex items-center gap-2 text-sm"
                 >
-                  <Plus class="w-4 h-4" /> Добавить поле
+                  Добавить
                 </button>
               </div>
               <div v-if="loadingFields" class="flex items-center justify-center py-8"><Loader2 class="animate-spin w-6 h-6 text-blue-600" /></div>
@@ -502,12 +502,24 @@
                   <thead>
                     <tr>
                       <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Наименование</th>
+                      <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Тип</th>
                       <th class="px-4 py-2 text-right text-xs font-medium text-gray-500">Действия</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr v-for="field in productFields" :key="field.id">
                       <td class="px-4 py-2">{{ field.field_name }}</td>
+                      <td class="px-4 py-2">
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium" 
+                              :class="{
+                                'bg-blue-100 text-blue-800': field.field_type === 'text',
+                                'bg-green-100 text-green-800': field.field_type === 'number',
+                                'bg-purple-100 text-purple-800': field.field_type === 'date',
+                                'bg-orange-100 text-orange-800': field.field_type === 'list'
+                              }">
+                          {{ field.field_type === 'text' ? 'Текст' : field.field_type === 'number' ? 'Число' : field.field_type === 'date' ? 'Дата' : 'Список' }}
+                        </span>
+                      </td>
                       <td class="px-4 py-2 text-right">
                         <div class="flex justify-end gap-3">
                           <button @click="editField(field)" class="text-blue-600 hover:underline text-xs flex items-center gap-1 cursor-pointer" title="Редактировать"><Pencil class="w-4 h-4" /></button>
@@ -542,6 +554,47 @@
                   <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Наименование поля</label>
                     <input v-model="fieldForm.field_name" type="text" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent" placeholder="Введите наименование" />
+                  </div>
+                  <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Тип поля</label>
+                    <select v-model="fieldForm.field_type" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent">
+                      <option value="text">Текст</option>
+                      <option value="number">Число</option>
+                      <option value="date">Дата</option>
+                      <option value="list">Список</option>
+                    </select>
+                  </div>
+                  
+                  <!-- Блок для управления опциями списка -->
+                  <div v-if="fieldForm.field_type === 'list'" class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Опции списка</label>
+                    <div class="space-y-2">
+                      <div v-for="(option, index) in fieldForm.list_options" :key="index" class="flex items-center gap-2">
+                        <input 
+                          v-model="fieldForm.list_options[index]" 
+                          type="text" 
+                          class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent" 
+                          placeholder="Введите опцию"
+                          @input="updateListOption(index, $event.target.value)"
+                        />
+                        <button 
+                          type="button" 
+                          @click="removeListOption(index)" 
+                          class="text-red-600 hover:text-red-800 p-1"
+                          title="Удалить опцию"
+                        >
+                          <X class="w-4 h-4" />
+                        </button>
+                      </div>
+                      <button 
+                        type="button" 
+                        @click="addListOption" 
+                        class="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1"
+                      >
+                        <Plus class="w-4 h-4" />
+                        Добавить опцию
+                      </button>
+                    </div>
                   </div>
                   <div v-if="errorSaveField" class="text-red-600 text-sm mb-2">{{ errorSaveField }}</div>
                   <div class="flex justify-end gap-2">
@@ -684,9 +737,17 @@
                 </div>
                 <div class="flex gap-2">
                   <button 
+                    @click="showAddSubcategoryModal(category)"
+                    class="text-green-600 hover:text-green-700 cursor-pointer group relative"
+                  >
+                    <Plus class="w-4 h-4" />
+                    <span class="absolute top-1/2 right-full transform -translate-y-1/2 mr-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-50">
+                      Добавить подкатегорию
+                    </span>
+                  </button>
+                  <button 
                     @click="editCategory(category)"
                     class="text-blue-600 hover:text-blue-700 cursor-pointer"
-                    title="Редактировать категорию"
                   >
                     <Pencil class="w-4 h-4" />
                   </button>
@@ -694,7 +755,6 @@
                     @click="deleteCategory(category)"
                     :disabled="category.products_count > 0 || deletingCategory === category.id"
                     class="text-red-600 hover:text-red-700 disabled:text-gray-400 disabled:cursor-not-allowed cursor-pointer"
-                    :title="category.products_count > 0 ? 'Нельзя удалить категорию с товарами' : 'Удалить категорию'"
                   >
                     <Loader2 v-if="deletingCategory === category.id" class="w-4 h-4 animate-spin" />
                     <Trash2 v-else class="w-4 h-4" />
@@ -708,13 +768,6 @@
                 <div class="space-y-3">
                   <div class="flex items-center justify-between">
                     <span class="text-sm font-medium">Подкатегории:</span>
-                    <button 
-                      @click="showAddSubcategoryModal(category)"
-                      class="text-blue-600 hover:text-blue-700 text-sm flex items-center gap-1 cursor-pointer"
-                    >
-                      <Plus class="w-3 h-3" />
-                      Добавить подкатегорию
-                    </button>
                   </div>
                   
                   <div v-if="category.subcategories && category.subcategories.length > 0" class="space-y-2">
@@ -727,7 +780,6 @@
                         <button 
                           @click="editSubcategory(subcategory)"
                           class="text-blue-600 hover:text-blue-700 cursor-pointer"
-                          title="Редактировать подкатегорию"
                         >
                           <Pencil class="w-3 h-3" />
                         </button>
@@ -735,7 +787,6 @@
                           @click="deleteSubcategory(subcategory)"
                           :disabled="subcategory.products_count > 0 || deletingSubcategory === subcategory.id"
                           class="text-red-600 hover:text-red-700 disabled:text-gray-400 disabled:cursor-not-allowed cursor-pointer"
-                          :title="subcategory.products_count > 0 ? 'Нельзя удалить подкатегорию с товарами' : 'Удалить подкатегорию'"
                         >
                           <Loader2 v-if="deletingSubcategory === subcategory.id" class="w-3 h-3 animate-spin" />
                           <Trash2 v-else class="w-3 h-3" />
@@ -1080,15 +1131,29 @@ async function loadProductFields() {
 
 const showFieldModal = ref(false)
 const editingField = ref(null)
-const fieldForm = reactive({ field_name: '' })
+const fieldForm = reactive({ field_name: '', field_type: 'text', list_options: [] })
 const savingField = ref(false)
 const errorSaveField = ref('')
 
 function openAddFieldModal() {
   editingField.value = null
   fieldForm.field_name = ''
+  fieldForm.field_type = 'text'
+  fieldForm.list_options = []
   showFieldModal.value = true
   errorSaveField.value = ''
+}
+
+function addListOption() {
+  fieldForm.list_options.push('')
+}
+
+function removeListOption(index) {
+  fieldForm.list_options.splice(index, 1)
+}
+
+function updateListOption(index, value) {
+  fieldForm.list_options[index] = value
 }
 function closeFieldModal() {
   showFieldModal.value = false
@@ -1096,6 +1161,8 @@ function closeFieldModal() {
 function editField(field) {
   editingField.value = field
   fieldForm.field_name = field.field_name
+  fieldForm.field_type = field.field_type || 'text'
+  fieldForm.list_options = field.list_options ? JSON.parse(field.list_options) : []
   showFieldModal.value = true
   errorSaveField.value = ''
 }
@@ -1107,7 +1174,11 @@ async function saveField() {
       // PUT
       const response = await apiRequest(`/product-fields/${editingField.value.id}`, {
         method: 'PUT',
-        body: JSON.stringify({ field_name: fieldForm.field_name }),
+        body: JSON.stringify({ 
+          field_name: fieldForm.field_name,
+          field_type: fieldForm.field_type,
+          list_options: fieldForm.field_type === 'list' ? fieldForm.list_options : undefined
+        }),
         headers: { 'Content-Type': 'application/json' }
       })
       if (response.ok && response.data.success) {
@@ -1120,7 +1191,11 @@ async function saveField() {
       // POST
       const response = await apiRequest('/product-fields', {
         method: 'POST',
-        body: JSON.stringify({ field_name: fieldForm.field_name }),
+        body: JSON.stringify({ 
+          field_name: fieldForm.field_name,
+          field_type: fieldForm.field_type,
+          list_options: fieldForm.field_type === 'list' ? fieldForm.list_options : undefined
+        }),
         headers: { 'Content-Type': 'application/json' }
       })
       if (response.ok && response.data.success) {
@@ -1960,6 +2035,11 @@ const cancelDeleteCategory = () => {
 const showAddSubcategoryModal = (category) => {
   selectedCategoryForSubcategory.value = category
   newSubcategoryName.value = ''
+  
+  // Автоматически открываем аккордеон категории, если он закрыт
+  if (!expandedCategories.value.includes(category.id)) {
+    expandedCategories.value.push(category.id)
+  }
 }
 
 // Создание новой подкатегории

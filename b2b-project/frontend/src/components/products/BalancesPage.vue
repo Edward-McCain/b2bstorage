@@ -459,10 +459,12 @@
                       </div>
                       
                       <!-- Кастомные поля -->
-                      <div v-for="field in customFields" :key="field.id" class="flex items-center gap-2">
-                        <span class="font-medium text-gray-600">{{ field.name }}:</span>
-                        <span class="text-gray-900">{{ getCustomFieldValue(balance.product, field.key) }}</span>
-                      </div>
+                      <template v-for="field in customFields" :key="field.id">
+                        <div v-if="customFields && Array.isArray(customFields) && field && typeof field === 'object' && field.field_name && typeof field.field_name === 'string' && getCustomFieldValue(balance.product, field.field_name) !== '-'" class="flex items-center gap-2">
+                          <span class="font-medium text-gray-600">{{ field.field_name }}:</span>
+                          <span class="text-gray-900">{{ getCustomFieldValue(balance.product, field.field_name) }}</span>
+                        </div>
+                      </template>
                     </div>
                   </td>
                 </tr>
@@ -996,7 +998,11 @@ export default {
         // Загрузка кастомных полей
         const customFieldsResponse = await api.get('/product-fields')
         if (customFieldsResponse.data.success) {
-          customFields.value = customFieldsResponse.data.data || []
+          // Фильтруем только валидные поля с field_name
+          const validFields = (customFieldsResponse.data.data || []).filter(field => 
+            field && field.field_name && typeof field.field_name === 'string'
+          )
+          customFields.value = validFields
         }
       } catch (error) {
         console.error('Ошибка загрузки настроек полей:', error)
@@ -1046,11 +1052,40 @@ export default {
 
     // Функция для получения значения кастомного поля
     const getCustomFieldValue = (product, fieldKey) => {
-      if (!product || !product.fields) return '-'
+      if (!product || !product.fields || !fieldKey || typeof fieldKey !== 'string') return '-'
       
       try {
         const fields = typeof product.fields === 'string' ? JSON.parse(product.fields) : product.fields
-        return fields[fieldKey] || '-'
+        
+        // Проверяем, что fields является объектом
+        if (!fields || typeof fields !== 'object') return '-'
+        
+        const value = fields[fieldKey]
+        
+        // Проверяем, что значение не пустое
+        if (value === null || value === undefined || value === '' || value === '-') {
+          return '-'
+        }
+        
+        // Если значение является объектом (для обратной совместимости со старыми данными)
+        if (typeof value === 'object' && value !== null) {
+          // Если у объекта есть свойство value, используем его
+          if (value.value !== undefined) {
+            return String(value.value)
+          }
+          // Если у объекта есть свойство label, используем его
+          if (value.label !== undefined) {
+            return String(value.label)
+          }
+          // Если у объекта есть свойство name, используем его
+          if (value.name !== undefined) {
+            return String(value.name)
+          }
+          // Если ничего не подходит, возвращаем JSON строку
+          return JSON.stringify(value)
+        }
+        
+        return String(value)
       } catch (error) {
         console.error('Ошибка парсинга кастомных полей:', error)
         return '-'
@@ -1385,7 +1420,8 @@ export default {
               return isNaN(num) ? '-' : num.toString()
             }
             
-            return {
+            // Базовые поля
+            const exportRow = {
               'Название': balance.product?.name || '-',
               'Категория': balance.product?.category_name || balance.product?.category || '-',
               'Подкатегория': balance.product?.subcategory_name || balance.product?.subcategory || '-',
@@ -1395,14 +1431,33 @@ export default {
               'Стоимость': formatPrice(balance.product?.price),
               'Артикул': balance.product?.article || '-'
             }
+            
+            // Добавляем дополнительные поля в зависимости от настроек
+            standardProductFields.forEach(field => {
+              if (productFieldsVisibility[field.key] === true && balance.product?.[field.key]) {
+                exportRow[field.label] = balance.product[field.key] || '-'
+              }
+            })
+            
+            // Добавляем кастомные поля
+            customFields.value.forEach(field => {
+              if (field && field.field_name) {
+                const customValue = getCustomFieldValue(balance.product, field.field_name)
+                if (customValue !== '-') {
+                  exportRow[field.field_name] = customValue
+                }
+              }
+            })
+            
+            return exportRow
           })
           
           // Создаем рабочую книгу Excel
           const workbook = XLSX.utils.book_new()
           const worksheet = XLSX.utils.json_to_sheet(exportData)
           
-          // Устанавливаем ширину столбцов
-          const columnWidths = [
+          // Устанавливаем ширину столбцов динамически
+          const baseColumnWidths = [
             { wch: 30 }, // Название
             { wch: 20 }, // Категория
             { wch: 20 }, // Подкатегория
@@ -1412,6 +1467,18 @@ export default {
             { wch: 12 }, // Стоимость
             { wch: 15 }  // Артикул
           ]
+          
+          // Добавляем ширину для дополнительных полей
+          const additionalColumnWidths = standardProductFields
+            .filter(field => productFieldsVisibility[field.key] === true)
+            .map(() => ({ wch: 15 }))
+          
+          // Добавляем ширину для кастомных полей
+          const customColumnWidths = customFields.value
+            .filter(field => field && field.field_name)
+            .map(() => ({ wch: 20 }))
+          
+          const columnWidths = [...baseColumnWidths, ...additionalColumnWidths, ...customColumnWidths]
           worksheet['!cols'] = columnWidths
           
           // Добавляем лист в книгу
