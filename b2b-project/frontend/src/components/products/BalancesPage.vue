@@ -701,7 +701,36 @@
                   </td>
                   
                   <td class="px-3 py-2 text-sm text-gray-900 whitespace-nowrap">
-                    <input v-model="product.unit" type="text" class="w-20 text-sm border border-gray-300 rounded px-2 py-1" />
+                    <Multiselect
+                      v-model="product.unit"
+                      :options="[
+                        { label: 'Штука', value: 'Штука' },
+                        { label: 'Килограмм', value: 'Килограмм' },
+                        { label: 'Грамм', value: 'Грамм' },
+                        { label: 'Тонна', value: 'Тонна' },
+                        { label: 'Литр', value: 'Литр' },
+                        { label: 'Миллилитр', value: 'Миллилитр' },
+                        { label: 'Метр', value: 'Метр' },
+                        { label: 'Сантиметр', value: 'Сантиметр' },
+                        { label: 'Квадратный метр', value: 'Квадратный метр' },
+                        { label: 'Кубический метр', value: 'Кубический метр' },
+                        { label: 'Упаковка', value: 'Упаковка' },
+                        { label: 'Пара', value: 'Пара' },
+                        { label: 'Рулон', value: 'Рулон' },
+                        { label: 'Блок', value: 'Блок' },
+                        { label: 'Бочка', value: 'Бочка' },
+                        { label: 'Пачка', value: 'Пачка' },
+                        { label: 'Комплект', value: 'Комплект' },
+                        { label: 'Лист', value: 'Лист' },
+                        { label: 'Погонный метр', value: 'Погонный метр' }
+                      ]"
+                      label="label"
+                      value="value"
+                      :object="true"
+                      placeholder="Выберите"
+                      :max-height="200"
+                      class="w-24 text-xs multiselect-custom"
+                    />
                   </td>
                   
                   <td v-if="productFieldsVisibility.article === true" class="px-3 py-2 text-sm text-gray-900 whitespace-nowrap">
@@ -1264,11 +1293,12 @@ export default {
           }
           
           // Преобразуем данные в нужный формат
+          const unitValue = product['Единица измерения'] || product['Ед. изм.'] || product['Единица'] || 'Штука'
           const parsedProduct = {
             name: product['Название']?.toString() || '',
             price: parseFloat(product['Стоимость']) || 0,
             quantity: parseFloat(product['Начальный остаток'] || product['Остаток'] || 0) || 0,
-            unit: product['Единица измерения'] || product['Ед. изм.'] || product['Единица'] || 'шт.',
+            unit: { label: unitValue, value: unitValue },
             article: product['Артикул'] || '',
             selectedCategory: null,
             selectedSubcategory: null,
@@ -1399,7 +1429,7 @@ export default {
             name: product.name,
             price: productFieldsVisibility.price !== false ? product.price : 0,
             quantity: product.quantity,
-            unit: product.unit,
+            unit: product.unit?.value || product.unit || 'Штука',
             article: product.article,
             warehouse_id: selectedWarehouseForImport.value.value
           }
