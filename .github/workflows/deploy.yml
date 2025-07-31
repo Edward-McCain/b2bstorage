@@ -60,6 +60,15 @@ jobs:
           target: "/var/www/b2bstorage-backend"
           strip_components: 2
 
+      - name: Deploy scripts to test server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.TEST_SERVER_HOST }}
+          username: ${{ secrets.TEST_SERVER_USER }}
+          key: ${{ secrets.TEST_SERVER_SSH_KEY }}
+          source: "init-production-server.sh,setup-postgresql.sh"
+          target: "/var/www/b2bstorage-backend"
+
       - name: Set permissions and restart services on test server
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -150,6 +159,15 @@ jobs:
           source: "b2b-project/backend/*"
           target: "/var/www/b2bstorage-backend"
           strip_components: 2
+
+      - name: Deploy scripts to production server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.PROD_SERVER_HOST }}
+          username: ${{ secrets.PROD_SERVER_USER }}
+          key: ${{ secrets.PROD_SERVER_SSH_KEY }}
+          source: "init-production-server.sh,setup-postgresql.sh"
+          target: "/var/www/b2bstorage-backend"
 
       - name: Set permissions and restart services on production server
         uses: appleboy/ssh-action@v1.0.3
