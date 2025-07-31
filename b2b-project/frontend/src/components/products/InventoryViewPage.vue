@@ -61,7 +61,7 @@
           
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <div>
-              <div class="text-gray-500 text-xs mb-1">Название</div>
+              <div class="text-gray-500 text-xs mb-1">Название</div>   
               <div class="text-gray-900 text-sm">{{ inventory.name }}</div>
             </div>
             <div>
@@ -526,4 +526,4 @@ async function exportToExcel() {
     toastr.error('Ошибка при экспорте в Excel')
   }
 }
-</script>
+</script># Thu Jul 31 18:08:37 +07 2025
