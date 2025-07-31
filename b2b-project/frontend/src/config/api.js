@@ -1,24 +1,71 @@
-// Конфигурация API
-const API_CONFIG = {
-  // Локальная разработка
-  development: {
-    baseURL: 'http://127.0.0.1:8000/api',
-    storageURL: 'http://127.0.0.1:8000',
-    timeout: 10000
-  },
-  // Продакшн
-  production: {
-    baseURL: 'https://api.b2bstorage.ru/api',
-    storageURL: 'https://api.b2bstorage.ru',
-    timeout: 10000
+// Универсальная конфигурация API
+// Автоматически определяет домен и использует соответствующий API URL
+
+// Функция для определения API URL на основе текущего домена
+function getApiBaseUrl() {
+  const hostname = window.location.hostname;
+  
+  // Продакшн домен
+  if (hostname === 'b2bsklad.uz' || hostname === 'www.b2bsklad.uz') {
+    return 'https://b2bsklad.uz/api';
   }
+  
+  // Тестовый домен
+  if (hostname === 'b2bstorage.ru' || hostname === 'www.b2bstorage.ru' || hostname === 'api.b2bstorage.ru') {
+    return 'https://api.b2bstorage.ru/api';
+  }
+  
+  // Локальная разработка
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return 'http://127.0.0.1:8000/api';
+  }
+  
+  // По умолчанию для IP адресов (продакшн)
+  if (hostname === '45.92.173.142') {
+    return 'https://b2bsklad.uz/api';
+  }
+  
+  // Fallback на продакшн
+  return 'https://b2bsklad.uz/api';
 }
 
-// Определяем окружение
-const isDevelopment = import.meta.env.DEV || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+// Функция для определения storage URL на основе текущего домена
+function getStorageBaseUrl() {
+  const hostname = window.location.hostname;
+  
+  // Продакшн домен
+  if (hostname === 'b2bsklad.uz' || hostname === 'www.b2bsklad.uz') {
+    return 'https://b2bsklad.uz';
+  }
+  
+  // Тестовый домен
+  if (hostname === 'b2bstorage.ru' || hostname === 'www.b2bstorage.ru' || hostname === 'api.b2bstorage.ru') {
+    return 'https://api.b2bstorage.ru';
+  }
+  
+  // Локальная разработка
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return 'http://127.0.0.1:8000';
+  }
+  
+  // По умолчанию для IP адресов (продакшн)
+  if (hostname === '45.92.173.142') {
+    return 'https://b2bsklad.uz';
+  }
+  
+  // Fallback на продакшн
+  return 'https://b2bsklad.uz';
+}
 
-// Экспортируем конфигурацию для текущего окружения
-export const apiConfig = isDevelopment ? API_CONFIG.development : API_CONFIG.production
+// Конфигурация API
+const API_CONFIG = {
+  baseURL: getApiBaseUrl(),
+  storageURL: getStorageBaseUrl(),
+  timeout: 10000
+}
+
+// Экспортируем конфигурацию
+export const apiConfig = API_CONFIG
 
 // Функция для получения полного URL
 export const getApiUrl = (endpoint) => {
@@ -138,6 +185,11 @@ const api = {
 
 // Экспортируем по умолчанию
 export default api
+
+// Для отладки - выводим информацию о текущем домене и API URL
+console.log('Current hostname:', window.location.hostname);
+console.log('API Base URL:', apiConfig.baseURL);
+console.log('Storage Base URL:', apiConfig.storageURL);
 
 const CATEGORIES_KEY = 'categories_cache';
 const USER_CATEGORIES_KEY = 'user_categories_cache';

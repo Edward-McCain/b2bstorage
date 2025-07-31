@@ -134,7 +134,7 @@ const goToAdminPanel = () => {
 
 const openSupport = () => {
   // Здесь можно добавить логику для открытия поддержки
-  window.open('mailto:support@b2bstorage.ru', '_blank')
+  window.open('mailto:support@b2bsklad.uz', '_blank')
   userMenuOpen.value = false
 }
 

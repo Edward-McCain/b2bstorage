@@ -332,7 +332,7 @@ const settings = ref({
   emailNotifications: true,
   smsNotifications: false,
   pushNotifications: true,
-  notificationEmail: 'admin@b2bstorage.ru',
+  notificationEmail: 'admin@b2bsklad.uz',
   apiKey: 'sk-1234567890abcdef',
   enableApi: true,
   enableWebhooks: false,
