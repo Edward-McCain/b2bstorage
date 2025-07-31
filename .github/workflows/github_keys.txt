@@ -1,0 +1,74 @@
+
+✅ Настройка продакшн сервера завершена!
+📝 Следующие шаги:
+1. Добавьте SSH ключи в GitHub Secrets
+2. Создайте ветку production: git checkout -b production
+3. Запустите миграции на сервере
+4. Сгенерируйте APP_KEY: php artisan key:generate
+
+
++---[RSA 4096]----+
+|      .o=o   =OE.|
+|     ..o.o...oo++|
+|    . ooo.o...+++|
+|   . . .+o+. +..+|
+|    .  .So.=o  .o|
+|         .o *  .o|
+|          .=o.. .|
+|          .. +   |
+|            .    |
++----[SHA256]-----+
+
+🔑 Публичный ключ для GitHub Actions:
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC7r8clhmXCzVg361RZ2ua5VU1fdEeHwC2kFVdiXPGX9+U8fGJdNyuFX/bYGxvHb0JRj+J5VbodW2/0FaC96KQOpEexN9MiwvbUG9AdNAR5nvf4HezhENoET+PX7CWV4KK7BTxrAXcTaL3/yZU6y7j3ipZ9RLOwSCFgag1P8SlIPnGUtbyModAnwceuor9F54sUXdNss7ioaFlf5UfoXMRwzUTuXUar5ZXm2URSm2xW/9xg5pzb0hQ7ydTCbOASs099lyxvWrdMT3mGqBhbL8h/x+Nq/OoaWzmVR4e0I2QZSidGaS7Xzje5UlHZLTev7pd6QjZHYgAMK2X5PSklhBn359lXt81w3WNTukXBGVDUPZnrqvdnisaKpxspJM3JV/2cNdhDCIY8zF90xHxq4B1Hf4IYZ2iyeBiUswo/JOclhM+mk2h40XsMn6FLTomDXGKcWZ+luco/uuzc6IOwD62X70T/E6ukIP81kDUM1PIPGC96onY5PsKZhi6WDxEwCJG5vgB3rhvSHxim0wJ/c8KTZ8FYflbWuS8aCMHVbekOlcE0OAb+9m9sEuvANJicQcjTiM0SwKLAXwA01h7nD9Zh5OY/BATgoYBOqDajA5de6i5Hyli3GswRauGUgsMxlbIr0yNc+e2iBjWoaXZm1R/DSArIFeJKuWBp2SHVc2Or+Q== root@vps03696.eskiz.uz
+
+🔑 Приватный ключ для GitHub Actions:
+-----BEGIN OPENSSH PRIVATE KEY-----
+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
+-----END OPENSSH PRIVATE KEY-----
