@@ -162,4 +162,46 @@ class ProductSklad extends Model
     {
         return $this->hasMany(ProductBalance::class, 'product_id');
     }
+
+    /**
+     * Связь с операциями товара
+     */
+    public function operations()
+    {
+        return $this->hasMany(ProductOperation::class, 'product_id');
+    }
+
+    /**
+     * Связь с позициями трансферов
+     */
+    public function transferPositions()
+    {
+        return $this->hasMany(ProductTransferPosition::class, 'product_id');
+    }
+
+    /**
+     * Boot метод для настройки каскадного удаления
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // При удалении товара удаляем все связанные записи
+        static::deleting(function ($product) {
+            // Удаляем остатки
+            $product->balances()->delete();
+            
+            // Удаляем операции
+            $product->operations()->delete();
+            
+            // Удаляем позиции трансферов
+            $product->transferPositions()->delete();
+            
+            // Удаляем изображения
+            $product->images()->delete();
+            
+            // Удаляем позиции оприходования
+            $product->receiptPositions()->delete();
+        });
+    }
 } 

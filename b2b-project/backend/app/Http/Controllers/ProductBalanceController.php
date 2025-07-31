@@ -19,15 +19,12 @@ class ProductBalanceController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = ProductBalance::with(['product.images', 'product.categoryRelation', 'product.subcategoryRelation', 'warehouse']);
-
-        // Фильтруем по складам текущего пользователя
-        $query->whereHas('warehouse', function ($q) {
-            $q->where('user_id', Auth::id());
-        });
+        // Берем товары напрямую из products_sklad
+        $query = \App\Models\ProductSklad::with(['images', 'categoryRelation', 'subcategoryRelation'])
+            ->where('user_id', Auth::id());
 
         // Логируем входящие параметры для отладки
-        Log::info('Balances filter params:', $request->all());
+        Log::info('Balances index params:', $request->all());
 
         // Фильтры
         if ($request->has('warehouse_id') && !empty($request->warehouse_id)) {
@@ -36,24 +33,14 @@ class ProductBalanceController extends Controller
         }
 
         if ($request->has('product_id') && !empty($request->product_id)) {
-            $query->where('product_id', $request->product_id);
+            $query->where('id', $request->product_id);
             Log::info('Applied product filter:', ['product_id' => $request->product_id]);
-        }
-
-        if ($request->has('min_quantity') && !empty($request->min_quantity)) {
-            $query->where('quantity', '>=', $request->min_quantity);
-            Log::info('Applied min quantity filter:', ['min_quantity' => $request->min_quantity]);
-        }
-
-        if ($request->has('max_quantity') && !empty($request->max_quantity)) {
-            $query->where('quantity', '<=', $request->max_quantity);
-            Log::info('Applied max quantity filter:', ['max_quantity' => $request->max_quantity]);
         }
 
         // Поиск по названию товара
         if ($request->has('search') && !empty($request->search)) {
             $search = $request->search;
-            $query->whereHas('product', function ($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('article', 'like', "%{$search}%")
                   ->orWhere('code', 'like', "%{$search}%");
@@ -61,28 +48,74 @@ class ProductBalanceController extends Controller
             Log::info('Applied search filter:', ['search' => $search]);
         }
 
-        $balances = $query->orderBy('quantity', 'desc')->paginate(50);
+        // Фильтры по характеристикам товара
+        $productFilters = ['category', 'subcategory', 'country', 'supplier', 'article', 'code', 'external_code', 'unit', 'weight', 'volume', 'vat', 'marking', 'product_type', 'barcode_type', 'barcode', 'cash_register_tax', 'cash_register_type', 'created_at'];
+        
+        foreach ($productFilters as $filter) {
+            if ($request->has($filter) && !empty($request->get($filter))) {
+                $query->where($filter, $request->get($filter));
+                Log::info("Applied {$filter} filter:", [$filter => $request->get($filter)]);
+            }
+        }
+
+        // Фильтры по остаткам (через product_balances)
+        if ($request->has('min_quantity') && !empty($request->min_quantity)) {
+            $productIds = \App\Models\ProductBalance::where('quantity', '>=', $request->min_quantity)
+                ->whereHas('warehouse', function ($q) {
+                    $q->where('user_id', Auth::id());
+                })
+                ->pluck('product_id');
+            $query->whereIn('id', $productIds);
+            Log::info('Applied min quantity filter:', ['min_quantity' => $request->min_quantity]);
+        }
+
+        if ($request->has('max_quantity') && !empty($request->max_quantity)) {
+            $productIds = \App\Models\ProductBalance::where('quantity', '<=', $request->max_quantity)
+                ->whereHas('warehouse', function ($q) {
+                    $q->where('user_id', Auth::id());
+                })
+                ->pluck('product_id');
+            $query->whereIn('id', $productIds);
+            Log::info('Applied max quantity filter:', ['max_quantity' => $request->max_quantity]);
+        }
+
+        $products = $query->orderBy('name')->paginate(50);
 
         // Логируем результат
-        Log::info('Balances query result:', ['count' => $balances->count()]);
+        Log::info('Products query result:', ['count' => $products->count()]);
 
-        // Получаем цены из последних оприходований для каждого товара
-        $this->addPricesToBalances($balances->getCollection());
-        
-        // Преобразуем URL изображений и добавляем названия категорий
-        $balances->getCollection()->transform(function($balance) {
-            if ($balance->product->images) {
-                $balance->product->images = $this->transformProductImages($balance->product->images);
-            }
-            
+        // Добавляем информацию об остатках и ценах
+        $products->getCollection()->transform(function($product) {
+            // Получаем все остатки для этого товара
+            $balances = \App\Models\ProductBalance::where('product_id', $product->id)
+                ->whereHas('warehouse', function ($q) {
+                    $q->where('user_id', Auth::id());
+                })
+                ->get();
+
+            // Считаем общее количество
+            $product->total_quantity = $balances->sum('quantity');
+
+            // Добавляем информацию по складам
+            $product->warehouse_balances = $balances->map(function($balance) {
+                return [
+                    'warehouse_id' => $balance->warehouse_id,
+                    'quantity' => $balance->quantity,
+                    'warehouse_name' => $balance->warehouse->name ?? 'Неизвестный склад'
+                ];
+            });
+
+            // Получаем цену товара
+            $product->price = $this->getProductPrice($product->id);
+
             // Добавляем названия категорий через аксессоры
-            $balance->product->category_name = $balance->product->category_name;
-            $balance->product->subcategory_name = $balance->product->subcategory_name;
-            
-            return $balance;
+            $product->category_name = $product->category_name;
+            $product->subcategory_name = $product->subcategory_name;
+
+            return $product;
         });
 
-        return response()->json($balances);
+        return response()->json($products);
     }
 
     /**
@@ -90,47 +123,51 @@ class ProductBalanceController extends Controller
      */
     public function filter(Request $request): JsonResponse
     {
-        $query = ProductBalance::with(['product.images', 'product.categoryRelation', 'product.subcategoryRelation', 'warehouse']);
-
-        // Фильтруем по складам текущего пользователя
-        $query->whereHas('warehouse', function ($q) {
-            $q->where('user_id', Auth::id());
-        });
-
-        // Фильтруем по товарам текущего пользователя из products_sklad
-        $userProductIds = \App\Models\ProductSklad::where('user_id', Auth::id())->pluck('id')->toArray();
-        $query->whereIn('product_id', $userProductIds);
+        // Берем товары напрямую из products_sklad
+        $query = \App\Models\ProductSklad::with(['images', 'categoryRelation', 'subcategoryRelation'])
+            ->where('user_id', Auth::id());
 
         // Логируем входящие параметры для отладки
         Log::info('Balances filter POST params:', $request->all());
 
         // Фильтры
         if ($request->has('warehouse_id') && !empty($request->warehouse_id)) {
-            $query->where('warehouse_id', $request->warehouse_id);
+            // Фильтруем по складу через product_balances
+            $productIds = ProductBalance::where('warehouse_id', $request->warehouse_id)->pluck('product_id')->toArray();
+            $query->whereIn('id', $productIds);
             Log::info('Applied warehouse filter:', ['warehouse_id' => $request->warehouse_id]);
         }
 
-        if ($request->has('product_id') && !empty($request->product_id)) {
-            $query->where('product_id', $request->product_id);
-            Log::info('Applied product filter:', ['product_id' => $request->product_id]);
-        }
-
+        // Фильтрация по количеству остатков
         if ($request->has('min_quantity') && !empty($request->min_quantity)) {
             $minQuantity = (int) $request->min_quantity;
-            $query->where('quantity', '>=', $minQuantity);
+            // Фильтруем товары, у которых есть остатки >= min_quantity
+            $productIdsWithMinQuantity = ProductBalance::where('quantity', '>=', $minQuantity)->pluck('product_id')->toArray();
+            $query->whereIn('id', $productIdsWithMinQuantity);
             Log::info('Applied min quantity filter:', ['min_quantity' => $minQuantity]);
         }
 
         if ($request->has('max_quantity') && !empty($request->max_quantity)) {
             $maxQuantity = (int) $request->max_quantity;
-            $query->where('quantity', '<=', $maxQuantity);
+            // Фильтруем товары, у которых есть остатки <= max_quantity
+            $productIdsWithMaxQuantity = ProductBalance::where('quantity', '<=', $maxQuantity)->pluck('product_id')->toArray();
+            $query->whereIn('id', $productIdsWithMaxQuantity);
             Log::info('Applied max quantity filter:', ['max_quantity' => $maxQuantity]);
+        }
+
+        // Логируем входящие параметры для отладки
+        Log::info('Balances filter POST params:', $request->all());
+
+        // Фильтры
+        if ($request->has('product_id') && !empty($request->product_id)) {
+            $query->where('id', $request->product_id);
+            Log::info('Applied product filter:', ['product_id' => $request->product_id]);
         }
 
         // Поиск по названию товара
         if ($request->has('search') && !empty($request->search)) {
             $search = $request->search;
-            $query->whereHas('product', function ($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('article', 'like', "%{$search}%")
                   ->orWhere('code', 'like', "%{$search}%");
@@ -140,69 +177,47 @@ class ProductBalanceController extends Controller
 
         // Расширенная фильтрация по полям товара
         if ($request->has('category') && !empty($request->category)) {
-            $query->whereHas('product', function ($q) use ($request) {
-                $q->where('category', $request->category);
-            });
+            $query->where('category', $request->category);
         }
 
         if ($request->has('subcategory') && !empty($request->subcategory)) {
-            $query->whereHas('product', function ($q) use ($request) {
-                $q->where('subcategory', $request->subcategory);
-            });
+            $query->where('subcategory', $request->subcategory);
         }
 
         if ($request->has('country') && !empty($request->country)) {
-            $query->whereHas('product', function ($q) use ($request) {
-                $q->where('country', 'like', "%{$request->country}%");
-            });
+            $query->where('country', 'like', "%{$request->country}%");
         }
 
         if ($request->has('supplier') && !empty($request->supplier)) {
-            $query->whereHas('product', function ($q) use ($request) {
-                $q->where('supplier', 'like', "%{$request->supplier}%");
-            });
+            $query->where('supplier', 'like', "%{$request->supplier}%");
         }
 
         if ($request->has('article') && !empty($request->article)) {
-            $query->whereHas('product', function ($q) use ($request) {
-                $q->where('article', 'like', "%{$request->article}%");
-            });
+            $query->where('article', 'like', "%{$request->article}%");
         }
 
         if ($request->has('code') && !empty($request->code)) {
-            $query->whereHas('product', function ($q) use ($request) {
-                $q->where('code', 'like', "%{$request->code}%");
-            });
+            $query->where('code', 'like', "%{$request->code}%");
         }
 
         if ($request->has('external_code') && !empty($request->external_code)) {
-            $query->whereHas('product', function ($q) use ($request) {
-                $q->where('external_code', 'like', "%{$request->external_code}%");
-            });
+            $query->where('external_code', 'like', "%{$request->external_code}%");
         }
 
         if ($request->has('unit') && !empty($request->unit)) {
-            $query->whereHas('product', function ($q) use ($request) {
-                $q->where('unit', 'like', "%{$request->unit}%");
-            });
+            $query->where('unit', 'like', "%{$request->unit}%");
         }
 
         if ($request->has('weight') && !empty($request->weight)) {
-            $query->whereHas('product', function ($q) use ($request) {
-                $q->where('weight', 'like', "%{$request->weight}%");
-            });
+            $query->where('weight', 'like', "%{$request->weight}%");
         }
 
         if ($request->has('volume') && !empty($request->volume)) {
-            $query->whereHas('product', function ($q) use ($request) {
-                $q->where('volume', 'like', "%{$request->volume}%");
-            });
+            $query->where('volume', 'like', "%{$request->volume}%");
         }
 
         if ($request->has('vat') && !empty($request->vat)) {
-            $query->whereHas('product', function ($q) use ($request) {
-                $q->where('vat', 'like', "%{$request->vat}%");
-            });
+            $query->where('vat', 'like', "%{$request->vat}%");
         }
 
         if ($request->has('min_stock') && !empty($request->min_stock)) {
@@ -236,71 +251,77 @@ class ProductBalanceController extends Controller
         }
 
         if ($request->has('marking') && !empty($request->marking)) {
-            $query->whereHas('product', function ($q) use ($request) {
-                $q->where('marking', 'like', "%{$request->marking}%");
-            });
+            $query->where('marking', 'like', "%{$request->marking}%");
         }
 
         if ($request->has('product_type') && !empty($request->product_type)) {
-            $query->whereHas('product', function ($q) use ($request) {
-                $q->where('product_type', 'like', "%{$request->product_type}%");
-            });
+            $query->where('product_type', 'like', "%{$request->product_type}%");
         }
 
         if ($request->has('barcode_type') && !empty($request->barcode_type)) {
-            $query->whereHas('product', function ($q) use ($request) {
-                $q->where('barcode_type', 'like', "%{$request->barcode_type}%");
-            });
+            $query->where('barcode_type', 'like', "%{$request->barcode_type}%");
         }
 
         if ($request->has('barcode') && !empty($request->barcode)) {
-            $query->whereHas('product', function ($q) use ($request) {
-                $q->where('barcode', 'like', "%{$request->barcode}%");
-            });
+            $query->where('barcode', 'like', "%{$request->barcode}%");
         }
 
         if ($request->has('cash_register_tax') && !empty($request->cash_register_tax)) {
-            $query->whereHas('product', function ($q) use ($request) {
-                $q->where('cash_register_tax', 'like', "%{$request->cash_register_tax}%");
-            });
+            $query->where('cash_register_tax', 'like', "%{$request->cash_register_tax}%");
         }
 
         if ($request->has('cash_register_type') && !empty($request->cash_register_type)) {
-            $query->whereHas('product', function ($q) use ($request) {
-                $q->where('cash_register_type', 'like', "%{$request->cash_register_type}%");
-            });
+            $query->where('cash_register_type', 'like', "%{$request->cash_register_type}%");
         }
 
         // Фильтрация по дате создания
         if ($request->has('created_at') && !empty($request->created_at)) {
-            $query->whereHas('product', function ($q) use ($request) {
-                $q->whereDate('created_at', $request->created_at);
-            });
+            $query->whereDate('created_at', $request->created_at);
         }
 
         $page = (int) $request->get('page', 1);
-        $balances = $query->orderBy('quantity', 'desc')->paginate(50);
+        $products = $query->orderBy('name', 'asc')->paginate(50);
 
         // Логируем результат
-        Log::info('Balances POST query result:', ['count' => $balances->count()]);
+        Log::info('Products query result:', ['count' => $products->count()]);
 
-        // Получаем цены из последних оприходований для каждого товара
-        $this->addPricesToBalances($balances->getCollection());
-        
-        // Преобразуем URL изображений и добавляем названия категорий
-        $balances->getCollection()->transform(function($balance) {
-            if ($balance->product->images) {
-                $balance->product->images = $this->transformProductImages($balance->product->images);
+        // Добавляем остатки и информацию о складах для каждого товара
+        $products->getCollection()->transform(function($product) {
+            // Получаем остатки для этого товара из product_balances
+            $balances = ProductBalance::where('product_id', $product->id)->get();
+            
+            // Добавляем информацию об остатках
+            $product->balances = $balances;
+            
+            // Считаем общий остаток из product_balances
+            $totalQuantity = $balances->sum('quantity');
+            $product->total_quantity = $totalQuantity;
+            
+            // Добавляем детальную информацию по складам
+            $product->warehouse_balances = $balances->map(function($balance) {
+                return [
+                    'warehouse_id' => $balance->warehouse_id,
+                    'quantity' => $balance->quantity,
+                    'warehouse_name' => $balance->warehouse ? $balance->warehouse->name : null
+                ];
+            });
+            
+            // Получаем правильную цену товара
+            $product->price = $this->getProductPrice($product->id);
+            
+            // Добавляем названия категорий
+            $product->category_name = $product->category_name;
+            $product->subcategory_name = $product->subcategory_name;
+            
+            // Преобразуем изображения
+            if ($product->images) {
+                $product->images = $this->transformProductImages($product->images);
             }
             
-            // Добавляем названия категорий через аксессоры
-            $balance->product->category_name = $balance->product->category_name;
-            $balance->product->subcategory_name = $balance->product->subcategory_name;
-            
-            return $balance;
+            return $product;
         });
 
-        return response()->json($balances);
+        return response()->json($products);
     }
 
     /**
@@ -666,11 +687,13 @@ class ProductBalanceController extends Controller
     {
         // Сначала пытаемся получить цену из самого товара
         $product = \App\Models\ProductSklad::find($productId);
+        
+        // Если в products_sklad есть цена > 0, берем её как основную
         if ($product && $product->price > 0) {
             return (float) $product->price;
         }
 
-        // Если цены нет в товаре, проверяем последнее оприходование (для совместимости)
+        // Если в products_sklad цена = 0 или null, ищем в последнем оприходовании
         $lastReceiptPosition = ReceiptPosition::where('product_id', $productId)
             ->whereNotNull('price')
             ->where('price', '>', 0)
