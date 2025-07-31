@@ -33,7 +33,7 @@
             </div>
           </div>
 
-          <div class="flex gap-4 mt-4">
+          <div class="flex flex-col sm:flex-row gap-2">
             <div class="flex-1">
               <label class="block text-sm text-gray-700 mb-1">Организация *</label>
               <div v-if="loading" class="flex items-center justify-center h-10 bg-gray-100 rounded-lg">

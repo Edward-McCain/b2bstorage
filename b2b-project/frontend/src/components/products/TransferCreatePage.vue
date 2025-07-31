@@ -6,7 +6,17 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
       <!-- Заголовок страницы -->
       <div class="mb-6 sm:mb-8">
-        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Создание перемещения</h1>
+        <div class="flex items-center justify-between">
+          <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Создание перемещения</h1>
+          <router-link
+            to="/products/transfers"
+            class="flex items-center gap-2 text-gray-600 hover:text-gray-900 font-medium px-4 py-2 rounded text-sm hover:bg-gray-100 transition-colors"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+          </router-link>
+        </div>
       </div>
       
       <!-- Основной контент -->
