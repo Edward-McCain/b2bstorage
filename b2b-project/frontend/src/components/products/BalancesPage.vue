@@ -424,100 +424,100 @@
                       </div>
                       
                       <!-- Дополнительные поля (активные) -->
-                      <div v-if="productFieldsVisibility.description && balance.product?.description" class="flex items-center gap-2">
+                      <div v-if="productFieldsVisibility.description && product?.description" class="flex items-center gap-2">
                         <span class="font-medium text-gray-600">Описание:</span>
-                        <span class="text-gray-900">{{ balance.product.description }}</span>
+                        <span class="text-gray-900">{{ product.description }}</span>
                       </div>
-                      <div v-if="productFieldsVisibility.country && balance.product?.country" class="flex items-center gap-2">
+                      <div v-if="productFieldsVisibility.country && product?.country" class="flex items-center gap-2">
                         <span class="font-medium text-gray-600">Страна:</span>
-                        <span class="text-gray-900">{{ balance.product.country }}</span>
+                        <span class="text-gray-900">{{ product.country }}</span>
                       </div>
-                      <div v-if="productFieldsVisibility.supplier && balance.product?.supplier" class="flex items-center gap-2">
+                      <div v-if="productFieldsVisibility.supplier && product?.supplier" class="flex items-center gap-2">
                         <span class="font-medium text-gray-600">Поставщик:</span>
-                        <span class="text-gray-900">{{ balance.product.supplier }}</span>
+                        <span class="text-gray-900">{{ product.supplier }}</span>
                       </div>
-                      <div v-if="productFieldsVisibility.article && balance.product?.article" class="flex items-center gap-2">
+                      <div v-if="productFieldsVisibility.article && product?.article" class="flex items-center gap-2">
                         <span class="font-medium text-gray-600">Артикул:</span>
-                        <span class="text-gray-900">{{ balance.product.article }}</span>
+                        <span class="text-gray-900">{{ product.article }}</span>
                       </div>
-                      <div v-if="productFieldsVisibility.code && balance.product?.code" class="flex items-center gap-2">
+                      <div v-if="productFieldsVisibility.code && product?.code" class="flex items-center gap-2">
                         <span class="font-medium text-gray-600">Код:</span>
-                        <span class="text-gray-900">{{ balance.product.code }}</span>
+                        <span class="text-gray-900">{{ product.code }}</span>
                       </div>
-                      <div v-if="productFieldsVisibility.external_code && balance.product?.external_code" class="flex items-center gap-2">
+                      <div v-if="productFieldsVisibility.external_code && product?.external_code" class="flex items-center gap-2">
                         <span class="font-medium text-gray-600">Внешний код:</span>
-                        <span class="text-gray-900">{{ balance.product.external_code }}</span>
+                        <span class="text-gray-900">{{ product.external_code }}</span>
                       </div>
-                      <div v-if="productFieldsVisibility.unit && balance.product?.unit" class="flex items-center gap-2">
+                      <div v-if="productFieldsVisibility.unit && product?.unit" class="flex items-center gap-2">
                         <span class="font-medium text-gray-600">Единица измерения:</span>
-                        <span class="text-gray-900">{{ balance.product.unit }}</span>
+                        <span class="text-gray-900">{{ product.unit }}</span>
                       </div>
-                      <div v-if="productFieldsVisibility.weight && balance.product?.weight" class="flex items-center gap-2">
+                      <div v-if="productFieldsVisibility.weight && product?.weight" class="flex items-center gap-2">
                         <span class="font-medium text-gray-600">Вес:</span>
-                        <span class="text-gray-900">{{ balance.product.weight }}</span>
+                        <span class="text-gray-900">{{ product.weight }}</span>
                       </div>
-                      <div v-if="productFieldsVisibility.volume && balance.product?.volume" class="flex items-center gap-2">
+                      <div v-if="productFieldsVisibility.volume && product?.volume" class="flex items-center gap-2">
                         <span class="font-medium text-gray-600">Объем:</span>
-                        <span class="text-gray-900">{{ balance.product.volume }}</span>
+                        <span class="text-gray-900">{{ product.volume }}</span>
                       </div>
-                      <div v-if="productFieldsVisibility.vat && balance.product?.vat" class="flex items-center gap-2">
+                      <div v-if="productFieldsVisibility.vat && product?.vat" class="flex items-center gap-2">
                         <span class="font-medium text-gray-600">Ставка НДС:</span>
-                        <span class="text-gray-900">{{ balance.product.vat }}</span>
+                        <span class="text-gray-900">{{ product.vat }}</span>
                       </div>
-                      <div v-if="productFieldsVisibility.min_stock && balance.product?.min_stock" class="flex items-center gap-2">
+                      <div v-if="productFieldsVisibility.min_stock && product?.min_stock" class="flex items-center gap-2">
                         <span class="font-medium text-gray-600">Минимальный остаток:</span>
-                        <span class="text-gray-900">{{ balance.product.min_stock }}</span>
+                        <span class="text-gray-900">{{ product.min_stock }}</span>
                       </div>
-                      <div v-if="productFieldsVisibility.stock_type && balance.product?.stock_type" class="flex items-center gap-2">
+                      <div v-if="productFieldsVisibility.stock_type && product?.stock_type" class="flex items-center gap-2">
                         <span class="font-medium text-gray-600">Тип запаса:</span>
-                        <span class="text-gray-900">{{ balance.product.stock_type }}</span>
+                        <span class="text-gray-900">{{ product.stock_type }}</span>
                       </div>
-                      <div v-if="productFieldsVisibility.packing && balance.product?.packing" class="flex items-center gap-2">
+                      <div v-if="productFieldsVisibility.packing && product?.packing" class="flex items-center gap-2">
                         <span class="font-medium text-gray-600">Упаковка:</span>
-                        <span class="text-gray-900">{{ balance.product.packing }}</span>
+                        <span class="text-gray-900">{{ product.packing }}</span>
                       </div>
-                      <div v-if="productFieldsVisibility.accounting_type && balance.product?.accounting_type" class="flex items-center gap-2">
+                      <div v-if="productFieldsVisibility.accounting_type && product?.accounting_type" class="flex items-center gap-2">
                         <span class="font-medium text-gray-600">Тип учета:</span>
-                        <span class="text-gray-900">{{ balance.product.accounting_type }}</span>
+                        <span class="text-gray-900">{{ product.accounting_type }}</span>
                       </div>
-                      <div v-if="productFieldsVisibility.traceable && balance.product?.traceable" class="flex items-center gap-2">
+                      <div v-if="productFieldsVisibility.traceable && product?.traceable" class="flex items-center gap-2">
                         <span class="font-medium text-gray-600">Маркируемый:</span>
-                        <span class="text-gray-900">{{ balance.product.traceable ? 'Да' : 'Нет' }}</span>
+                        <span class="text-gray-900">{{ product.traceable ? 'Да' : 'Нет' }}</span>
                       </div>
-                      <div v-if="productFieldsVisibility.marking && balance.product?.marking" class="flex items-center gap-2">
+                      <div v-if="productFieldsVisibility.marking && product?.marking" class="flex items-center gap-2">
                         <span class="font-medium text-gray-600">Маркировка:</span>
-                        <span class="text-gray-900">{{ balance.product.marking }}</span>
+                        <span class="text-gray-900">{{ product.marking }}</span>
                       </div>
-                      <div v-if="productFieldsVisibility.product_type && balance.product?.product_type" class="flex items-center gap-2">
+                      <div v-if="productFieldsVisibility.product_type && product?.product_type" class="flex items-center gap-2">
                         <span class="font-medium text-gray-600">Тип товара:</span>
-                        <span class="text-gray-900">{{ balance.product.product_type }}</span>
+                        <span class="text-gray-900">{{ product.product_type }}</span>
                       </div>
-                      <div v-if="productFieldsVisibility.barcode_type && balance.product?.barcode_type" class="flex items-center gap-2">
+                      <div v-if="productFieldsVisibility.barcode_type && product?.barcode_type" class="flex items-center gap-2">
                         <span class="font-medium text-gray-600">Тип штрихкода:</span>
-                        <span class="text-gray-900">{{ balance.product.barcode_type }}</span>
+                        <span class="text-gray-900">{{ product.barcode_type }}</span>
                       </div>
-                      <div v-if="productFieldsVisibility.barcode && balance.product?.barcode" class="flex items-center gap-2">
+                      <div v-if="productFieldsVisibility.barcode && product?.barcode" class="flex items-center gap-2">
                         <span class="font-medium text-gray-600">Штрихкод:</span>
-                        <span class="text-gray-900">{{ balance.product.barcode }}</span>
+                        <span class="text-gray-900">{{ product.barcode }}</span>
                       </div>
-                      <div v-if="productFieldsVisibility.cash_register_tax && balance.product?.cash_register_tax" class="flex items-center gap-2">
+                      <div v-if="productFieldsVisibility.cash_register_tax && product?.cash_register_tax" class="flex items-center gap-2">
                         <span class="font-medium text-gray-600">Налог ККМ:</span>
-                        <span class="text-gray-900">{{ balance.product.cash_register_tax }}</span>
+                        <span class="text-gray-900">{{ product.cash_register_tax }}</span>
                       </div>
-                      <div v-if="productFieldsVisibility.cash_register_type && balance.product?.cash_register_type" class="flex items-center gap-2">
+                      <div v-if="productFieldsVisibility.cash_register_type && product?.cash_register_type" class="flex items-center gap-2">
                         <span class="font-medium text-gray-600">Тип ККМ:</span>
-                        <span class="text-gray-900">{{ balance.product.cash_register_type }}</span>
+                        <span class="text-gray-900">{{ product.cash_register_type }}</span>
                       </div>
-                      <div v-if="productFieldsVisibility.price && balance.product?.price" class="flex items-center gap-2">
+                      <div v-if="productFieldsVisibility.price && product?.price" class="flex items-center gap-2">
                         <span class="font-medium text-gray-600">Цена:</span>
-                        <span class="text-gray-900">{{ formatCurrency(balance.product.price) }}</span>
+                        <span class="text-gray-900">{{ formatCurrency(product.price) }}</span>
                       </div>
                       
                       <!-- Кастомные поля -->
                       <template v-for="field in customFields" :key="field.id">
-                        <div v-if="customFields && Array.isArray(customFields) && field && typeof field === 'object' && field.field_name && typeof field.field_name === 'string' && getCustomFieldValue(balance.product, field.field_name) !== '-'" class="flex items-center gap-2">
+                        <div v-if="customFields && Array.isArray(customFields) && field && typeof field === 'object' && field.field_name && typeof field.field_name === 'string' && getCustomFieldValue(product, field.field_name) !== '-'" class="flex items-center gap-2">
                           <span class="font-medium text-gray-600">{{ field.field_name }}:</span>
-                          <span class="text-gray-900">{{ getCustomFieldValue(balance.product, field.field_name) }}</span>
+                          <span class="text-gray-900">{{ getCustomFieldValue(product, field.field_name) }}</span>
                         </div>
                       </template>
                     </div>
