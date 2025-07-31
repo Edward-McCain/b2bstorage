@@ -235,7 +235,7 @@ const handleAvatarUpdated = (newAvatarUrl) => {
 const updateUserData = async () => {
   try {
     const token = localStorage.getItem('auth_token')
-    const response = await fetch('http://127.0.0.1:8000/api/me', {
+    const response = await fetch('/api/me', {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
