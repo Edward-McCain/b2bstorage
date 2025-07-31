@@ -174,7 +174,8 @@
 
         <!-- Таблица позиций -->
         <div v-if="positions.length > 0" class="mt-6">
-          <table class="min-w-full divide-y divide-gray-200 text-sm">
+          <div class="overflow-x-auto">
+            <table class="w-full divide-y divide-gray-200 text-sm">
             <thead>
               <tr class="bg-gray-50">
                 <th class="px-3 py-2 text-left font-semibold text-gray-700">Товар</th>
@@ -325,6 +326,7 @@
               </tr>
             </tbody>
           </table>
+          </div>
         </div>
 
         <!-- Toggle для автоматических операций -->

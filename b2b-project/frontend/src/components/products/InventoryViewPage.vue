@@ -113,66 +113,68 @@
               Нет товаров в инвентаризации
             </div>
             <div v-else>
-              <table class="min-w-full divide-y divide-gray-200 text-sm">
-                <thead class="bg-gray-50">
-                  <tr>
-                    <th class="px-3 py-2 text-left font-semibold text-gray-700">Наименование</th>
-                    <th class="px-3 py-2 text-center font-semibold text-gray-700">Расчетный остаток</th>
-                    <th class="px-3 py-2 text-center font-semibold text-gray-700">Фактический остаток</th>
-                    <th class="px-3 py-2 text-center font-semibold text-gray-700">Разница</th>
-                    <th class="px-3 py-2 text-center font-semibold text-gray-700">Статус</th>
-                    <th class="px-3 py-2 text-center font-semibold text-gray-700">Детали</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <template v-for="item in items" :key="item.id">
-                    <tr class="hover:bg-gray-50">
-                      <td class="px-3 py-2">
-                        <div>
-                          <div class="font-medium">{{ item.product_name }}</div>
-                          <div class="text-xs text-gray-500">{{ item.product_sku }}</div>
-                        </div>
-                      </td>
-                      <td class="px-3 py-2 text-center">{{ formatNumber(item.calculated_quantity) }}</td>
-                      <td class="px-3 py-2 text-center">{{ formatNumber(item.actual_quantity) }}</td>
-                      <td class="px-3 py-2 text-center">
-                        <span :class="getDifferenceClass(item)">
-                          {{ formatNumber(item.difference_quantity) }}
-                        </span>
-                      </td>
-                      <td class="px-3 py-2 text-center">
-                        <span :class="getExcessShortageClass(item)">
-                          {{ getExcessShortageText(item) }}
-                        </span>
-                      </td>
-                      <td class="px-3 py-2 text-center">
-                        <div v-if="hasDiscrepancy(item) && item.photo" class="flex items-center justify-center gap-2">
-                          <button 
-                            @click="viewFullPhoto(item.photo)"
-                            class="p-0 rounded transition-colors hover:opacity-80 cursor-pointer border border-gray-200 hover:border-blue-400"
-                            title="Просмотреть фото"
-                          >
-                            <img 
-                              :src="item.photo" 
-                              alt="Фото товара" 
-                              class="w-6 h-6 rounded object-cover"
-                            />
-                          </button>
-                        </div>
-                        <span v-else class="text-gray-400 text-xs">—</span>
-                      </td>
+              <div class="overflow-x-auto">
+                <table class="w-full divide-y divide-gray-200 text-sm">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th class="px-3 py-2 text-left font-semibold text-gray-700">Наименование</th>
+                      <th class="px-3 py-2 text-center font-semibold text-gray-700">Расчетный остаток</th>
+                      <th class="px-3 py-2 text-center font-semibold text-gray-700">Фактический остаток</th>
+                      <th class="px-3 py-2 text-center font-semibold text-gray-700">Разница</th>
+                      <th class="px-3 py-2 text-center font-semibold text-gray-700">Статус</th>
+                      <th class="px-3 py-2 text-center font-semibold text-gray-700">Детали</th>
                     </tr>
-                    <!-- Комментарий под строкой -->
-                    <tr v-if="item.notes && item.notes.trim() !== ''" :key="item.id + '-comment'">
-                      <td colspan="6" class="bg-gray-50 px-3 py-2 text-sm text-black border-t border-b border-gray-100">
-                        <div class="flex items-start gap-2">
-                          <span style="font-size: 12px;color: #747474;">Комментарий: {{ item.notes }}</span>
-                        </div>
-                      </td>
-                    </tr>
-                  </template>
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    <template v-for="item in items" :key="item.id">
+                      <tr class="hover:bg-gray-50">
+                        <td class="px-3 py-2">
+                          <div>
+                            <div class="font-medium">{{ item.product_name }}</div>
+                            <div class="text-xs text-gray-500">{{ item.product_sku }}</div>
+                          </div>
+                        </td>
+                        <td class="px-3 py-2 text-center">{{ formatNumber(item.calculated_quantity) }}</td>
+                        <td class="px-3 py-2 text-center">{{ formatNumber(item.actual_quantity) }}</td>
+                        <td class="px-3 py-2 text-center">
+                          <span :class="getDifferenceClass(item)">
+                            {{ formatNumber(item.difference_quantity) }}
+                          </span>
+                        </td>
+                        <td class="px-3 py-2 text-center">
+                          <span :class="getExcessShortageClass(item)">
+                            {{ getExcessShortageText(item) }}
+                          </span>
+                        </td>
+                        <td class="px-3 py-2 text-center">
+                          <div v-if="hasDiscrepancy(item) && item.photo" class="flex items-center justify-center gap-2">
+                            <button 
+                              @click="viewFullPhoto(item.photo)"
+                              class="p-0 rounded transition-colors hover:opacity-80 cursor-pointer border border-gray-200 hover:border-blue-400"
+                              title="Просмотреть фото"
+                            >
+                              <img 
+                                :src="item.photo" 
+                                alt="Фото товара" 
+                                class="w-6 h-6 rounded object-cover"
+                              />
+                            </button>
+                          </div>
+                          <span v-else class="text-gray-400 text-xs">—</span>
+                        </td>
+                      </tr>
+                      <!-- Комментарий под строкой -->
+                      <tr v-if="item.notes && item.notes.trim() !== ''" :key="item.id + '-comment'">
+                        <td colspan="6" class="bg-gray-50 px-3 py-2 text-sm text-black border-t border-b border-gray-100">
+                          <div class="flex items-start gap-2">
+                            <span style="font-size: 12px;color: #747474;">Комментарий: {{ item.notes }}</span>
+                          </div>
+                        </td>
+                      </tr>
+                    </template>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
           

@@ -166,7 +166,7 @@
           <div v-if="warehouseProducts.length > 0" class="mt-6">
             <h3 class="text-lg font-medium text-gray-900 mb-4">Товары для инвентаризации</h3>
             <div class="overflow-x-auto">
-              <table class="min-w-full divide-y divide-gray-200 text-sm">
+              <table class="w-full divide-y divide-gray-200 text-sm">
               <thead>
                 <tr class="bg-gray-50">
                   <th class="px-3 py-2 text-left font-semibold text-gray-700">Товар</th>

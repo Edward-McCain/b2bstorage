@@ -121,7 +121,7 @@
             Найдено записей: {{ inventories.length }}
           </div>
           <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200 text-sm">
+            <table class="w-full divide-y divide-gray-200 text-sm">
             <thead>
               <tr class="bg-gray-50">
                 <th class="px-3 py-2 text-left font-semibold text-gray-700">Название</th>
