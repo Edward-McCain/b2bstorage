@@ -5,55 +5,115 @@
     
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- Заголовок страницы -->
-        <div class="flex items-center justify-between mb-6">
-          <h1 class="text-3xl font-bold text-gray-900">Остатки</h1>
-          <div class="flex items-center gap-2">
-            <button
-              @click="toggleFilters"
-              class="flex items-center gap-2 text-gray-700 font-medium px-4 py-2 rounded text-sm hover:bg-gray-100 transition-colors cursor-pointer relative group"
-            >
-              <Filter v-if="!showFilters" class="w-4 h-4" />
-              <FunnelX v-else class="w-4 h-4" />
-              <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
-                {{ showFilters ? 'Скрыть фильтры' : 'Показать фильтры' }}
-                <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
-              </div>
-            </button>
-            <router-link 
-              to="/products/create" 
-              class="flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-700 font-medium px-4 py-2 rounded text-sm hover:bg-blue-100 transition-colors relative group"
-            >
-              <Plus class="w-4 h-4 text-blue-700" />
-              Остаток
-              <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
-                Добавить новый остаток
-                <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
-              </div>
-            </router-link>
-            <button 
-              @click="openImportModal"
-              :disabled="importLoading"
-              class="bg-white border border-gray-300 px-4 py-2 rounded font-medium text-sm hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2 relative group"
-            >
-              <Loader2 v-if="importLoading" class="w-4 h-4 animate-spin" />
-              {{ importLoading ? 'Обработка...' : 'Импорт' }}
-              <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
-                {{ importLoading ? 'Обработка файла...' : 'Импорт остатков из файла Excel' }}
-                <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
-              </div>
-            </button>
-            <button 
-              @click="exportBalances"
-              :disabled="exportLoading"
-              class="bg-white border border-gray-300 px-4 py-2 rounded font-medium text-sm hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2 relative group"
-            >
-              <Loader2 v-if="exportLoading" class="w-4 h-4 animate-spin" />
-              {{ exportLoading ? 'Экспорт...' : 'Экспорт' }}
-              <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
-                {{ exportLoading ? 'Выполняется экспорт...' : 'Экспорт остатков в файл Excel' }}
-                <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
-              </div>
-            </button>
+        <div class="mb-6">
+          <!-- Мобильная версия: двухстрочная -->
+          <div class="block sm:hidden w-full">
+            <!-- Первая строка: заголовок и кнопка фильтра -->
+            <div class="flex items-center justify-between mb-2">
+              <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Остатки</h1>
+              <button
+                @click="toggleFilters"
+                class="flex items-center gap-2 text-gray-700 font-medium px-4 py-2 rounded text-sm hover:bg-gray-100 transition-colors cursor-pointer group"
+              >
+                <Filter v-if="!showFilters" class="w-4 h-4" />
+                <FunnelX v-else class="w-4 h-4" />
+                <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                  {{ showFilters ? 'Скрыть фильтры' : 'Показать фильтры' }}
+                  <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                </div>
+              </button>
+            </div>
+            <!-- Вторая строка: кнопки действий -->
+            <div class="flex items-center gap-2 flex-wrap">
+              <router-link 
+                to="/products/create" 
+                class="flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-700 font-medium px-4 py-2 rounded text-sm hover:bg-blue-100 transition-colors relative group"
+              >
+                <Plus class="w-4 h-4 text-blue-700" />
+                Остаток
+                <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                  Добавить новый остаток
+                  <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                </div>
+              </router-link>
+              <button 
+                @click="openImportModal"
+                :disabled="importLoading"
+                class="bg-white border border-gray-300 px-4 py-2 rounded font-medium text-sm hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2 relative group"
+              >
+                <Loader2 v-if="importLoading" class="w-4 h-4 animate-spin" />
+                {{ importLoading ? 'Обработка...' : 'Импорт' }}
+                <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                  {{ importLoading ? 'Обработка файла...' : 'Импорт остатков из файла Excel' }}
+                  <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                </div>
+              </button>
+              <button 
+                @click="exportBalances"
+                :disabled="exportLoading"
+                class="bg-white border border-gray-300 px-4 py-2 rounded font-medium text-sm hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2 relative group"
+              >
+                <Loader2 v-if="exportLoading" class="w-4 h-4 animate-spin" />
+                {{ exportLoading ? 'Экспорт...' : 'Экспорт' }}
+                <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                  {{ exportLoading ? 'Выполняется экспорт...' : 'Экспорт остатков в файл Excel' }}
+                  <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                </div>
+              </button>
+            </div>
+          </div>
+          
+          <!-- ПК версия: однострочная как раньше -->
+          <div class="hidden items-center justify-between sm:flex w-full">
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Остатки</h1>
+            <div class="flex items-center gap-2">
+              <button
+                @click="toggleFilters"
+                class="flex items-center gap-2 text-gray-700 font-medium px-4 py-2 rounded text-sm hover:bg-gray-100 transition-colors cursor-pointer relative group"
+              >
+                <Filter v-if="!showFilters" class="w-4 h-4" />
+                <FunnelX v-else class="w-4 h-4" />
+                <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                  {{ showFilters ? 'Скрыть фильтры' : 'Показать фильтры' }}
+                  <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                </div>
+              </button>
+              <router-link 
+                to="/products/create" 
+                class="flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-700 font-medium px-4 py-2 rounded text-sm hover:bg-blue-100 transition-colors relative group"
+              >
+                <Plus class="w-4 h-4 text-blue-700" />
+                Остаток
+                <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                  Добавить новый остаток
+                  <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                </div>
+              </router-link>
+              <button 
+                @click="openImportModal"
+                :disabled="importLoading"
+                class="bg-white border border-gray-300 px-4 py-2 rounded font-medium text-sm hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2 relative group"
+              >
+                <Loader2 v-if="importLoading" class="w-4 h-4 animate-spin" />
+                {{ importLoading ? 'Обработка...' : 'Импорт' }}
+                <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                  {{ importLoading ? 'Обработка файла...' : 'Импорт остатков из файла Excel' }}
+                  <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                </div>
+              </button>
+              <button 
+                @click="exportBalances"
+                :disabled="exportLoading"
+                class="bg-white border border-gray-300 px-4 py-2 rounded font-medium text-sm hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2 relative group"
+              >
+                <Loader2 v-if="exportLoading" class="w-4 h-4 animate-spin" />
+                {{ exportLoading ? 'Экспорт...' : 'Экспорт' }}
+                <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                  {{ exportLoading ? 'Выполняется экспорт...' : 'Экспорт остатков в файл Excel' }}
+                  <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                </div>
+              </button>
+            </div>
           </div>
         </div>
       
@@ -661,7 +721,7 @@
               <tbody class="bg-white divide-y divide-gray-200">
                 <tr v-for="(product, index) in parsedProducts" :key="index" class="hover:bg-gray-50">
                   <td class="px-3 py-2 text-sm text-gray-900 whitespace-nowrap">
-                    <input v-model="product.name" type="text" class="w-32 text-sm border border-gray-300 rounded px-2 py-1" placeholder="Наименование" />
+                    <input v-model="product.name" type="text" class="w-full sm:w-32 text-sm border border-gray-300 rounded px-2 py-1" placeholder="Наименование" />
                   </td>
                   
                   <td v-if="areCategoriesEnabled()" class="px-3 py-2 text-sm text-gray-900 whitespace-nowrap">

@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+  <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-2 lg:p-6">
     <div class="flex items-center justify-between mb-6">
       <div class="flex items-center justify-between space-x-4 w-full">
         <!-- Переключатель периодов -->

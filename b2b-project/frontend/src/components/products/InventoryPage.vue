@@ -3,7 +3,7 @@
     <ProductsMenu />
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div class="flex items-center justify-between mb-6">
-        <h1 class="text-3xl font-bold text-gray-900">Инвентаризации</h1>
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Инвентаризации</h1>
         <div class="flex items-center gap-2">
           <button
             @click="toggleFilters"
@@ -120,7 +120,8 @@
           <div class="mb-4 text-sm text-gray-600">
             Найдено записей: {{ inventories.length }}
           </div>
-          <table class="min-w-full divide-y divide-gray-200 text-sm">
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 text-sm">
             <thead>
               <tr class="bg-gray-50">
                 <th class="px-3 py-2 text-left font-semibold text-gray-700">Название</th>
@@ -170,6 +171,7 @@
               </tr>
             </tbody>
           </table>
+          </div>
           <div v-if="inventories.length === 0" class="text-center text-gray-500 py-8">Нет инвентаризаций</div>
         </div>
       </div>

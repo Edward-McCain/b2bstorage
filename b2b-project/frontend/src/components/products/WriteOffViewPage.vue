@@ -17,7 +17,7 @@
           <div class="mb-6">
             <div class="flex items-center justify-between">
               <div>
-                <h1 class="text-xl font-bold text-gray-900 mb-1">Списание номер {{ writeOff.number }}</h1>
+                <h1 class="text-sm lg:text-xl font-bold text-gray-900 mb-1">Списание номер {{ writeOff.number }}</h1>
                 <div class="text-gray-500 text-sm">от {{ formatDate(writeOff.date) }}</div>
               </div>
               <div class="flex items-center gap-2">

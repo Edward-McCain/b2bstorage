@@ -3,7 +3,7 @@
     <SalesMenu />
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h1 class="text-3xl font-bold text-gray-900 mb-6">Отгрузки</h1>
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-6">Отгрузки</h1>
         <p class="text-gray-700 mb-4">Управление отгрузками товаров покупателям. Здесь вы можете создавать отгрузки, отслеживать их статус и печатать документы.</p>
         <div class="overflow-x-auto">
           <table class="min-w-full divide-y divide-gray-200">

@@ -6,7 +6,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- Заголовок страницы -->
       <div class="flex items-center justify-between mb-6">
-        <h1 class="text-3xl font-bold text-gray-900">Перемещения</h1>
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Перемещения</h1>
         <div class="flex items-center gap-2">
           <button
             @click="toggleFilters"

@@ -97,6 +97,10 @@ class ProductBalanceController extends Controller
             $q->where('user_id', Auth::id());
         });
 
+        // Фильтруем по товарам текущего пользователя из products_sklad
+        $userProductIds = \App\Models\ProductSklad::where('user_id', Auth::id())->pluck('id')->toArray();
+        $query->whereIn('product_id', $userProductIds);
+
         // Логируем входящие параметры для отладки
         Log::info('Balances filter POST params:', $request->all());
 
@@ -308,7 +312,11 @@ class ProductBalanceController extends Controller
             'warehouse_id' => 'required|exists:warehouses,id'
         ]);
 
+        // Получаем ID товаров пользователя
+        $userProductIds = \App\Models\ProductSklad::where('user_id', Auth::id())->pluck('id')->toArray();
+
         $balances = ProductBalance::with(['product.images', 'product.categoryRelation', 'product.subcategoryRelation'])
+            ->whereIn('product_id', $userProductIds)
             ->where('warehouse_id', $request->warehouse_id)
             ->where('quantity', '>', 0)
             ->whereHas('warehouse', function ($q) {
@@ -363,8 +371,20 @@ class ProductBalanceController extends Controller
             'product_id' => 'required|exists:products_sklad,id'
         ]);
 
+        // Проверяем, что товар принадлежит текущему пользователю
+        $product = \App\Models\ProductSklad::where('id', $request->product_id)
+            ->where('user_id', Auth::id())
+            ->first();
+
+        if (!$product) {
+            return response()->json(['error' => 'Товар не найден'], 404);
+        }
+
         $balances = ProductBalance::with(['warehouse'])
             ->where('product_id', $request->product_id)
+            ->whereHas('warehouse', function ($q) {
+                $q->where('user_id', Auth::id());
+            })
             ->orderBy('quantity', 'desc')
             ->get();
 
@@ -385,34 +405,63 @@ class ProductBalanceController extends Controller
         $user = Auth::user();
         $currency = $user && $user->currency ? $user->currency : 'UZS';
 
-        $query = \App\Models\ProductSklad::where('user_id', $user->id);
+        // 1. Получаем количество складов пользователя
+        $total_warehouses = \App\Models\Warehouse::where('user_id', $user->id)->count();
+
+        // 2. Получаем количество товаров пользователя из products_sklad
+        $userProductsQuery = \App\Models\ProductSklad::where('user_id', $user->id);
         if ($request->has('warehouse_id') && !empty($request->warehouse_id)) {
-            $query->where('warehouse_id', $request->warehouse_id);
+            $userProductsQuery->where('warehouse_id', $request->warehouse_id);
         }
-        $products = $query->get();
+        $userProducts = $userProductsQuery->get();
+        $total_products = $userProducts->count();
+
+        // 3. Получаем общее количество единиц товаров из product_balances
+        $userProductIds = $userProducts->pluck('id')->toArray();
+        $total_quantity = \App\Models\ProductBalance::whereIn('product_id', $userProductIds)
+            ->whereHas('warehouse', function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            })
+            ->sum('quantity');
+
+        // 4. Считаем общую стоимость: количество * цена (из products_sklad или receipt_positions)
         $total_value = 0;
-        $total_quantity = 0;
         $low_stock_items = 0;
         $out_of_stock_items = 0;
-        foreach ($products as $product) {
-            $start = (float)$product->start_count;
-            $price = (float)$product->price;
-            $receipts = \App\Models\ReceiptPosition::where('product_id', $product->id)->sum('quantity');
-            $writeOffs = \App\Models\WriteOffPosition::where('product_id', $product->id)->sum('quantity');
-            $final_qty = $start + $receipts - $writeOffs;
-            $total_quantity += $final_qty;
-            $total_value += $final_qty * $price;
-            if ($final_qty <= 10 && $final_qty > 0) $low_stock_items++;
-            if ($final_qty <= 0) $out_of_stock_items++;
+
+        foreach ($userProducts as $product) {
+            // Получаем общее количество этого товара по всем складам
+            $productTotalQuantity = \App\Models\ProductBalance::where('product_id', $product->id)
+                ->whereHas('warehouse', function ($q) use ($user) {
+                    $q->where('user_id', $user->id);
+                })
+                ->sum('quantity');
+
+            // Получаем цену товара (сначала из products_sklad, затем из receipt_positions)
+            $productPrice = $this->getProductPrice($product->id);
+
+            // Считаем стоимость для этого товара
+            $productValue = $productTotalQuantity * $productPrice;
+            $total_value += $productValue;
+
+            // Считаем товары с низким остатком и без остатка
+            if ($productTotalQuantity <= 10 && $productTotalQuantity > 0) {
+                $low_stock_items++;
+            }
+            if ($productTotalQuantity <= 0) {
+                $out_of_stock_items++;
+            }
         }
+
         $summary = [
-            'total_products' => $products->count(),
-            'total_warehouses' => $products->unique('warehouse_id')->count(),
+            'total_products' => $total_products,
+            'total_warehouses' => $total_warehouses,
             'total_quantity' => $total_quantity,
             'total_value' => $total_value,
             'low_stock_items' => $low_stock_items,
             'out_of_stock_items' => $out_of_stock_items
         ];
+
         return response()->json([
             'summary' => $summary,
             'currency' => $currency,
@@ -428,7 +477,11 @@ class ProductBalanceController extends Controller
     {
         $threshold = $request->get('threshold', 10);
 
+        // Получаем ID товаров пользователя
+        $userProductIds = \App\Models\ProductSklad::where('user_id', Auth::id())->pluck('id')->toArray();
+
         $lowStockItems = ProductBalance::with(['product.images', 'warehouse'])
+            ->whereIn('product_id', $userProductIds)
             ->where('quantity', '<=', $threshold)
             ->where('quantity', '>', 0)
             ->whereHas('warehouse', function ($q) {
@@ -470,7 +523,11 @@ class ProductBalanceController extends Controller
      */
     public function outOfStock(Request $request): JsonResponse
     {
+        // Получаем ID товаров пользователя
+        $userProductIds = \App\Models\ProductSklad::where('user_id', Auth::id())->pluck('id')->toArray();
+
         $outOfStockItems = ProductBalance::with(['product.images', 'warehouse'])
+            ->whereIn('product_id', $userProductIds)
             ->where('quantity', 0)
             ->whereHas('warehouse', function ($q) {
                 $q->where('user_id', Auth::id());
@@ -517,8 +574,15 @@ class ProductBalanceController extends Controller
             'date_to' => 'nullable|date'
         ]);
 
-        // Получаем информацию о товаре с категориями
-        $product = \App\Models\ProductSklad::with(['categoryRelation', 'subcategoryRelation'])->find($request->product_id);
+        // Проверяем, что товар принадлежит текущему пользователю
+        $product = \App\Models\ProductSklad::where('id', $request->product_id)
+            ->where('user_id', Auth::id())
+            ->with(['categoryRelation', 'subcategoryRelation'])
+            ->first();
+
+        if (!$product) {
+            return response()->json(['error' => 'Товар не найден'], 404);
+        }
         
         $query = DB::table('product_operations as po')
             ->leftJoin('products_sklad as p', 'po.product_id', '=', 'p.id')

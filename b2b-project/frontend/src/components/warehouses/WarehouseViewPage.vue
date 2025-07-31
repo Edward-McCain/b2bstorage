@@ -5,9 +5,37 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- Заголовок страницы -->
       <div class="mb-8">
-        <div class="flex items-center justify-between">
+        <!-- Мобильная версия: двухстрочная -->
+        <div class="block sm:hidden">
+          <!-- Первая строка: название и адрес -->
+          <div class="w-full mb-4">
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-900">{{ warehouse?.name || 'Склад' }}</h1>
+            <p v-if="warehouse?.address" class="mt-2 text-gray-600">{{ warehouse.address }}</p>
+            <p v-else class="mt-2 text-gray-400">Адрес не указан</p>
+          </div>
+          <!-- Вторая строка: кнопки -->
+          <div class="flex items-center gap-3">
+            <router-link
+              :to="`/warehouses/edit/${warehouseId}`"
+              class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm"
+            >
+              <Edit class="w-4 h-4" />
+              Редактировать
+            </router-link>
+            <router-link
+              :to="`/products/transfers/create?from_warehouse=${warehouseId}`"
+              class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm"
+            >
+              <Truck class="w-4 h-4" />
+              Переместить товары
+            </router-link>
+          </div>
+        </div>
+        
+        <!-- ПК версия: однострочная как раньше -->
+        <div class="hidden sm:flex items-center justify-between">
           <div>
-            <h1 class="text-3xl font-bold text-gray-900">{{ warehouse?.name || 'Склад' }}</h1>
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-900">{{ warehouse?.name || 'Склад' }}</h1>
             <p v-if="warehouse?.address" class="mt-2 text-gray-600">{{ warehouse.address }}</p>
             <p v-else class="mt-2 text-gray-400">Адрес не указан</p>
           </div>

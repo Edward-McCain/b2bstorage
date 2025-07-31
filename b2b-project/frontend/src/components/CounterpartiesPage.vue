@@ -57,7 +57,8 @@
         </div>
       </div>
       <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200 text-sm">
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200 text-sm">
           <thead class="bg-gray-50">
             <tr>
               <th class="px-2 py-2"><input type="checkbox" /></th>
@@ -139,6 +140,7 @@
             </tr>
           </tbody>
         </table>
+        </div>
         <div class="flex items-center justify-between mt-4 text-sm text-gray-600">
           <div>1-3 из 3</div>
           <div class="flex gap-2">

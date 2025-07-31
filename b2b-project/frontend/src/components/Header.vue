@@ -309,7 +309,7 @@ window.addEventListener('notifications-updated', () => {
       <!-- Логотип -->
       <div class="flex pr-10">
         <a href="/" class="-m-1.5 p-1.5 flex items-center gap-2">
-          <img class="h-8 w-auto" src="../assets/skladlogo.png" alt="" />
+          <img class="h-6 lg:h-8 w-auto" src="../assets/skladlogo.png" alt="" />
         </a>
       </div>
       <!-- Мобильная навигация -->

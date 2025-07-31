@@ -106,5 +106,5 @@ button, input, select, optgroup, textarea, ::file-selector-button {
   box-shadow: none !important;
 }
 *:not(.shadow-2xl):not(.fixed *) {box-shadow: none !important;}
-.bg-white.border {border: none !important;}
+.bg-white.border:not(input):not(textarea) {border: none !important;}
 </style>

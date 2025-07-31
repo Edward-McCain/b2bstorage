@@ -3,7 +3,7 @@
     <SalesMenu />
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h1 class="text-3xl font-bold text-gray-900 mb-6">Юнит-экономика</h1>
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-6">Юнит-экономика</h1>
         <p class="text-gray-700 mb-4">Анализируйте показатели юнит-экономики по товарам, клиентам и каналам продаж.</p>
         <ul class="list-disc pl-6 text-gray-700 space-y-2">
           <li>Средний доход на единицу: <span class="font-bold">5,200 ₽</span></li>
