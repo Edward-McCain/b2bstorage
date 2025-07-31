@@ -93,7 +93,7 @@ export const apiRequest = async (endpoint, options = {}) => {
   }
 }
 
-// Создаем объект API с методами для удобства
+// Создаем объект API с методами для удобства 
 const api = {
   async get(endpoint, options = {}) {
     const response = await apiRequest(endpoint, { ...options, method: 'GET' })
