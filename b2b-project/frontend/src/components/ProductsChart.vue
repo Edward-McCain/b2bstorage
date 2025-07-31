@@ -5,7 +5,7 @@
         <!-- Переключатель периодов -->
         <div class="flex bg-gray-100 rounded-lg p-1">
           <button
-            v-for="period in periods"
+            v-for="period in availablePeriodsList"
             :key="period.value"
             @click="changePeriod(period.value)"
             :class="[
@@ -112,6 +112,7 @@ const periods = [
 // Состояние
 const selectedPeriod = ref('week')
 const loading = ref(false)
+const availablePeriods = ref(['week']) // По умолчанию доступна только неделя
 const statisticsData = ref({
   receipts: [],
   writeOffs: [],
@@ -135,6 +136,10 @@ const series = ref([
 ])
 
 // Вычисляемые свойства
+const availablePeriodsList = computed(() => {
+  return periods.filter(period => availablePeriods.value.includes(period.value))
+})
+
 const totalOperations = computed(() => {
   const receipts = statisticsData.value.receipts.reduce((sum, item) => sum + item.count, 0)
   const writeOffs = statisticsData.value.writeOffs.reduce((sum, item) => sum + item.count, 0)
@@ -308,6 +313,10 @@ const loadStatistics = async () => {
     
     if (response.ok && response.data.success) {
       statisticsData.value = response.data.data
+      // Обновляем доступные периоды из ответа API
+      if (response.data.data.availablePeriods) {
+        availablePeriods.value = response.data.data.availablePeriods
+      }
       updateChartData()
     } else {
       console.error('Ошибка загрузки статистики:', response.data.message)

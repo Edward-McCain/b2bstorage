@@ -614,8 +614,10 @@ class ProductController extends Controller
         
         if ($latestReceiptPosition) {
             $product->quantity = (float) $latestReceiptPosition->quantity;
-            $product->price = (float) $latestReceiptPosition->price;
         }
+        
+        // Получаем цену товара используя ту же логику, что и в ProductBalanceController
+        $product->price = $this->getProductPrice($product->id);
 
         return response()->json([
             'success' => true,
@@ -787,6 +789,11 @@ class ProductController extends Controller
             'products_count' => is_array($products) ? count($products) : 0
         ]);
 
+        // Проверяем, есть ли warehouse_id на верхнем уровне или в первом продукте
+        if (!$warehouseId && is_array($products) && count($products) > 0 && isset($products[0]['warehouse_id'])) {
+            $warehouseId = $products[0]['warehouse_id'];
+        }
+
         if (!$warehouseId || !is_array($products) || count($products) === 0) {
             return response()->json(['success' => false, 'error' => 'warehouse_id и products обязательны'], 422);
         }
@@ -808,6 +815,9 @@ class ProductController extends Controller
             // 1. Массовое создание товаров с начальными остатками
             $createdProducts = [];
             foreach ($products as $prod) {
+                // Используем warehouse_id из продукта, если он есть, иначе используем общий warehouse_id
+                $productWarehouseId = $prod['warehouse_id'] ?? $warehouseId;
+                
                 $productData = [
                     'user_id' => $user->id,
                     'name' => $prod['name'],
@@ -818,7 +828,7 @@ class ProductController extends Controller
                     'code' => $prod['code'] ?? null,
                     'external_code' => $prod['external_code'] ?? null,
                     'unit' => $prod['unit'] ?? null,
-                    'warehouse_id' => $warehouseId,
+                    'warehouse_id' => $productWarehouseId,
                     'weight' => $prod['weight'] ?? null,
                     'volume' => $prod['volume'] ?? null,
                     'vat' => $prod['vat'] ?? null,
@@ -843,7 +853,7 @@ class ProductController extends Controller
                     $category = $prod['category'] ?? null;
                     $subcategory = $prod['subcategory'] ?? null;
                     
-                    // Валидация существования категорий
+                    // Валидация существования категорий (делаем необязательными)
                     if ($category) {
                         if ($catsType === 'user') {
                             $categoryExists = DB::table('user_categories')
@@ -852,7 +862,12 @@ class ProductController extends Controller
                                 ->exists();
                                 
                             if (!$categoryExists) {
-                                throw new \Exception("Категория '{$category}' не существует в ваших пользовательских категориях");
+                                // Логируем предупреждение, но не прерываем импорт
+                                Log::warning("Категория '{$category}' не существует в пользовательских категориях, пропускаем", [
+                                    'user_id' => $user->id,
+                                    'category' => $category
+                                ]);
+                                $category = null; // Сбрасываем категорию
                             }
                         } else {
                             $categoryExists = DB::table('categories')
@@ -860,12 +875,16 @@ class ProductController extends Controller
                                 ->exists();
                                 
                             if (!$categoryExists) {
-                                throw new \Exception("Категория '{$category}' не существует в системных категориях");
+                                // Логируем предупреждение, но не прерываем импорт
+                                Log::warning("Категория '{$category}' не существует в системных категориях, пропускаем", [
+                                    'category' => $category
+                                ]);
+                                $category = null; // Сбрасываем категорию
                             }
                         }
                     }
                     
-                    // Валидация существования подкатегорий
+                    // Валидация существования подкатегорий (делаем необязательными)
                     if ($subcategory) {
                         if ($catsType === 'user') {
                             $subcategoryExists = DB::table('user_subcategories')
@@ -874,7 +893,12 @@ class ProductController extends Controller
                                 ->exists();
                                 
                             if (!$subcategoryExists) {
-                                throw new \Exception("Подкатегория '{$subcategory}' не существует в ваших пользовательских подкатегориях");
+                                // Логируем предупреждение, но не прерываем импорт
+                                Log::warning("Подкатегория '{$subcategory}' не существует в пользовательских подкатегориях, пропускаем", [
+                                    'user_id' => $user->id,
+                                    'subcategory' => $subcategory
+                                ]);
+                                $subcategory = null; // Сбрасываем подкатегорию
                             }
                         } else {
                             $subcategoryExists = DB::table('subcategories')
@@ -882,11 +906,16 @@ class ProductController extends Controller
                                 ->exists();
                                 
                             if (!$subcategoryExists) {
-                                throw new \Exception("Подкатегория '{$subcategory}' не существует в системных подкатегориях");
+                                // Логируем предупреждение, но не прерываем импорт
+                                Log::warning("Подкатегория '{$subcategory}' не существует в системных подкатегориях, пропускаем", [
+                                    'subcategory' => $subcategory
+                                ]);
+                                $subcategory = null; // Сбрасываем подкатегорию
                             }
                         }
                     }
                     
+                    // Сохраняем category_id и subcategory_id как строки
                     $productData['category'] = $category;
                     $productData['subcategory'] = $subcategory;
                 }
@@ -900,10 +929,13 @@ class ProductController extends Controller
 
             // 2. Массовое создание/обновление остатков на основе начальных остатков
             foreach ($createdProducts as $item) {
+                // Используем warehouse_id из продукта, если он есть, иначе используем общий warehouse_id
+                $productWarehouseId = $item['input']['warehouse_id'] ?? $warehouseId;
+                
                 \App\Models\ProductBalance::updateOrCreate(
                     [
                         'product_id' => $item['model']->id,
-                        'warehouse_id' => $warehouseId
+                        'warehouse_id' => $productWarehouseId
                     ],
                     [
                         'quantity' => $item['input']['start_count'] ?? 0 // Используем start_count
@@ -917,7 +949,9 @@ class ProductController extends Controller
                     'created_products_count' => count($createdProducts),
                     'first_product_structure' => array_keys($createdProducts[0] ?? [])
                 ]);
-                $this->createBulkProductsInventory($createdProducts, $warehouseId, $user->id);
+                // Используем warehouse_id из первого продукта, если он есть, иначе используем общий warehouse_id
+                $firstProductWarehouseId = $createdProducts[0]['input']['warehouse_id'] ?? $warehouseId;
+                $this->createBulkProductsInventory($createdProducts, $firstProductWarehouseId, $user->id);
             }
 
             DB::commit();
@@ -1079,6 +1113,29 @@ class ProductController extends Controller
         }
         
         return $inventory;
+    }
+
+    /**
+     * Получить цену товара
+     */
+    private function getProductPrice($productId)
+    {
+        // Сначала пытаемся получить цену из самого товара
+        $product = \App\Models\ProductSklad::find($productId);
+        
+        // Если в products_sklad есть цена > 0, берем её как основную
+        if ($product && $product->price > 0) {
+            return (float) $product->price;
+        }
+
+        // Если в products_sklad цена = 0 или null, ищем в последнем оприходовании
+        $lastReceiptPosition = \App\Models\ReceiptPosition::where('product_id', $productId)
+            ->whereNotNull('price')
+            ->where('price', '>', 0)
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        return $lastReceiptPosition ? (float) $lastReceiptPosition->price : 0;
     }
 
     /**

@@ -13,8 +13,15 @@ class StatisticsController extends Controller
     public function getOperationsStatistics(Request $request)
     {
         try {
-            // Временно используем тестового пользователя для отладки
-            $userId = Auth::id() ?: 52; // Если пользователь не аутентифицирован, используем ID 52
+            // Используем ID аутентифицированного пользователя
+            $userId = Auth::id();
+            
+            if (!$userId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Пользователь не аутентифицирован'
+                ], 401);
+            }
             
             $period = $request->get('period', 'week'); // week, month, year
             
@@ -35,6 +42,9 @@ class StatisticsController extends Controller
                 'transfers_count' => count($transfers)
             ]);
             
+            // Определяем доступные периоды на основе данных
+            $availablePeriods = $this->getAvailablePeriods($userId);
+            
             return response()->json([
                 'success' => true,
                 'data' => [
@@ -42,6 +52,7 @@ class StatisticsController extends Controller
                     'writeOffs' => $writeOffs,
                     'transfers' => $transfers,
                     'period' => $period,
+                    'availablePeriods' => $availablePeriods,
                     'startDate' => Carbon::now()->subMonth()->format('Y-m-d'),
                     'endDate' => Carbon::now()->format('Y-m-d')
                 ]
@@ -308,5 +319,41 @@ class StatisticsController extends Controller
             default:
                 return $carbon->format('M');
         }
+    }
+    
+    private function getAvailablePeriods($userId)
+    {
+        $availablePeriods = ['week']; // Неделя всегда доступна
+        
+        // Проверяем данные за месяц
+        $monthData = $this->getLatestReceiptsData($userId, 'month');
+        $monthWriteOffs = $this->getLatestWriteOffsData($userId, 'month');
+        $monthTransfers = $this->getLatestTransfersData($userId, 'month');
+        
+        $hasMonthData = $this->hasData($monthData) || $this->hasData($monthWriteOffs) || $this->hasData($monthTransfers);
+        
+        if ($hasMonthData) {
+            $availablePeriods[] = 'month';
+            
+            // Проверяем данные за год
+            $yearData = $this->getLatestReceiptsData($userId, 'year');
+            $yearWriteOffs = $this->getLatestWriteOffsData($userId, 'year');
+            $yearTransfers = $this->getLatestTransfersData($userId, 'year');
+            
+            $hasYearData = $this->hasData($yearData) || $this->hasData($yearWriteOffs) || $this->hasData($yearTransfers);
+            
+            if ($hasYearData) {
+                $availablePeriods[] = 'year';
+            }
+        }
+        
+        return $availablePeriods;
+    }
+    
+    private function hasData($data)
+    {
+        return $data->reduce(function($sum, $item) {
+            return $sum + $item['count'];
+        }, 0) > 0;
     }
 } 

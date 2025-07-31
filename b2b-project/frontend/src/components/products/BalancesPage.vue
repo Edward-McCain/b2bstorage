@@ -315,9 +315,6 @@
                   Товар
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500">
-                  Склад
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500">
                   Остаток
                 </th>
                 <th v-if="productFieldsVisibility.price !== false" class="px-6 py-3 text-left text-xs font-medium text-gray-500">
@@ -332,15 +329,15 @@
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-              <template v-for="balance in balances" :key="`${balance.product.id}-${balance.warehouse_id}`">
+              <template v-for="product in balances" :key="`${product.id}`">
                 <tr class="hover:bg-gray-50">
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="flex items-center">
                       <div class="flex-shrink-0 h-10 w-10">
                         <img
-                          v-if="balance.product?.images?.length > 0"
-                          :src="balance.product.images[0].image_url"
-                          :alt="balance.product.images[0].alt_text || balance.product.name"
+                          v-if="product?.images?.length > 0"
+                          :src="product.images[0].image_url"
+                          :alt="product.images[0].alt_text || product.name"
                           class="h-10 w-10 rounded-lg object-cover"
                         />
                         <div v-else class="h-10 w-10 bg-gray-200 rounded-lg flex items-center justify-center">
@@ -350,33 +347,31 @@
                         </div>
                       </div>
                       <div class="ml-4">
-                        <div class="text-sm font-medium text-gray-900">{{ balance.product?.name }}</div>
-                        <div class="text-sm text-gray-500">{{ balance.product?.category_name || balance.product?.category }}</div>
+                        <div class="text-sm font-medium text-gray-900">{{ product?.name }}</div>
+                        <div class="text-sm text-gray-500">{{ product?.category_name || product?.category }}</div>
                       </div>
                     </div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {{ balance.warehouse?.name }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    <span :class="getQuantityClass(balance.quantity)">
-                      {{ balance.quantity }}
+                    <!-- Показываем общий остаток -->
+                    <span :class="getQuantityClass(product.total_quantity || 0)">
+                      {{ product.total_quantity || 0 }}
                     </span>
                   </td>
                   <td v-if="productFieldsVisibility.price !== false" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {{ formatCurrency(balance.product?.price) }} <br>
-                    {{ formatCurrency(balance.quantity * (balance.product?.price || 0)) }}
+                    {{ formatCurrency(Number(product?.price) || 0) }} <br>
+                    {{ formatCurrency((product.total_quantity || 0) * (Number(product?.price) || 0)) }}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
-                    <span :class="getStatusClass(balance.quantity)" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
-                      {{ getStatusText(balance.quantity) }}
+                    <span :class="getStatusClass(product.total_quantity || 0)" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
+                      {{ getStatusText(product.total_quantity || 0) }}
                     </span>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div class="flex items-center gap-2">
                       <div class="relative group">
                         <button
-                          @click="viewMovements(balance.product.id, balance.warehouse_id)"
+                          @click="viewMovements(product.id)"
                           class="text-blue-600 hover:text-blue-900 cursor-pointer p-1 rounded hover:bg-blue-50 transition-colors"
                         >
                           <ArrowRightLeft class="w-4 h-4" />
@@ -388,8 +383,8 @@
                       </div>
                       <div class="relative group">
                         <router-link
-                          v-if="balance.product?.id"
-                          :to="`/products/edit/${balance.product.id}`"
+                          v-if="product?.id"
+                          :to="`/products/edit/${product.id}`"
                           class="text-green-600 hover:text-green-900 cursor-pointer p-1 rounded hover:bg-green-50 transition-colors"
                         >
                           <Edit class="w-4 h-4" />
@@ -401,7 +396,7 @@
                       </div>
                       <div class="relative group">
                         <button
-                          @click="openDeleteModal(balance.product.id)"
+                          @click="openDeleteModal(product.id)"
                           class="text-red-600 hover:text-red-900 cursor-pointer p-1 rounded hover:bg-red-50 transition-colors"
                         >
                           <Trash2 class="w-4 h-4" />
@@ -416,16 +411,16 @@
                 </tr>
                 <!-- Дополнительная строка с полями товара -->
                 <tr class="bg-gray-50">
-                  <td :colspan="productFieldsVisibility.price !== false ? 7 : 5" class="px-6 py-3">
+                  <td :colspan="productFieldsVisibility.price !== false ? 5 : 4" class="px-6 py-3">
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
                       <!-- Обязательные поля -->
-                      <div v-if="balance.product?.category_name || balance.product?.category" class="flex items-center gap-2">
+                      <div v-if="product?.category_name || product?.category" class="flex items-center gap-2">
                         <span class="font-medium text-gray-600">Категория:</span>
-                        <span class="text-gray-900">{{ balance.product.category_name || balance.product.category }}</span>
+                        <span class="text-gray-900">{{ product.category_name || product.category }}</span>
                       </div>
-                      <div v-if="balance.product?.subcategory_name || balance.product?.subcategory" class="flex items-center gap-2">
+                      <div v-if="product?.subcategory_name || product?.subcategory" class="flex items-center gap-2">
                         <span class="font-medium text-gray-600">Подкатегория:</span>
-                        <span class="text-gray-900">{{ balance.product.subcategory_name || balance.product.subcategory }}</span>
+                        <span class="text-gray-900">{{ product.subcategory_name || product.subcategory }}</span>
                       </div>
                       
                       <!-- Дополнительные поля (активные) -->
@@ -1092,9 +1087,9 @@ export default {
       showFilters.value = !showFilters.value
     }
 
-    const viewMovements = (productId, warehouseId) => {
+    const viewMovements = (productId) => {
       selectedProductId.value = productId
-      selectedWarehouseId.value = warehouseId
+      selectedWarehouseId.value = null // Теперь показываем движения по всем складам
       showMovementsModal.value = true
     }
 
@@ -1175,8 +1170,8 @@ export default {
         
         if (response.data.success) {
           // Удаляем товар из списка остатков
-          balances.value = balances.value.filter(balance => 
-            balance.product.id !== productIdToDelete.value
+          balances.value = balances.value.filter(product => 
+            product.id !== productIdToDelete.value
           )
           
           showNotification('Товар успешно удален', 'success')
@@ -1488,7 +1483,7 @@ export default {
           const productData = {
             name: product.name,
             price: productFieldsVisibility.price !== false ? product.price : 0,
-            quantity: product.quantity,
+            start_count: product.quantity || 0, // Используем start_count вместо quantity
             unit: product.unit?.value || product.unit || 'Штука',
             article: product.article,
             warehouse_id: selectedWarehouseForImport.value.value
@@ -1496,8 +1491,22 @@ export default {
           
           // Добавляем категории только если они включены
           if (areCategoriesEnabled()) {
-            productData.category = product.category
-            productData.subcategory = product.subcategory
+            // Передаем ID категорий из выбранных значений
+            if (product.selectedCategory && product.selectedCategory.value) {
+              productData.category = product.selectedCategory.value
+            } else if (product.category && typeof product.category === 'object' && product.category.value) {
+              productData.category = product.category.value
+            } else if (product.category) {
+              productData.category = product.category
+            }
+            
+            if (product.selectedSubcategory && product.selectedSubcategory.value) {
+              productData.subcategory = product.selectedSubcategory.value
+            } else if (product.subcategory && typeof product.subcategory === 'object' && product.subcategory.value) {
+              productData.subcategory = product.subcategory.value
+            } else if (product.subcategory) {
+              productData.subcategory = product.subcategory
+            }
           }
           
           // Добавляем кастомные поля
@@ -1558,10 +1567,10 @@ export default {
         const response = await api.post('/balances', params)
         
         if (response.data.data) {
-          const allBalances = response.data.data || []
+          const allProducts = response.data.data || []
           
           // Подготавливаем данные для экспорта
-          const exportData = allBalances.map(balance => {
+          const exportData = allProducts.map(product => {
             const formatQuantity = (qty) => {
               if (qty === null || qty === undefined || qty === '') return '-'
               const num = parseFloat(qty)
@@ -1576,27 +1585,34 @@ export default {
             
             // Базовые поля
             const exportRow = {
-              'Название': balance.product?.name || '-',
-              'Категория': balance.product?.category_name || balance.product?.category || '-',
-              'Подкатегория': balance.product?.subcategory_name || balance.product?.subcategory || '-',
-              'Склад': balance.warehouse?.name || '-',
-              'Остаток': formatQuantity(balance.quantity),
-              'Единица измерения': balance.product?.unit || '-',
-              'Стоимость': formatPrice(balance.product?.price),
-              'Артикул': balance.product?.article || '-'
+              'Название': product.name || '-',
+              'Категория': product.category_name || product.category || '-',
+              'Подкатегория': product.subcategory_name || product.subcategory || '-',
+              'Общий остаток': formatQuantity(product.total_quantity),
+              'Единица измерения': product.unit || '-',
+              'Стоимость': formatPrice(product.price),
+              'Артикул': product.article || '-'
+            }
+            
+            // Добавляем информацию по складам
+            if (product.warehouse_balances && Array.isArray(product.warehouse_balances)) {
+              product.warehouse_balances.forEach((warehouseBalance, index) => {
+                const warehouseName = warehouseBalance.warehouse_name || `Склад ${warehouseBalance.warehouse_id}`
+                exportRow[`Остаток на ${warehouseName}`] = formatQuantity(warehouseBalance.quantity)
+              })
             }
             
             // Добавляем дополнительные поля в зависимости от настроек
             standardProductFields.forEach(field => {
-              if (productFieldsVisibility[field.key] === true && balance.product?.[field.key]) {
-                exportRow[field.label] = balance.product[field.key] || '-'
+              if (productFieldsVisibility[field.key] === true && product[field.key]) {
+                exportRow[field.label] = product[field.key] || '-'
               }
             })
             
             // Добавляем кастомные поля
             customFields.value.forEach(field => {
               if (field && field.field_name) {
-                const customValue = getCustomFieldValue(balance.product, field.field_name)
+                const customValue = getCustomFieldValue(product, field.field_name)
                 if (customValue !== '-') {
                   exportRow[field.field_name] = customValue
                 }
@@ -1615,8 +1631,7 @@ export default {
             { wch: 30 }, // Название
             { wch: 20 }, // Категория
             { wch: 20 }, // Подкатегория
-            { wch: 15 }, // Склад
-            { wch: 12 }, // Остаток
+            { wch: 15 }, // Общий остаток
             { wch: 15 }, // Единица измерения
             { wch: 12 }, // Стоимость
             { wch: 15 }  // Артикул
