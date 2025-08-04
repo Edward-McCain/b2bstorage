@@ -202,9 +202,9 @@
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     <div>
-                      <div>{{ product.category?.name || 'Не указана' }}</div>
+                      <div>{{ getCategoryDisplayName(product.category) || 'Не указана' }}</div>
                       <div v-if="product.subcategory?.name" class="text-xs text-gray-500">
-                        {{ product.subcategory.name }}
+                        {{ getSubcategoryDisplayName(product.subcategory) }}
                       </div>
                     </div>
                   </td>
@@ -356,7 +356,7 @@ import api from '../../../config/api.js'
 import Multiselect from '@vueform/multiselect'
 import '@vueform/multiselect/themes/default.css'
 import { getCategoriesByUserSettings } from '../../../config/api.js'
-import { transformCategoriesToOptions, transformSubcategoriesToOptions } from '../../../utils/categoryDisplayUtils'
+import { transformCategoriesToOptions, transformSubcategoriesToOptions, getCategoryDisplayName, getSubcategoryDisplayName } from '../../../utils/categoryDisplayUtils'
 
 // Данные
 const products = ref([])

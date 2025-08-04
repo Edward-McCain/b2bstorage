@@ -1330,9 +1330,16 @@ export default {
         // Получаем заголовки (первая строка)
         const headers = jsonData[0]
         
-        // Проверяем обязательные колонки
-        const requiredColumns = [t('BalancesPage_143'), t('BalancesPage_144')] // Название, Стоимость
-        const missingColumns = requiredColumns.filter(col => !headers.includes(col))
+        // Проверяем обязательные колонки (поддерживаем все языки)
+        const nameColumns = ['Название', 'Name', 'Nomi', '名称'] // Название на всех языках
+        const costColumns = ['Стоимость', 'Cost', 'Narxi', '成本'] // Стоимость на всех языках
+        
+        const hasNameColumn = nameColumns.some(col => headers.includes(col))
+        const hasCostColumn = costColumns.some(col => headers.includes(col))
+        
+        const missingColumns = []
+        if (!hasNameColumn) missingColumns.push(t('BalancesPage_143'))
+        if (!hasCostColumn) missingColumns.push(t('BalancesPage_144'))
         
         if (missingColumns.length > 0) {
           throw new Error(`${t('BalancesPage_141')} ${missingColumns.join(', ')}`) // Отсутствуют обязательные колонки:
@@ -1349,16 +1356,19 @@ export default {
             product[header] = row[index] || ''
           })
           
-          // Проверяем обязательные поля
-          if (!product[t('BalancesPage_143')] || !product[t('BalancesPage_144')]) { // Название, Стоимость
+          // Проверяем обязательные поля (поддерживаем все языки)
+          const productName = product['Название'] || product['Name'] || product['Nomi'] || product['名称'] || product[t('BalancesPage_143')]
+          const productCost = product['Стоимость'] || product['Cost'] || product['Narxi'] || product['成本'] || product[t('BalancesPage_144')]
+          
+          if (!productName || !productCost) { // Название, Стоимость
             continue // Пропускаем строки без обязательных полей
           }
           
           // Преобразуем данные в нужный формат
           const unitValue = product[t('BalancesPage_147')] || product[t('BalancesPage_148')] || product[t('BalancesPage_149')] || t('BalancesPage_109') // Единица измерения, Ед. изм., Единица, Штука
           const parsedProduct = {
-            name: product[t('BalancesPage_143')]?.toString() || '', // Название
-            price: parseFloat(product[t('BalancesPage_144')]) || 0, // Стоимость
+            name: productName?.toString() || '', // Название
+            price: parseFloat(productCost) || 0, // Стоимость
             quantity: parseFloat(product[t('BalancesPage_145')] || product[t('BalancesPage_146')] || 0) || 0, // Начальный остаток, Остаток
             unit: { label: unitValue, value: unitValue },
             article: product[t('BalancesPage_107')] || '', // Артикул
@@ -1370,7 +1380,9 @@ export default {
           
           // Добавляем категории только если они включены в настройках
           if (areCategoriesEnabled()) {
-            parsedProduct.category = product[t('BalancesPage_21')] || product[t('BalancesPage_150')] || '' // Категория, Категория товара
+            // Поддерживаем категории на всех языках
+            const categoryColumns = ['Категория', 'Category', 'Kategoriya', '类别', 'Категория товара', 'Product category', 'Tovar kategoriyasi', '商品类别']
+            parsedProduct.category = categoryColumns.find(col => product[col]) || product[t('BalancesPage_21')] || product[t('BalancesPage_150')] || ''
           }
           
           products.push(parsedProduct)

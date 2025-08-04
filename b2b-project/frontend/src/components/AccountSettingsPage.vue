@@ -731,7 +731,7 @@
                       :class="expandedCategories.includes(category.id) ? 'rotate-180' : ''"
                     />
                   </button>
-                  <span class="font-medium">{{ category.name }}</span>
+                  <span class="font-medium">{{ getCategoryDisplayName(category) }}</span>
                   <span class="text-sm text-gray-500">({{ category.products_count }} {{ t('AccountSettingsPage_91') }})</span>
                 </div>
                 <div class="flex gap-2">
@@ -772,7 +772,7 @@
                   <div v-if="category.subcategories && category.subcategories.length > 0" class="space-y-2">
                     <div v-for="subcategory in category.subcategories" :key="subcategory.id" class="flex items-center justify-between py-2 px-3 bg-gray-50 rounded">
                       <div class="flex items-center gap-2">
-                        <span class="text-sm">{{ subcategory.name }}</span>
+                        <span class="text-sm">{{ getSubcategoryDisplayName(subcategory) }}</span>
                         <span class="text-xs text-gray-500">({{ subcategory.products_count }} {{ t('AccountSettingsPage_91') }})</span>
                       </div>
                       <div class="flex gap-1">
@@ -822,7 +822,7 @@
         
         <div class="mb-4">
           <p class="text-sm text-gray-600 mb-2">
-            {{ t('AccountSettingsPage_97') }} <span class="font-medium">{{ selectedCategoryForSubcategory.name }}</span>
+            {{ t('AccountSettingsPage_97') }} <span class="font-medium">{{ getCategoryDisplayName(selectedCategoryForSubcategory) }}</span>
           </p>
           <input 
             v-model="newSubcategoryName"
@@ -1904,6 +1904,7 @@ const toggleCategoriesType = async () => {
 
 // Импортируем утилиты для работы с кэшем
 import { saveUserCategoriesToCache, clearUserCategoriesCache } from '@/utils/categoryCacheUtils'
+import { getCategoryDisplayName, getSubcategoryDisplayName } from '@/utils/categoryDisplayUtils'
 
 // Загрузка пользовательских категорий
 const loadUserCategories = async () => {

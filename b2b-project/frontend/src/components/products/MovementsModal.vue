@@ -140,15 +140,16 @@
 </template>
 
 <script>
-import { ref, reactive, onMounted } from 'vue'
 import api from '@/config/api'
 import { Loader2 } from 'lucide-vue-next'
 import { t } from '@/locales'
+import LocalizedDatePicker from '../LocalizedDatePicker.vue'
 
 export default {
   name: 'MovementsModal',
   components: {
-    Loader2
+    Loader2,
+    LocalizedDatePicker
   },
   props: {
     productId: {
@@ -161,15 +162,23 @@ export default {
     }
   },
   emits: ['close'],
-  setup(props) {
-    const movements = ref([])
-    const pagination = ref(null)
-    const loading = ref(false)
-    const productPrice = ref(0)
-    const product = ref(null)
-
+  data() {
+    return {
+      movements: [],
+      pagination: null,
+      loading: false,
+      productPrice: 0,
+      product: null,
+      filters: {
+        date_from: '',
+        date_to: ''
+      },
+      t: t
+    }
+  },
+  methods: {
     // Получаем валюту пользователя из localStorage
-    const getUserCurrency = () => {
+    getUserCurrency() {
       const userData = localStorage.getItem('user')
       if (userData) {
         try {
@@ -180,47 +189,40 @@ export default {
         }
       }
       return 'UZS'
-    }
+    },
 
-    const userCurrency = getUserCurrency()
-
-    const filters = reactive({
-      date_from: '',
-      date_to: ''
-    })
-
-    const loadMovements = async (page = 1) => {
-      if (!props.productId) {
+    async loadMovements(page = 1) {
+      if (!this.productId) {
         console.error('productId не передан')
         return
       }
 
-      loading.value = true
+      this.loading = true
       try {
         const requestData = {
-          product_id: props.productId,
+          product_id: this.productId,
           page,
-          ...filters
+          ...this.filters
         }
         
-        if (props.warehouseId) {
-          requestData.warehouse_id = props.warehouseId
+        if (this.warehouseId) {
+          requestData.warehouse_id = this.warehouseId
         }
 
         const response = await api.post('/balances/movements', requestData)
         
-        movements.value = response.data.movements.data
-        pagination.value = response.data.movements
-        product.value = response.data.product
-        productPrice.value = response.data.product_price
+        this.movements = response.data.movements.data
+        this.pagination = response.data.movements
+        this.product = response.data.product
+        this.productPrice = response.data.product_price
       } catch (error) {
         console.error('Ошибка загрузки движения товаров:', error)
       } finally {
-        loading.value = false
+        this.loading = false
       }
-    }
+    },
 
-    const getOperationClass = (type) => {
+    getOperationClass(type) {
       const classes = {
         receipt: 'bg-green-100 text-green-800',
         write_off: 'bg-red-100 text-red-800',
@@ -229,24 +231,25 @@ export default {
         transfer_out: 'bg-orange-100 text-orange-800'
       }
       return classes[type] || 'bg-gray-100 text-gray-800'
-    }
+    },
 
-    const getOperationText = (type) => {
+    getOperationText(type) {
       const texts = {
-        receipt: t('MovementsModal_7'), // Оприходование
-        write_off: t('MovementsModal_8'), // Списание
-        inventory: t('MovementsModal_9'), // Инвентаризация
-        transfer_in: t('MovementsModal_10'), // Перемещение (в)
-        transfer_out: t('MovementsModal_11') // Перемещение (из)
+        receipt: this.t('MovementsModal_7'), // Оприходование
+        write_off: this.t('MovementsModal_8'), // Списание
+        inventory: this.t('MovementsModal_9'), // Инвентаризация
+        transfer_in: this.t('MovementsModal_10'), // Перемещение (в)
+        transfer_out: this.t('MovementsModal_11') // Перемещение (из)
       }
       return texts[type] || type
-    }
+    },
 
-    const formatDateTime = (date) => {
+    formatDateTime(date) {
       return new Date(date).toLocaleString('ru-RU')
-    }
+    },
 
-    const formatCurrency = (amount) => {
+    formatCurrency(amount) {
+      const userCurrency = this.getUserCurrency()
       if (!amount) return `0 ${userCurrency}`
       
       // Маппинг символов валют
@@ -281,24 +284,10 @@ export default {
       // Для валют с символом слева
       return `${symbol}${formattedNumber}`
     }
+  },
 
-    onMounted(() => {
-      loadMovements()
-    })
-
-    return {
-      movements,
-      pagination,
-      loading,
-      productPrice,
-      product,
-      filters,
-      loadMovements,
-      getOperationClass,
-      getOperationText,
-      formatDateTime,
-      formatCurrency
-    }
+  mounted() {
+    this.loadMovements()
   }
 }
 </script> 
