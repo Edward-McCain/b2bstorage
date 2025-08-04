@@ -1,7 +1,8 @@
 <script setup>
 // Компонент шапки сайта
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
+import { t, setLocale, getCurrentLocale } from '../locales/index.js'
 
 import { getFileUrl } from '../config/api.js'
 import CurrencySelector from './CurrencySelector.vue'
@@ -16,6 +17,43 @@ const purchasesMenuOpen = ref(false)
 const salesMenuOpen = ref(false)
 const unreadNotificationsCount = ref(0)
 
+// Функция для принудительного обновления date picker'ов
+const forceUpdateDatePickers = () => {
+  nextTick(() => {
+    const dateInputs = document.querySelectorAll('input[type="date"]')
+    dateInputs.forEach(input => {
+      const value = input.value
+      const parent = input.parentNode
+      if (parent) {
+        const newInput = input.cloneNode(true)
+        
+        // Полностью пересоздаем элемент
+        parent.replaceChild(newInput, input)
+        newInput.value = value
+        
+        // Также пробуем старый метод
+        setTimeout(() => {
+          newInput.type = 'text'
+          newInput.type = 'date'  
+          newInput.value = value
+        }, 10)
+      }
+    })
+    console.log('Route change: Force refreshed', dateInputs.length, 'date picker elements')
+  })
+}
+
+// Селектор языка
+const currentLanguage = ref(getCurrentLocale())
+const languageMenuOpen = ref(false)
+const isLanguageChanging = ref(false)
+const languageOptions = [
+  { label: 'Русский', value: 'ru', flag: '🇷🇺' },
+  { label: 'English', value: 'en', flag: '🇺🇸' },
+  { label: 'O\'zbek', value: 'uz', flag: '🇺🇿' },
+  { label: '中文', value: 'china', flag: '🇨🇳' }
+]
+
 // Computed свойство для правильного URL аватара
 const avatarUrl = computed(() => {
   if (!user.value?.avatar_url) return null
@@ -27,6 +65,13 @@ const isAdmin = computed(() => {
   return user.value?.role === 1
 })
 
+// Отслеживаем смену роута для обновления date picker'ов
+watch(() => router.currentRoute.value.path, () => {
+  setTimeout(() => {
+    forceUpdateDatePickers()
+  }, 500) // Даем время странице загрузиться
+})
+
 onMounted(() => {
   const token = localStorage.getItem('auth_token')
   const userData = localStorage.getItem('user')
@@ -35,11 +80,70 @@ onMounted(() => {
     isAuthenticated.value = true
     user.value = JSON.parse(userData)
     
+    // Устанавливаем текущий язык из данных пользователя
+    const langMapping = {
+      ru: 'ru',
+      en: 'en', 
+      uz: 'uz',
+      china: 'zh-CN'
+    }
+    
+    if (user.value?.language) {
+      console.log('Initializing language from user data:', user.value.language)
+      currentLanguage.value = user.value.language
+      document.documentElement.lang = langMapping[user.value.language] || 'ru'
+      document.body.lang = langMapping[user.value.language] || 'ru'
+      document.documentElement.setAttribute('data-locale', user.value.language)
+      document.body.setAttribute('data-locale', user.value.language)
+      setLocale(user.value.language)
+    } else {
+      console.log('No language in user data, using default: ru')
+      currentLanguage.value = 'ru'
+      document.documentElement.lang = 'ru'
+      document.body.lang = 'ru'
+      document.documentElement.setAttribute('data-locale', 'ru')
+      document.body.setAttribute('data-locale', 'ru')
+      setLocale('ru')
+    }
+    
+    // Принудительно обновляем все date picker'ы на странице после инициализации
+    setTimeout(() => {
+      const dateInputs = document.querySelectorAll('input[type="date"]')
+      dateInputs.forEach(input => {
+        const value = input.value
+        input.type = 'text'
+        input.type = 'date'
+        input.value = value
+      })
+      console.log('Initial refresh of', dateInputs.length, 'date picker elements')
+    }, 200)
+    
     // Обновляем данные пользователя из API для получения актуальной валюты
     updateUserData()
     
     // Загружаем количество непрочитанных уведомлений
     loadUnreadNotificationsCount()
+  } else {
+    // Для неавторизованных пользователей всегда русский
+    console.log('User not authenticated, using default language: ru')
+    currentLanguage.value = 'ru'
+    document.documentElement.lang = 'ru'
+    document.body.lang = 'ru'
+    document.documentElement.setAttribute('data-locale', 'ru')
+    document.body.setAttribute('data-locale', 'ru')
+    setLocale('ru')
+    
+    // Принудительно обновляем все date picker'ы на странице для неавторизованных
+    setTimeout(() => {
+      const dateInputs = document.querySelectorAll('input[type="date"]')
+      dateInputs.forEach(input => {
+        const value = input.value
+        input.type = 'text'
+        input.type = 'date'
+        input.value = value
+      })
+      console.log('Unauthenticated refresh of', dateInputs.length, 'date picker elements')
+    }, 200)
   }
   
   // Добавляем глобальный обработчик события обновления аватара
@@ -52,6 +156,23 @@ onMounted(() => {
     console.log('Header: Получено событие обновления данных пользователя')
     user.value = event.detail.user
     console.log('Header: Обновлена валюта:', user.value.currency)
+    
+    // Обновляем язык
+    if (user.value?.language) {
+      console.log('Updating language from user data event:', user.value.language)
+      currentLanguage.value = user.value.language
+      const langMapping = {
+        ru: 'ru',
+        en: 'en', 
+        uz: 'uz',
+        china: 'zh-CN'
+      }
+      document.documentElement.lang = langMapping[user.value.language] || 'ru'
+      document.body.lang = langMapping[user.value.language] || 'ru'
+      document.documentElement.setAttribute('data-locale', user.value.language)
+      document.body.setAttribute('data-locale', user.value.language)
+      setLocale(user.value.language)
+    }
   })
   
   // Закрытие меню при клике вне его
@@ -60,6 +181,12 @@ onMounted(() => {
     const productsMenu = document.getElementById('products-menu-button')
     const purchasesMenu = document.getElementById('purchases-menu-button')
     const salesMenu = document.getElementById('sales-menu-button')
+    
+    // Селекторы языка - проверяем родительские контейнеры
+    const languageMenuContainer = document.getElementById('language-menu-button')?.parentElement
+    const mobileUnauthContainer = document.getElementById('mobile-unauth-language-menu-button')?.parentElement
+    const mobileAuthContainer = document.getElementById('mobile-auth-language-menu-button')?.parentElement
+    const desktopUnauthContainer = document.getElementById('desktop-unauth-language-menu-button')?.parentElement
     
     if (userMenu && !userMenu.contains(event.target)) {
       userMenuOpen.value = false
@@ -76,8 +203,96 @@ onMounted(() => {
     if (salesMenu && !salesMenu.contains(event.target)) {
       salesMenuOpen.value = false
     }
+    
+    // Закрываем меню языка если клик был вне всех контейнеров селекторов
+    const clickedInsideLanguageMenu = 
+      (languageMenuContainer && languageMenuContainer.contains(event.target)) ||
+      (mobileUnauthContainer && mobileUnauthContainer.contains(event.target)) ||
+      (mobileAuthContainer && mobileAuthContainer.contains(event.target)) ||
+      (desktopUnauthContainer && desktopUnauthContainer.contains(event.target))
+    
+    if (!clickedInsideLanguageMenu) {
+      languageMenuOpen.value = false
+    }
   })
 })
+
+// Watcher для currentLanguage - УБИРАЕМ, так как он вызывает бесконечную перезагрузку
+// watch(currentLanguage, (newLanguage) => {
+//   if (isLanguageChanging.value) return // Предотвращаем повторные вызовы
+//   
+//   if (isAuthenticated.value) {
+//     handleLanguageChange(newLanguage)
+//   } else {
+//     // Для неавторизованных пользователей просто перезагружаем страницу
+//     isLanguageChanging.value = true
+//     setTimeout(() => {
+//       window.location.reload()
+//     }, 100)
+//   }
+// })
+
+// Функция для выбора языка (заменяет watcher)
+const selectLanguage = async (newLanguage) => {
+  if (isLanguageChanging.value) return
+  
+  console.log('Selecting language:', newLanguage)
+  currentLanguage.value = newLanguage
+  languageMenuOpen.value = false
+  
+  // Принудительно устанавливаем lang атрибут документа для date picker'ов
+  const langMapping = {
+    ru: 'ru',
+    en: 'en', 
+    uz: 'uz',
+    china: 'zh-CN'
+  }
+  document.documentElement.lang = langMapping[newLanguage] || 'ru'
+  document.body.lang = langMapping[newLanguage] || 'ru'
+  
+  // Также устанавливаем CSS стили для принудительной локализации
+  document.documentElement.setAttribute('data-locale', newLanguage)
+  document.body.setAttribute('data-locale', newLanguage)
+  
+  console.log('Document lang forcibly set to:', document.documentElement.lang)
+  console.log('Body lang set to:', document.body.lang)
+  
+  // Принудительно обновляем все date picker'ы на странице
+  setTimeout(() => {
+    const dateInputs = document.querySelectorAll('input[type="date"]')
+    dateInputs.forEach(input => {
+      const value = input.value
+      const parent = input.parentNode
+      const newInput = input.cloneNode(true)
+      
+      // Полностью пересоздаем элемент
+      parent.replaceChild(newInput, input)
+      newInput.value = value
+      
+      // Также пробуем старый метод
+      setTimeout(() => {
+        newInput.type = 'text'
+        newInput.type = 'date'  
+        newInput.value = value
+      }, 10)
+    })
+    console.log('Force refreshed', dateInputs.length, 'date picker elements with lang:', document.documentElement.lang)
+  }, 100)
+  
+  // Сразу меняем язык в UI
+  setLocale(newLanguage)
+  
+  // Очищаем кэш категорий при смене языка
+  const { clearCategoriesCache } = await import('@/config/api')
+  clearCategoriesCache()
+  console.log('Кэш категорий очищен при смене языка на:', newLanguage)
+  
+  if (isAuthenticated.value) {
+    // Для авторизованных пользователей отправляем запрос к API (но не перезагружаем страницу)
+    await handleLanguageChange(newLanguage)
+  }
+  // Для неавторизованных пользователей ничего дополнительно не делаем - язык уже изменен в UI
+}
 
 const handleLogout = () => {
   localStorage.removeItem('auth_token')
@@ -156,6 +371,73 @@ const handleCurrencyChanged = async (newCurrency) => {
   
   // Можно добавить дополнительную логику для обновления интерфейса
   // например, перезагрузка данных с новой валютой
+}
+
+// Функция для обработки изменения языка
+const handleLanguageChange = async (newLanguage) => {
+  if (isLanguageChanging.value) return
+  
+  try {
+    isLanguageChanging.value = true
+    console.log('Saving language to API:', newLanguage)
+    
+    const token = localStorage.getItem('auth_token')
+    if (!token) {
+      console.log('No auth token found, skipping API call')
+      isLanguageChanging.value = false
+      return
+    }
+    
+    // Отправляем запрос к API для обновления языка пользователя
+    const response = await fetch('/api/user/update-language', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        language: newLanguage
+      })
+    })
+
+    if (response.ok) {
+      const result = await response.json()
+      console.log('Language update response:', result)
+      
+      if (result.success) {
+        // Обновляем данные пользователя в компоненте
+        if (user.value) {
+          user.value.language = newLanguage
+        }
+        
+        // Обновляем localStorage
+        const userData = localStorage.getItem('user')
+        if (userData) {
+          const userObj = JSON.parse(userData)
+          userObj.language = newLanguage
+          localStorage.setItem('user', JSON.stringify(userObj))
+        }
+        
+        console.log('Language successfully saved to database')
+        isLanguageChanging.value = false
+      } else {
+        console.error('Error updating language:', result.message)
+        isLanguageChanging.value = false
+      }
+    } else {
+      console.error('HTTP error updating language:', response.status)
+      isLanguageChanging.value = false
+    }
+  } catch (error) {
+    console.error('Error updating language:', error)
+    isLanguageChanging.value = false
+    
+    // Если API недоступен, просто логируем это - язык уже изменен в UI
+    if (error.message.includes('Failed to fetch')) {
+      console.log('API unavailable, language changed in UI only')
+    }
+  }
 }
 
 // Определяем, находимся ли мы на странице товаров
@@ -326,13 +608,41 @@ window.addEventListener('notifications-updated', () => {
           </button>
         </div>
         <!-- Если пользователь не авторизован -->
-        <button 
-          v-else
-          @click="handleLogin"
-          class="border-2 text-white bg-blue-700 border-blue-700 px-3 py-1.5 rounded-lg font-semibold text-sm transition-colors cursor-pointer"
-        >
-          Войти
-        </button>
+        <div v-else class="flex items-center gap-2">
+          <!-- Селектор языка рядом с гамбургер иконкой -->
+          <div class="relative">
+            <button
+              @click.stop="languageMenuOpen = !languageMenuOpen"
+              class="flex items-center gap-1 text-sm text-gray-700 rounded-md border border-gray-300 px-2 py-1 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              id="mobile-unauth-language-menu-button"
+            >
+              <span>{{ languageOptions.find(lang => lang.value === currentLanguage)?.flag }}</span>
+            </button>
+            <div
+              v-if="languageMenuOpen"
+              class="absolute z-[9999] right-0 bg-white border border-gray-200 rounded-md shadow-lg mt-1 w-32"
+            >
+              <ul class="py-1">
+                <li
+                  v-for="option in languageOptions"
+                  :key="option.value"
+                  @click="selectLanguage(option.value)"
+                  class="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                >
+                  <span>{{ option.flag }}</span>
+                  <span>{{ option.label }}</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+          
+          <button 
+            @click="handleLogin"
+            class="border-2 text-white bg-blue-700 border-blue-700 px-3 py-1.5 rounded-lg font-semibold text-sm transition-colors cursor-pointer"
+          >
+            {{ t('Header_1') }}
+          </button>
+        </div>
       </div>
       <!-- Навигация (десктоп) - только для авторизованных пользователей -->
       <div v-if="isAuthenticated" class="hidden lg:flex lg:gap-x-12">
@@ -346,7 +656,7 @@ window.addEventListener('notifications-updated', () => {
             aria-expanded="false"
             aria-haspopup="true"
           >
-            Товары
+            {{ t('Header_2') }}
             <svg v-if="!isOnProductsPage" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
             </svg>
@@ -369,7 +679,7 @@ window.addEventListener('notifications-updated', () => {
                 tabindex="-1"
                 @click="closeProductsMenu"
               >
-                Главная
+                {{ t('Header_3') }}
               </router-link>
               <router-link
                 to="/products/receipts"
@@ -378,7 +688,7 @@ window.addEventListener('notifications-updated', () => {
                 tabindex="-1"
                 @click="closeProductsMenu"
               >
-                Оприходования
+                {{ t('Header_4') }}
               </router-link>
               <router-link
                 to="/products/write-offs"
@@ -387,7 +697,7 @@ window.addEventListener('notifications-updated', () => {
                 tabindex="-1"
                 @click="closeProductsMenu"
               >
-                Списания
+                {{ t('Header_5') }}
               </router-link>
               <router-link
                 to="/products/inventory"
@@ -396,7 +706,7 @@ window.addEventListener('notifications-updated', () => {
                 tabindex="-1"
                 @click="closeProductsMenu"
               >
-                Инвентаризации
+                {{ t('Header_6') }}
               </router-link>
               <!-- <router-link
                 to="/products/internal-orders"
@@ -414,7 +724,7 @@ window.addEventListener('notifications-updated', () => {
                 tabindex="-1"
                 @click="closeProductsMenu"
               >
-                Перемещения
+                {{ t('Header_7') }}
               </router-link>
               <!-- <router-link
                 to="/products/price-lists"
@@ -432,7 +742,7 @@ window.addEventListener('notifications-updated', () => {
                 tabindex="-1"
                 @click="closeProductsMenu"
               >
-                Остатки
+                {{ t('Header_8') }}
               </router-link>
               <router-link
                 to="/warehouses"
@@ -441,7 +751,7 @@ window.addEventListener('notifications-updated', () => {
                 tabindex="-1"
                 @click="closeProductsMenu"
               >
-                Склады
+                {{ t('Header_9') }}
               </router-link>
               <router-link
                 to="/products/logs"
@@ -450,7 +760,7 @@ window.addEventListener('notifications-updated', () => {
                 tabindex="-1"
                 @click="closeProductsMenu"
               >
-                Логи
+                {{ t('Header_10') }}
               </router-link>
             </div>
           </div>
@@ -466,7 +776,7 @@ window.addEventListener('notifications-updated', () => {
             aria-expanded="false"
             aria-haspopup="true"
           >
-            Закупки
+            {{ t('Header_11') }}
             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
             </svg>
@@ -487,7 +797,7 @@ window.addEventListener('notifications-updated', () => {
                 tabindex="-1"
                 @click="closePurchasesMenu"
               >
-                Закупки
+                {{ t('Header_11') }}
               </router-link>
               <router-link
                 to="/purchases/supplier-orders"
@@ -496,7 +806,7 @@ window.addEventListener('notifications-updated', () => {
                 tabindex="-1"
                 @click="closePurchasesMenu"
               >
-                Заказы поставщикам
+                {{ t('Header_12') }}
               </router-link>
               <router-link
                 to="/purchases/supplier-invoices"
@@ -505,7 +815,7 @@ window.addEventListener('notifications-updated', () => {
                 tabindex="-1"
                 @click="closePurchasesMenu"
               >
-                Счета поставщиков
+                {{ t('Header_13') }}
               </router-link>
               <router-link
                 to="/purchases/received-invoices"
@@ -514,7 +824,7 @@ window.addEventListener('notifications-updated', () => {
                 tabindex="-1"
                 @click="closePurchasesMenu"
               >
-                Полученные счета
+                {{ t('Header_14') }}
               </router-link>
               <router-link
                 to="/purchases/receipts"
@@ -523,7 +833,7 @@ window.addEventListener('notifications-updated', () => {
                 tabindex="-1"
                 @click="closePurchasesMenu"
               >
-                Приемки
+                {{ t('Header_15') }}
               </router-link>
               <router-link
                 to="/purchases/supplier-returns"
@@ -532,7 +842,7 @@ window.addEventListener('notifications-updated', () => {
                 tabindex="-1"
                 @click="closePurchasesMenu"
               >
-                Возвраты поставщикам
+                {{ t('Header_16') }}
               </router-link>
               <router-link
                 to="/purchases/purchase-management"
@@ -541,7 +851,7 @@ window.addEventListener('notifications-updated', () => {
                 tabindex="-1"
                 @click="closePurchasesMenu"
               >
-                Управление закупками
+                {{ t('Header_17') }}
               </router-link>
             </div>
           </div>
@@ -557,7 +867,7 @@ window.addEventListener('notifications-updated', () => {
             aria-expanded="false"
             aria-haspopup="true"
           >
-            Продажи
+            {{ t('Header_18') }}
             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
             </svg>
@@ -578,7 +888,7 @@ window.addEventListener('notifications-updated', () => {
                 tabindex="-1"
                 @click="closeSalesMenu"
               >
-                Продажи
+                {{ t('Header_18') }}
               </router-link>
               <router-link
                 to="/sales/customer-invoices"
@@ -587,7 +897,7 @@ window.addEventListener('notifications-updated', () => {
                 tabindex="-1"
                 @click="closeSalesMenu"
               >
-                Счета покупателям
+                {{ t('Header_19') }}
               </router-link>
               <router-link
                 to="/sales/shipments"
@@ -596,7 +906,7 @@ window.addEventListener('notifications-updated', () => {
                 tabindex="-1"
                 @click="closeSalesMenu"
               >
-                Отгрузки
+                {{ t('Header_20') }}
               </router-link>
               <!-- <router-link
                 to="/sales/commission-reports"
@@ -614,7 +924,7 @@ window.addEventListener('notifications-updated', () => {
                 tabindex="-1"
                 @click="closeSalesMenu"
               >
-                Возвраты покупателей
+                {{ t('Header_21') }}
               </router-link>
               <!-- <router-link
                 to="/sales/issued-invoices"
@@ -669,13 +979,13 @@ window.addEventListener('notifications-updated', () => {
           to="/analytics"
           class="text-sm font-semibold text-gray-900 hover:text-blue-600 transition-colors flex items-center gap-1" style="display: none;"
         >
-          Аналитика
+          {{ t('Header_22') }}
         </router-link>
         <router-link
           to="/counterparties"
           class="text-sm font-semibold text-gray-900 hover:text-blue-600 transition-colors flex items-center gap-1" style="display: none;"
         >
-          Контрагенты
+          {{ t('Header_23') }}
         </router-link>
         <!-- <router-link
           to="/docs_api"
@@ -685,7 +995,7 @@ window.addEventListener('notifications-updated', () => {
         </router-link> -->
       </div>
       <!-- Справа: кнопки авторизации -->
-      <div class="hidden lg:flex lg:flex-1 lg:justify-end items-center gap-4 hidden">
+      <div class="hidden lg:flex lg:flex-1 lg:justify-end items-center gap-4">
         <!-- Иконка уведомлений -->
         <router-link
           to="/notifications"
@@ -707,45 +1017,77 @@ window.addEventListener('notifications-updated', () => {
         <!-- Если пользователь авторизован -->
         <div v-if="isAuthenticated" class="relative">
           <!-- Flyout Menu -->
-          <div class="relative">
-            <button
-              @click="toggleUserMenu"
-              type="button"
-              class="flex items-center gap-3 text-sm rounded-full"
-              id="user-menu-button"
-              aria-expanded="false"
-              aria-haspopup="true"
-            >
-              <div>
-                <span class="text-sm text-gray-700">{{ user?.first_name || (user?.first_name === '' ? 'Пользователь' : user?.first_name) }}</span>
-                <!-- Текущая валюта пользователя -->
-                <div class="text-right text-blue-700" style="margin-top: -4px;">
-                  <span class="font-bold text-sm">{{ user?.currency || 'USD' }}</span>
-                </div>
+          <div class="relative flex items-center gap-3">
+            <!-- Селектор языка для авторизованных пользователей -->
+            <div class="relative">
+              <button
+                @click.stop="languageMenuOpen = !languageMenuOpen"
+                class="flex items-center gap-2 text-sm text-gray-700 rounded-md border border-gray-300 px-2 py-1 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                id="language-menu-button"
+              >
+                <span>{{ languageOptions.find(lang => lang.value === currentLanguage)?.flag }}</span>
+                <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              <div
+                v-if="languageMenuOpen"
+                class="absolute z-[9999] left-0 bg-white border border-gray-200 rounded-md shadow-lg mt-1 w-32"
+              >
+                <ul class="py-1">
+                  <li
+                    v-for="option in languageOptions"
+                    :key="option.value"
+                    @click="selectLanguage(option.value)"
+                    class="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                  >
+                    <span>{{ option.flag }}</span>
+                    <span>{{ option.label }}</span>
+                  </li>
+                </ul>
               </div>
-              <!-- Аватар -->
-              <div v-if="avatarUrl" class="h-8 w-8 rounded-full overflow-hidden">
-                <img 
-                  :src="avatarUrl" 
-                  :alt="user?.user_name || 'Аватар'"
-                  class="h-full w-full object-cover"
-                  @error="console.error('Header: ошибка загрузки аватара:', avatarUrl)"
-                />
-              </div>
-              <div v-else class="h-8 w-8 rounded-full bg-blue-700 flex items-center justify-center text-white font-medium text-sm">
-                {{ (user?.user_name || 'П').charAt(0).toUpperCase() }}
-              </div>
-            </button>
+            </div>
 
-            <!-- Dropdown menu -->
-            <div
-              v-if="userMenuOpen"
-              class="absolute right-0 z-[9999] mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg focus:outline-none border border-gray-200"
-              role="menu"
-              aria-orientation="vertical"
-              aria-labelledby="user-menu-button"
-              tabindex="-1"
-            >
+            <!-- Контейнер пользователя с dropdown -->
+            <div class="relative">
+              <button
+                @click="toggleUserMenu"
+                type="button"
+                class="flex items-center gap-3 text-sm rounded-full"
+                id="user-menu-button"
+                aria-expanded="false"
+                aria-haspopup="true"
+              >
+                <div>
+                  <span class="text-sm text-gray-700">{{ user?.first_name || (user?.first_name === '' ? t('Header_25') : user?.first_name) }}</span>
+                  <!-- Текущая валюта пользователя -->
+                  <div class="text-right text-blue-700" style="margin-top: -4px;">
+                    <span class="font-bold text-sm">{{ user?.currency || 'USD' }}</span>
+                  </div>
+                </div>
+                <!-- Аватар -->
+                <div v-if="avatarUrl" class="h-8 w-8 rounded-full overflow-hidden">
+                  <img 
+                    :src="avatarUrl" 
+                    :alt="user?.user_name || 'Аватар'"
+                    class="h-full w-full object-cover"
+                    @error="console.error('Header: ошибка загрузки аватара:', avatarUrl)"
+                  />
+                </div>
+                <div v-else class="h-8 w-8 rounded-full bg-blue-700 flex items-center justify-center text-white font-medium text-sm">
+                  {{ (user?.user_name || t('Header_25')).charAt(0).toUpperCase() }}
+                </div>
+              </button>
+
+              <!-- Dropdown menu -->
+              <div
+                v-if="userMenuOpen"
+                class="absolute right-0 z-[9999] mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg focus:outline-none border border-gray-200"
+                role="menu"
+                aria-orientation="vertical"
+                aria-labelledby="user-menu-button"
+                tabindex="-1"
+              >
               <div class="py-1" role="none">
                 <!-- Админ панель (только для администраторов) -->
                 <button
@@ -758,7 +1100,7 @@ window.addEventListener('notifications-updated', () => {
                   <svg class="h-5 w-5 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                   </svg>
-                  Админ панель
+                  {{ t('Header_26') }}
                 </button>
                 
                 <!-- Настройки аккаунта -->
@@ -772,25 +1114,8 @@ window.addEventListener('notifications-updated', () => {
                     <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
                     <circle cx="12" cy="12" r="3"/>
                   </svg>
-                  Настройки аккаунта
+                  {{ t('Header_27') }}
                 </button>
-                
-                <!-- Техническая поддержка -->
-                <!-- <button
-                  @click="openSupport"
-                  class="flex items-center gap-3 text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 w-full text-left cursor-pointer"
-                  role="menuitem"
-                  tabindex="-1"
-                >
-                  <svg class="h-5 w-5 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path d="M22 10.5V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v10c0 1.1.9 2 2 2h6l5 4v-4H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4.5"/>
-                    <path d="M10 9.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z"/>
-                    <path d="M14.5 8a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z"/>
-                    <path d="M10 12.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z"/>
-                    <path d="M14.5 11a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z"/>
-                  </svg>
-                  Техническая поддержка
-                </button> -->
                 
                 <!-- Разделитель -->
                 <div class="border-t border-gray-100 my-1"></div>
@@ -807,20 +1132,57 @@ window.addEventListener('notifications-updated', () => {
                     <polyline points="16,17 21,12 16,7"/>
                     <line x1="21" x2="9" y1="12" y2="12"/>
                   </svg>
-                  Выйти
+                  {{ t('Header_28') }}
                 </button>
               </div>
+            </div>
             </div>
           </div>
         </div>
         <!-- Если пользователь не авторизован -->
-        <button 
-          v-else
-          @click="handleLogin"
-          class="border-2 border-blue-700 text-white bg-blue-700 px-4 py-2 rounded-lg font-semibold text-sm transition-colors cursor-pointer"
-        >
-          Войти
-        </button>
+        <div v-else class="flex items-center gap-4">
+          <!-- Селектор языка для неавторизованных пользователей -->
+          <div class="w-40">
+            <div class="relative">
+              <button
+                @click.stop="languageMenuOpen = !languageMenuOpen"
+                class="flex items-center justify-between w-full text-sm text-gray-700 rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                id="desktop-unauth-language-menu-button"
+              >
+                <div class="flex items-center gap-2">
+                  <span>{{ languageOptions.find(lang => lang.value === currentLanguage)?.flag }}</span>
+                  <span>{{ languageOptions.find(lang => lang.value === currentLanguage)?.label }}</span>
+                </div>
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              <div
+                v-if="languageMenuOpen"
+                class="absolute z-[9999] w-full bg-white border border-gray-200 rounded-md shadow-lg mt-1"
+              >
+                <ul class="py-1">
+                  <li
+                    v-for="option in languageOptions"
+                    :key="option.value"
+                    @click="selectLanguage(option.value)"
+                    class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                  >
+                    <span>{{ option.flag }}</span>
+                    <span>{{ option.label }}</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          
+          <button 
+            @click="handleLogin"
+            class="border-2 border-blue-700 text-white bg-blue-700 px-4 py-2 rounded-lg font-semibold text-sm transition-colors cursor-pointer"
+          >
+            {{ t('Header_1') }}
+          </button>
+        </div>
       </div>
     </nav>
 
@@ -832,7 +1194,7 @@ window.addEventListener('notifications-updated', () => {
       <div class="fixed inset-y-0 right-0 z-[9999] w-full max-w-xs bg-white shadow-xl flex flex-col">
         <!-- Заголовок меню -->
         <div class="flex items-center justify-between p-4 border-b border-gray-200 bg-white">
-          <h2 class="text-lg font-semibold text-gray-900">Меню</h2>
+          <h2 class="text-lg font-semibold text-gray-900">{{ t('Header_29') }}</h2>
           <button
             @click="toggleMobileMenu"
             class="text-gray-400 hover:text-gray-600"
@@ -848,42 +1210,42 @@ window.addEventListener('notifications-updated', () => {
           <div class="px-4 py-6 space-y-6">
           <!-- Товары -->
           <div>
-            <h3 class="text-sm font-semibold text-gray-900 mb-3">Товары</h3>
+            <h3 class="text-sm font-semibold text-gray-900 mb-3">{{ t('Header_2') }}</h3>
             <div class="space-y-2">
               <router-link
                 to="/products"
                 class="block text-sm text-gray-700 hover:text-blue-600 py-2 pl-4"
                 @click="toggleMobileMenu"
               >
-                Главная
+                {{ t('Header_3') }}
               </router-link>
               <router-link
                 to="/products/receipts"
                 class="block text-sm text-gray-700 hover:text-blue-600 py-2 pl-4"
                 @click="toggleMobileMenu"
               >
-                Оприходования
+                {{ t('Header_4') }}
               </router-link>
               <router-link
                 to="/products/write-offs"
                 class="block text-sm text-gray-700 hover:text-blue-600 py-2 pl-4"
                 @click="toggleMobileMenu"
               >
-                Списания
+                {{ t('Header_5') }}
               </router-link>
               <router-link
                 to="/products/inventory"
                 class="block text-sm text-gray-700 hover:text-blue-600 py-2 pl-4"
                 @click="toggleMobileMenu"
               >
-                Инвентаризации
+                {{ t('Header_6') }}
               </router-link>
               <router-link
                 to="/products/transfers"
                 class="block text-sm text-gray-700 hover:text-blue-600 py-2 pl-4"
                 @click="toggleMobileMenu"
               >
-                Перемещения
+                {{ t('Header_7') }}
               </router-link>
               <!-- <router-link
                 to="/products/price-lists"
@@ -897,21 +1259,21 @@ window.addEventListener('notifications-updated', () => {
                 class="block text-sm text-gray-700 hover:text-blue-600 py-2 pl-4"
                 @click="toggleMobileMenu"
               >
-                Остатки
+                {{ t('Header_8') }}
               </router-link>
               <router-link
                 to="/warehouses"
                 class="block text-sm text-gray-700 hover:text-blue-600 py-2 pl-4"
                 @click="toggleMobileMenu"
               >
-                Склады
+                {{ t('Header_9') }}
               </router-link>
               <router-link
                 to="/products/logs"
                 class="block text-sm text-gray-700 hover:text-blue-600 py-2 pl-4"
                 @click="toggleMobileMenu"
               >
-                Логи
+                {{ t('Header_10') }}
               </router-link>
             </div>
           </div>
@@ -929,91 +1291,91 @@ window.addEventListener('notifications-updated', () => {
 
           <!-- Закупки -->
           <div style="display: none;">
-            <h3 class="text-sm font-semibold text-gray-900 mb-3">Закупки</h3>
+            <h3 class="text-sm font-semibold text-gray-900 mb-3">{{ t('Header_11') }}</h3>
             <div class="space-y-2">
               <router-link
                 to="/purchases"
                 class="block text-sm text-gray-700 hover:text-blue-600 py-2 pl-4"
                 @click="toggleMobileMenu"
               >
-                Закупки
+                {{ t('Header_11') }}
               </router-link>
               <router-link
                 to="/purchases/supplier-orders"
                 class="block text-sm text-gray-700 hover:text-blue-600 py-2 pl-4"
                 @click="toggleMobileMenu"
               >
-                Заказы поставщикам
+                {{ t('Header_12') }}
               </router-link>
               <router-link
                 to="/purchases/supplier-invoices"
                 class="block text-sm text-gray-700 hover:text-blue-600 py-2 pl-4"
                 @click="toggleMobileMenu"
               >
-                Счета поставщиков
+                {{ t('Header_13') }}
               </router-link>
               <router-link
                 to="/purchases/received-invoices"
                 class="block text-sm text-gray-700 hover:text-blue-600 py-2 pl-4"
                 @click="toggleMobileMenu"
               >
-                Полученные счета
+                {{ t('Header_14') }}
               </router-link>
               <router-link
                 to="/purchases/receipts"
                 class="block text-sm text-gray-700 hover:text-blue-600 py-2 pl-4"
                 @click="toggleMobileMenu"
               >
-                Приемки
+                {{ t('Header_15') }}
               </router-link>
               <router-link
                 to="/purchases/supplier-returns"
                 class="block text-sm text-gray-700 hover:text-blue-600 py-2 pl-4"
                 @click="toggleMobileMenu"
               >
-                Возвраты поставщикам
+                {{ t('Header_16') }}
               </router-link>
               <router-link
                 to="/purchases/purchase-management"
                 class="block text-sm text-gray-700 hover:text-blue-600 py-2 pl-4"
                 @click="toggleMobileMenu"
               >
-                Управление закупками
+                {{ t('Header_17') }}
               </router-link>
             </div>
           </div>
 
           <!-- Продажи -->
           <div style="display: none;" >
-            <h3 class="text-sm font-semibold text-gray-900 mb-3">Продажи</h3>
+            <h3 class="text-sm font-semibold text-gray-900 mb-3">{{ t('Header_18') }}</h3>
             <div class="space-y-2">
               <router-link
                 to="/sales"
                 class="block text-sm text-gray-700 hover:text-blue-600 py-2 pl-4"
                 @click="toggleMobileMenu"
               >
-                Продажи
+                {{ t('Header_18') }}
               </router-link>
               <router-link
                 to="/sales/customer-invoices"
                 class="block text-sm text-gray-700 hover:text-blue-600 py-2 pl-4"
                 @click="toggleMobileMenu"
               >
-                Счета покупателям
+                {{ t('Header_19') }}
               </router-link>
               <router-link
                 to="/sales/shipments"
                 class="block text-sm text-gray-700 hover:text-blue-600 py-2 pl-4"
                 @click="toggleMobileMenu"
               >
-                Отгрузки
+                {{ t('Header_20') }}
               </router-link>
               <router-link
                 to="/sales/customer-returns"
                 class="block text-sm text-gray-700 hover:text-blue-600 py-2 pl-4"
                 @click="toggleMobileMenu"
               >
-                Возвраты покупателей
+                {{ t('Header_21') }}
               </router-link>
             </div>
           </div>
@@ -1025,14 +1387,14 @@ window.addEventListener('notifications-updated', () => {
               class="block text-sm text-gray-700 hover:text-blue-600 py-2"
               @click="toggleMobileMenu"
             >
-              Аналитика
+              {{ t('Header_22') }}
             </router-link>
             <router-link
               to="/counterparties"
               class="block text-sm text-gray-700 hover:text-blue-600 py-2"
               @click="toggleMobileMenu"
             >
-              Контрагенты
+              {{ t('Header_23') }}
             </router-link>
           </div>
 
@@ -1050,7 +1412,7 @@ window.addEventListener('notifications-updated', () => {
           <!-- Выбор валюты -->
           <div class="border-t border-gray-200 pt-4" style="display: none;">
             <div class="px-4 py-2">
-              <h3 class="text-sm font-semibold text-gray-900 mb-2">Валюта</h3>
+              <h3 class="text-sm font-semibold text-gray-900 mb-2">{{ t('Header_30') }}</h3>
               <CurrencySelector 
                 :current-currency="user?.currency || 'UZS'"
                 @currency-changed="handleCurrencyChanged"
@@ -1069,8 +1431,10 @@ window.addEventListener('notifications-updated', () => {
                 <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
                 <circle cx="12" cy="12" r="3"/>
               </svg>
-              Настройки аккаунта
+              {{ t('Header_27') }}
             </router-link>
+            
+
             
             <!-- <button
               @click="openSupport"
@@ -1095,13 +1459,48 @@ window.addEventListener('notifications-updated', () => {
                 <polyline points="16,17 21,12 16,7"/>
                 <line x1="21" x2="9" y1="12" y2="12"/>
               </svg>
-              Выйти
+              {{ t('Header_28') }}
             </button>
+            
+            <!-- Селектор языка в мобильном меню -->
+            <div class="py-2 mt-2 border-t border-gray-200 pt-2">
+              <div class="relative">
+                <button
+                  @click.stop="languageMenuOpen = !languageMenuOpen"
+                  class="flex items-center justify-between w-full text-sm text-gray-700 rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  id="mobile-auth-language-menu-button"
+                >
+                  <div class="flex items-center gap-2">
+                    <span>{{ languageOptions.find(lang => lang.value === currentLanguage)?.flag }}</span>
+                    <span>{{ languageOptions.find(lang => lang.value === currentLanguage)?.label }}</span>
+                  </div>
+                  <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                <div
+                  v-if="languageMenuOpen"
+                  class="absolute z-[9999] w-full bg-white border border-gray-200 rounded-md shadow-lg mt-1"
+                >
+                  <ul class="py-1">
+                    <li
+                      v-for="option in languageOptions"
+                      :key="option.value"
+                      @click="selectLanguage(option.value)"
+                      class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                    >
+                      <span>{{ option.flag }}</span>
+                      <span>{{ option.label }}</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
         </div>
       </div>
     </div>
+  </div>
   </header>
 </template>
 

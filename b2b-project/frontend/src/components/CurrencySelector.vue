@@ -20,6 +20,7 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { currencyService } from '../services/currency.js'
+import { t } from '../locales/index.js'
 
 const props = defineProps({
   currentCurrency: {
@@ -73,14 +74,14 @@ const selectCurrency = (currencyType) => {
   
   // Показываем уведомление
   if (window.toastr) {
-    window.toastr.success(`Валюта изменена на ${currencyType}`)
+    window.toastr.success(`${t('CurrencySelector_1')} ${currencyType}`)
   }
   
   // Обновляем валюту пользователя через API (в фоне)
   currencyService.updateUserCurrency(currencyType).catch(error => {
     console.error('Error updating user currency:', error)
     if (window.toastr) {
-      window.toastr.error('Ошибка при сохранении валюты на сервере')
+      window.toastr.error(t('CurrencySelector_2'))
     }
   })
 }

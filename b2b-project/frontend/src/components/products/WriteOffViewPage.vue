@@ -8,7 +8,7 @@
         <div v-if="loading" class="flex items-center justify-center py-20">
           <div class="text-center">
             <Loader2 class="animate-spin h-8 w-8 text-blue-600 mx-auto mb-4" />
-            <p class="text-gray-600 text-sm">Загрузка списания...</p>
+            <p class="text-gray-600 text-sm">{{ t('WriteOffViewPage_1') }}</p> <!-- Загрузка списания... -->
           </div>
         </div>
 
@@ -17,8 +17,8 @@
           <div class="mb-6">
             <div class="flex items-center justify-between">
               <div>
-                <h1 class="text-sm lg:text-xl font-bold text-gray-900 mb-1">Списание номер {{ writeOff.number }}</h1>
-                <div class="text-gray-500 text-sm">от {{ formatDate(writeOff.date) }}</div>
+                <h1 class="text-sm lg:text-xl font-bold text-gray-900 mb-1">{{ t('WriteOffViewPage_2') }} {{ writeOff.number }}</h1> <!-- Списание номер -->
+                <div class="text-gray-500 text-sm">{{ t('WriteOffViewPage_3') }} {{ formatDate(writeOff.date) }}</div> <!-- от -->
               </div>
               <div class="flex items-center gap-2">
                 <button 
@@ -27,7 +27,7 @@
                 >
                   <Download class="w-4 h-4" />
                   <span class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
-                    Скачать PDF
+                    {{ t('WriteOffViewPage_4') }} <!-- Скачать PDF -->
                   </span>
                 </button>
                 <button 
@@ -36,7 +36,7 @@
                 >
                   <Printer class="w-4 h-4" />
                   <span class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
-                    Печать
+                    {{ t('WriteOffViewPage_5') }} <!-- Печать -->
                   </span>
                 </button>
               </div>
@@ -44,46 +44,46 @@
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <div>
-              <div class="text-gray-500 text-xs mb-1">Организация</div>
+              <div class="text-gray-500 text-xs mb-1">{{ t('WriteOffViewPage_6') }}</div> <!-- Организация -->
               <div class="text-gray-900 text-sm">{{ writeOff.organization }}</div>
             </div>
             <div>
-              <div class="text-gray-500 text-xs mb-1">Склад</div>
+              <div class="text-gray-500 text-xs mb-1">{{ t('WriteOffViewPage_7') }}</div> <!-- Склад -->
               <div class="text-gray-900 text-sm">{{ writeOff.warehouse_name }}<span v-if="writeOff.warehouse_address" class="text-gray-400 ml-2">({{ writeOff.warehouse_address }})</span></div>
             </div>
             <div>
-              <div class="text-gray-500 text-xs mb-1">Статус</div>
-              <div class="text-gray-900 text-sm">{{ writeOff.status === 'posted' ? 'Проведено' : 'Черновик' }}</div>
+              <div class="text-gray-500 text-xs mb-1">{{ t('WriteOffViewPage_8') }}</div> <!-- Статус -->
+              <div class="text-gray-900 text-sm">{{ writeOff.status === 'posted' ? t('WriteOffViewPage_22') : t('WriteOffViewPage_23') }}</div> <!-- Проведено : Черновик -->
             </div>
             <div>
-              <div class="text-gray-500 text-xs mb-1">Создано</div>
+              <div class="text-gray-500 text-xs mb-1">{{ t('WriteOffViewPage_9') }}</div> <!-- Создано -->
               <div class="text-gray-900 text-sm">{{ writeOff.created_by || '-' }}</div>
             </div>
             <div>
-              <div class="text-gray-500 text-xs mb-1">Комментарий</div>
+              <div class="text-gray-500 text-xs mb-1">{{ t('WriteOffViewPage_10') }}</div> <!-- Комментарий -->
               <div class="text-gray-900 text-sm">{{ writeOff.comment || '-' }}</div>
             </div>
             <div>
-              <div class="text-gray-500 text-xs mb-1">Накладные расходы</div>
+              <div class="text-gray-500 text-xs mb-1">{{ t('WriteOffViewPage_11') }}</div> <!-- Накладные расходы -->
               <div class="text-gray-900 text-sm">{{ writeOff.overhead_costs }}</div>
             </div>
             <div>
-              <div class="text-gray-500 text-xs mb-1">Валюта</div>
+              <div class="text-gray-500 text-xs mb-1">{{ t('WriteOffViewPage_12') }}</div> <!-- Валюта -->
               <div class="text-gray-900 text-sm">{{ userCurrency }}</div>
             </div>
           </div>
           
           <!-- Товары -->
           <div class="mb-6">
-            <div class="font-semibold text-gray-800 mb-2">Товары</div>
+            <div class="font-semibold text-gray-800 mb-2">{{ t('WriteOffViewPage_13') }}</div> <!-- Товары -->
             <div v-if="writeOff.positions && writeOff.positions.length > 0">
               <table class="min-w-full divide-y divide-gray-200 text-sm">
                 <thead class="bg-gray-50">
                   <tr>
-                    <th class="px-3 py-2 text-left font-semibold text-gray-700">Наименование</th>
-                    <th class="px-3 py-2 text-center font-semibold text-gray-700">Количество</th>
-                    <th class="px-3 py-2 text-center font-semibold text-gray-700">Цена</th>
-                    <th class="px-3 py-2 text-center font-semibold text-gray-700">Сумма</th>
+                    <th class="px-3 py-2 text-left font-semibold text-gray-700">{{ t('WriteOffViewPage_14') }}</th> <!-- Наименование -->
+                    <th class="px-3 py-2 text-center font-semibold text-gray-700">{{ t('WriteOffViewPage_15') }}</th> <!-- Количество -->
+                    <th class="px-3 py-2 text-center font-semibold text-gray-700">{{ t('WriteOffViewPage_16') }}</th> <!-- Цена -->
+                    <th class="px-3 py-2 text-center font-semibold text-gray-700">{{ t('WriteOffViewPage_17') }}</th> <!-- Сумма -->
                   </tr>
                 </thead>
                 <tbody>
@@ -95,20 +95,20 @@
                   </tr>
                 </tbody>
               </table>
-              <div class="text-right mt-2 text-base font-semibold text-gray-900">Итого: {{ writeOff.total }} {{ userCurrency }}</div>
+              <div class="text-right mt-2 text-base font-semibold text-gray-900">{{ t('WriteOffViewPage_18') }} {{ writeOff.total }} {{ userCurrency }}</div> <!-- Итого: -->
             </div>
             <div v-else class="text-center text-gray-500 py-8">
-              Товары не найдены
+              {{ t('WriteOffViewPage_19') }} <!-- Товары не найдены -->
             </div>
           </div>
           
           <!-- Файлы -->
           <div v-if="writeOff.files && writeOff.files.length > 0" class="mb-4">
-            <div class="font-semibold text-gray-800 mb-2">Файлы</div>
+            <div class="font-semibold text-gray-800 mb-2">{{ t('WriteOffViewPage_20') }}</div> <!-- Файлы -->
             <ul class="list-disc pl-5">
               <li v-for="file in writeOff.files" :key="file.id" class="mb-1">
                 <a :href="getFileUrl(file.file_url)" target="_blank" class="text-blue-600 hover:underline text-sm">{{ file.filename }}</a>
-                <span class="text-gray-400 text-xs ml-2">({{ file.size_mb }} МБ)</span>
+                <span class="text-gray-400 text-xs ml-2">({{ file.size_mb }} {{ t('WriteOffViewPage_21') }})</span> <!-- МБ -->
               </li>
             </ul>
           </div>
@@ -127,6 +127,7 @@ import toastr from 'toastr'
 import { Loader2, Pencil, Download, Printer } from 'lucide-vue-next'
 import { generatePDF, printElement, generatePDFSimple, generatePDFWithCanvas, generateSimplePDF, generateReceiptPDFWithCanvas, printReceipt, generateWriteOffPDFWithCanvas } from '@/utils/printUtils'
 import { getUserCurrency, updateUserCurrency } from '@/utils/currencyUtils'
+import { t } from '@/locales'
 
 // Устанавливаем заголовок страницы
 document.title = 'B2B SKLAD - Списания'
@@ -149,7 +150,7 @@ const fetchUserCurrency = async () => {
     const currency = await getUserCurrency()
     userCurrency.value = currency
   } catch (error) {
-    console.error('Ошибка получения валюты пользователя:', error)
+    console.error(t('WriteOffViewPage_26') + error) // Ошибка получения валюты пользователя:
   }
 }
 
@@ -182,12 +183,12 @@ async function loadWriteOff() {
       writeOff.value = response.data.data
       positions.value = writeOff.value.positions || []
     } else {
-      toastr.error('Списание не найдено')
+      toastr.error(t('WriteOffViewPage_24')) // Списание не найдено
       router.push('/products/write-offs')
     }
   } catch (error) {
-    console.error('Ошибка загрузки списания:', error)
-    toastr.error('Ошибка при загрузке списания')
+    console.error(t('WriteOffViewPage_25') + error) // Ошибка при загрузке списания
+    toastr.error(t('WriteOffViewPage_25')) // Ошибка при загрузке списания
     router.push('/products/write-offs')
   } finally {
     loading.value = false
@@ -205,10 +206,10 @@ async function downloadPDF() {
       const filename = `writeoff-${writeOff.value.number || 'writeoff'}.pdf`
       generateWriteOffPDFWithCanvas(writeOff.value, filename, userCurrency.value)
     } else {
-      console.error('Не удалось найти данные списания')
+      console.error(t('WriteOffViewPage_27')) // Не удалось найти данные списания
     }
   } catch (error) {
-    console.error('Ошибка скачивания PDF:', error)
+    console.error(t('WriteOffViewPage_28') + error) // Ошибка скачивания PDF:
   }
 }
 
@@ -218,10 +219,10 @@ function printDocument() {
     if (contentElement) {
       printElement(contentElement)
     } else {
-      console.error('Не удалось найти контент для печати')
+      console.error(t('WriteOffViewPage_29')) // Не удалось найти контент для печати
     }
   } catch (error) {
-    console.error('Ошибка печати:', error)
+    console.error(t('WriteOffViewPage_30') + error) // Ошибка печати:
   }
 }
 </script> 

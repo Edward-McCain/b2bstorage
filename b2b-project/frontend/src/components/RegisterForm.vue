@@ -1,13 +1,15 @@
 <template>
   <div class="flex flex-col justify-center px-6 py-20 lg:px-8 bg-gray-50">
     <div class="sm:mx-auto sm:w-full sm:max-w-sm">
-      <h2 class="mt-10 text-center text-2xl/9 font-bold tracking-tight text-gray-900">Создать аккаунт</h2>
+      <!-- Создать аккаунт -->
+      <h2 class="mt-10 text-center text-2xl/9 font-bold tracking-tight text-gray-900">{{ t('RegisterForm_1') }}</h2>
     </div>
 
     <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
       <form class="space-y-6" @submit.prevent="handleRegister">
         <div>
-          <label for="email" class="block text-sm/6 font-medium text-gray-900">Email</label>
+          <!-- Email -->
+          <label for="email" class="block text-sm/6 font-medium text-gray-900">{{ t('RegisterForm_2') }}</label>
           <div class="mt-2">
             <input 
               type="email" 
@@ -18,14 +20,15 @@
               required 
               class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-primary sm:text-sm/6"
               :class="{ 'outline-red-500': errors.email }"
-              placeholder="Введите ваш email"
+              :placeholder="t('RegisterForm_3')"
             />
           </div>
           <p v-if="errors.email" class="mt-1 text-sm text-red-600">{{ errors.email[0] }}</p>
         </div>
 
         <div>
-          <label for="user_name" class="block text-sm/6 font-medium text-gray-900">Логин</label>
+          <!-- Логин -->
+          <label for="user_name" class="block text-sm/6 font-medium text-gray-900">{{ t('RegisterForm_4') }}</label>
           <div class="mt-2">
             <input 
               type="text" 
@@ -36,14 +39,15 @@
               required 
               class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-primary sm:text-sm/6"
               :class="{ 'outline-red-500': errors.user_name }"
-              placeholder="Введите логин"
+              :placeholder="t('RegisterForm_5')"
             />
           </div>
           <p v-if="errors.user_name" class="mt-1 text-sm text-red-600">{{ errors.user_name[0] }}</p>
         </div>
 
         <div>
-          <label for="password" class="block text-sm/6 font-medium text-gray-900">Пароль</label>
+          <!-- Пароль -->
+          <label for="password" class="block text-sm/6 font-medium text-gray-900">{{ t('RegisterForm_6') }}</label>
           <div class="mt-2">
             <input 
               type="password" 
@@ -54,14 +58,15 @@
               required 
               class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-primary sm:text-sm/6"
               :class="{ 'outline-red-500': errors.password }"
-              placeholder="Введите пароль"
+              :placeholder="t('RegisterForm_7')"
             />
           </div>
           <p v-if="errors.password" class="mt-1 text-sm text-red-600">{{ errors.password[0] }}</p>
         </div>
 
         <div>
-          <label for="password_confirmation" class="block text-sm/6 font-medium text-gray-900">Повторите пароль</label>
+          <!-- Повторите пароль -->
+          <label for="password_confirmation" class="block text-sm/6 font-medium text-gray-900">{{ t('RegisterForm_8') }}</label>
           <div class="mt-2">
             <input 
               type="password" 
@@ -72,7 +77,7 @@
               required 
               class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-primary sm:text-sm/6"
               :class="{ 'outline-red-500': errors.password_confirmation }"
-              placeholder="Повторите пароль"
+              :placeholder="t('RegisterForm_8')"
             />
           </div>
           <p v-if="errors.password_confirmation" class="mt-1 text-sm text-red-600">{{ errors.password_confirmation[0] }}</p>
@@ -90,14 +95,17 @@
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
             </span>
-            {{ loading ? 'Регистрация...' : 'Зарегистрироваться' }}
+            <!-- Регистрация... / Зарегистрироваться -->
+            {{ loading ? t('RegisterForm_9') : t('RegisterForm_10') }}
           </button>
         </div>
       </form>
 
       <p class="mt-10 text-center text-sm/6 text-gray-500">
-        Уже есть аккаунт?
-        <button @click="$emit('switch-to-login')" class="font-semibold text-primary cursor-pointer text-blue-700 hover:text-primary/80">Войти</button>
+        <!-- Уже есть аккаунт? -->
+        {{ t('RegisterForm_11') }}
+        <!-- Войти -->
+        <button @click="$emit('switch-to-login')" class="font-semibold text-primary cursor-pointer text-blue-700 hover:text-primary/80">{{ t('RegisterForm_12') }}</button>
       </p>
 
       <div v-if="error" class="mt-6 rounded-md bg-red-50 p-4">
@@ -118,6 +126,7 @@
 
 <script>
 import { apiRequest } from '@/config/api'
+import { t } from '../locales/index.js'
 
 export default {
   name: 'RegisterForm',
@@ -136,6 +145,7 @@ export default {
     }
   },
   methods: {
+    t,
     async handleRegister() {
       this.loading = true
       this.error = ''
@@ -169,11 +179,11 @@ export default {
           if (response.data.errors) {
             this.errors = response.data.errors
           } else {
-            this.error = response.data.message || 'Ошибка регистрации'
+            this.error = response.data.message || this.t('RegisterForm_13')
           }
         }
       } catch (err) {
-        this.error = 'Ошибка соединения с сервером'
+        this.error = this.t('RegisterForm_14')
         console.error('Register error:', err)
       } finally {
         this.loading = false

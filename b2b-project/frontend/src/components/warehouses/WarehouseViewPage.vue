@@ -9,9 +9,9 @@
         <div class="block sm:hidden">
           <!-- Первая строка: название и адрес -->
           <div class="w-full mb-4">
-            <h1 class="text-2xl md:text-3xl font-bold text-gray-900">{{ warehouse?.name || 'Склад' }}</h1>
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-900">{{ warehouse?.name || t('WarehouseViewPage_1') }}</h1> <!-- Склад -->
             <p v-if="warehouse?.address" class="mt-2 text-gray-600">{{ warehouse.address }}</p>
-            <p v-else class="mt-2 text-gray-400">Адрес не указан</p>
+            <p v-else class="mt-2 text-gray-400">{{ t('WarehouseViewPage_2') }}</p> <!-- Адрес не указан -->
           </div>
           <!-- Вторая строка: кнопки -->
           <div class="flex items-center gap-3">
@@ -20,14 +20,14 @@
               class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm"
             >
               <Edit class="w-4 h-4" />
-              Редактировать
+              {{ t('WarehouseViewPage_3') }} <!-- Редактировать -->
             </router-link>
             <router-link
               :to="`/products/transfers/create?from_warehouse=${warehouseId}`"
               class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm"
             >
               <Truck class="w-4 h-4" />
-              Переместить товары
+              {{ t('WarehouseViewPage_4') }} <!-- Переместить товары -->
             </router-link>
           </div>
         </div>
@@ -35,9 +35,9 @@
         <!-- ПК версия: однострочная как раньше -->
         <div class="hidden sm:flex items-center justify-between">
           <div>
-            <h1 class="text-2xl md:text-3xl font-bold text-gray-900">{{ warehouse?.name || 'Склад' }}</h1>
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-900">{{ warehouse?.name || t('WarehouseViewPage_1') }}</h1> <!-- Склад -->
             <p v-if="warehouse?.address" class="mt-2 text-gray-600">{{ warehouse.address }}</p>
-            <p v-else class="mt-2 text-gray-400">Адрес не указан</p>
+            <p v-else class="mt-2 text-gray-400">{{ t('WarehouseViewPage_2') }}</p> <!-- Адрес не указан -->
           </div>
           <div class="flex items-center gap-3">
             <router-link
@@ -45,14 +45,14 @@
               class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm"
             >
               <Edit class="w-4 h-4" />
-              Редактировать
+              {{ t('WarehouseViewPage_3') }} <!-- Редактировать -->
             </router-link>
             <router-link
               :to="`/products/transfers/create?from_warehouse=${warehouseId}`"
               class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm"
             >
               <Truck class="w-4 h-4" />
-              Переместить товары
+              {{ t('WarehouseViewPage_4') }} <!-- Переместить товары -->
             </router-link>
           </div>
         </div>
@@ -61,13 +61,13 @@
       <!-- Основной контент -->
       <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div class="flex justify-between items-center mb-6">
-          <h2 class="text-xl font-semibold text-gray-900">Товары на складе</h2>
+          <h2 class="text-xl font-semibold text-gray-900">{{ t('WarehouseViewPage_5') }}</h2> <!-- Товары на складе -->
           <div class="flex items-center gap-4">
             <div class="text-sm text-gray-600">
-              Всего товаров: {{ products.length }}
+              {{ t('WarehouseViewPage_6') }} {{ products.length }} <!-- Всего товаров: -->
             </div>
             <div class="text-sm text-gray-600 hidden">
-              Общее количество: {{ totalQuantity }}
+              {{ t('WarehouseViewPage_20') }} {{ totalQuantity }} <!-- Общее количество: -->
             </div>
           </div>
         </div>
@@ -75,14 +75,14 @@
         <!-- Загрузка товаров -->
         <div v-if="loadingProducts" class="flex items-center justify-center py-12">
           <Loader2 class="animate-spin h-8 w-8 text-blue-600 mr-3" />
-          <span class="text-sm text-gray-600">Загрузка товаров склада...</span>
+          <span class="text-sm text-gray-600">{{ t('WarehouseViewPage_7') }}</span> <!-- Загрузка товаров склада... -->
         </div>
 
         <!-- Пустой склад -->
         <div v-else-if="!loadingProducts && products.length === 0" class="text-center py-12">
           <Package class="mx-auto h-12 w-12 text-gray-400" />
-          <h3 class="mt-2 text-sm font-medium text-gray-900">Склад пуст</h3>
-          <p class="mt-1 text-sm text-gray-500">На этом складе пока нет товаров</p>
+          <h3 class="mt-2 text-sm font-medium text-gray-900">{{ t('WarehouseViewPage_8') }}</h3> <!-- Склад пуст -->
+          <p class="mt-1 text-sm text-gray-500">{{ t('WarehouseViewPage_9') }}</p> <!-- На этом складе пока нет товаров -->
         </div>
 
         <!-- Таблица товаров -->
@@ -92,16 +92,16 @@
               <thead class="bg-gray-50">
                 <tr>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Товар
+                    {{ t('WarehouseViewPage_10') }} <!-- Товар -->
                   </th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Артикул
+                    {{ t('WarehouseViewPage_11') }} <!-- Артикул -->
                   </th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Количество
+                    {{ t('WarehouseViewPage_12') }} <!-- Количество -->
                   </th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Действия
+                    {{ t('WarehouseViewPage_13') }} <!-- Действия -->
                   </th>
                 </tr>
               </thead>
@@ -116,11 +116,11 @@
                     </div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {{ product.article || 'Не указан' }}
+                    {{ product.article || t('WarehouseViewPage_14') }} <!-- Не указан -->
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                      {{ product.warehouse_quantity }} шт.
+                      {{ product.warehouse_quantity }} {{ t('WarehouseViewPage_15') }} <!-- шт. -->
                     </span>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -130,7 +130,7 @@
                         class="text-gray-600 hover:text-gray-900 px-3 py-1 rounded text-sm transition-colors flex items-center gap-1 cursor-pointer"
                       >
                         <TimerReset class="w-4 h-4" />
-                        Движения
+                        {{ t('WarehouseViewPage_16') }} <!-- Движения -->
                       </button>
                     </div>
                   </td>
@@ -160,6 +160,7 @@ import ProductsMenu from '../products/ProductsMenu.vue'
 import MovementsModal from '../products/MovementsModal.vue'
 import { Edit, Truck, Loader2, Package, TimerReset } from 'lucide-vue-next'
 import toastr from 'toastr'
+import { t } from '@/locales'
 
 const route = useRoute()
 const router = useRouter()
@@ -185,11 +186,11 @@ const loadWarehouse = async () => {
     if (response.ok && response.data.success) {
       warehouse.value = response.data.data
     } else {
-      toastr.error('Ошибка загрузки данных склада')
+      toastr.error(t('WarehouseViewPage_17')) // Ошибка загрузки данных склада
     }
   } catch (error) {
-    console.error('Ошибка загрузки склада:', error)
-    toastr.error('Ошибка загрузки данных склада')
+    console.error(t('WarehouseViewPage_18') + error) // Ошибка загрузки склада:
+    toastr.error(t('WarehouseViewPage_17')) // Ошибка загрузки данных склада
   } finally {
     loadingWarehouse.value = false
   }
@@ -209,7 +210,7 @@ const loadWarehouseProducts = async () => {
       products.value = []
     }
   } catch (error) {
-    console.error('Ошибка загрузки товаров склада:', error)
+    console.error(t('WarehouseViewPage_19') + error) // Ошибка загрузки товаров склада:
     products.value = []
   } finally {
     loadingProducts.value = false

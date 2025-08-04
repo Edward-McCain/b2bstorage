@@ -4,7 +4,7 @@
       <div class="mt-3">
         <div class="flex justify-between items-center mb-4">
           <div>
-            <h3 class="text-lg font-medium text-gray-900">Движение товаров</h3>
+            <h3 class="text-lg font-medium text-gray-900">{{ t('MovementsModal_1') }}</h3> <!-- Движение товаров -->
             <div v-if="product" class="text-sm text-gray-600 mt-1">
               {{ product.name }}
               <span v-if="product.article" class="text-gray-500">({{ product.article }})</span>
@@ -27,30 +27,30 @@
 
         <div v-if="loading" class="text-center py-8">
           <Loader2 class="animate-spin h-8 w-8 text-blue-600 mx-auto mb-2" />
-          <div class="text-gray-600 text-sm">Загрузка движения товаров...</div>
+          <div class="text-gray-600 text-sm">{{ t('MovementsModal_2') }}</div> <!-- Загрузка движения товаров... -->
         </div>
 
         <div v-else-if="movements.length === 0" class="text-center py-8">
-          <div class="text-gray-500 text-sm">Нет данных о движении товаров</div>
+          <div class="text-gray-500 text-sm">{{ t('MovementsModal_3') }}</div> <!-- Нет данных о движении товаров -->
         </div>
 
         <div v-else class="space-y-4">
           <!-- Фильтры -->
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Дата с</label>
-              <input
+              <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('MovementsModal_4') }}</label> <!-- Дата с -->
+              <LocalizedDatePicker 
                 v-model="filters.date_from"
-                type="date"
-                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                :enable-time-picker="false"
+                :auto-apply="true"
               />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Дата по</label>
-              <input
+              <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('MovementsModal_5') }}</label> <!-- Дата по -->
+              <LocalizedDatePicker 
                 v-model="filters.date_to"
-                type="date"
-                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                :enable-time-picker="false"
+                :auto-apply="true"
               />
             </div>
             <div class="flex items-end">
@@ -58,7 +58,7 @@
                 @click="loadMovements"
                 class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm"
               >
-                Применить
+                {{ t('MovementsModal_6') }} <!-- Применить -->
               </button>
             </div>
           </div>
@@ -95,7 +95,7 @@
                     {{ formatCurrency(movement.quantity * (productPrice || 0)) }}
                   </div>
                   <div class="text-xs text-gray-500">
-                    {{ formatCurrency(productPrice || 0) }} за шт.
+                    {{ formatCurrency(productPrice || 0) }} {{ t('MovementsModal_12') }} <!-- за шт. -->
                   </div>
                 </div>
               </div>
@@ -105,7 +105,7 @@
           <!-- Пагинация -->
           <div v-if="pagination" class="flex justify-between items-center">
             <div class="text-sm text-gray-700">
-              Показано {{ pagination.from }}-{{ pagination.to }} из {{ pagination.total }}
+              {{ t('MovementsModal_13') }} {{ pagination.from }}-{{ pagination.to }} {{ t('MovementsModal_14') }} {{ pagination.total }} <!-- Показано из -->
             </div>
             <div class="flex gap-2">
               <button
@@ -113,14 +113,14 @@
                 @click="loadMovements(pagination.current_page - 1)"
                 class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm"
               >
-                Назад
+                {{ t('MovementsModal_15') }} <!-- Назад -->
               </button>
               <button
                 v-if="pagination.next_page_url"
                 @click="loadMovements(pagination.current_page + 1)"
                 class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm"
               >
-                Вперед
+                {{ t('MovementsModal_16') }} <!-- Вперед -->
               </button>
             </div>
           </div>
@@ -131,7 +131,7 @@
             @click="$emit('close')"
             class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm"
           >
-            Закрыть
+            {{ t('MovementsModal_17') }} <!-- Закрыть -->
           </button>
         </div>
       </div>
@@ -143,6 +143,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import api from '@/config/api'
 import { Loader2 } from 'lucide-vue-next'
+import { t } from '@/locales'
 
 export default {
   name: 'MovementsModal',
@@ -232,11 +233,11 @@ export default {
 
     const getOperationText = (type) => {
       const texts = {
-        receipt: 'Оприходование',
-        write_off: 'Списание',
-        inventory: 'Инвентаризация',
-        transfer_in: 'Перемещение (в)',
-        transfer_out: 'Перемещение (из)'
+        receipt: t('MovementsModal_7'), // Оприходование
+        write_off: t('MovementsModal_8'), // Списание
+        inventory: t('MovementsModal_9'), // Инвентаризация
+        transfer_in: t('MovementsModal_10'), // Перемещение (в)
+        transfer_out: t('MovementsModal_11') // Перемещение (из)
       }
       return texts[type] || type
     }

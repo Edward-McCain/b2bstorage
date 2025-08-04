@@ -3,16 +3,16 @@
     <!-- Наименование и кнопки -->
     <div class="mb-6 w-full" style="position: sticky;top: 62px;background: #fff;z-index: 99;padding: 10px 0;">
       <div class="flex flex-col gap-3 sm:inline-flex sm:flex-row sm:items-center w-full px-4">
-        <input v-model="product.name" @blur="handleNameBlur" type="text" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" placeholder="Наименование товара *" style="border: 1px solid #ddd !important;" />
+        <input v-model="product.name" @blur="handleNameBlur" type="text" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" :placeholder="t('ProductCreatePage_1')" style="border: 1px solid #ddd !important;" /> <!-- Наименование товара * -->
         <div class="flex gap-2 mt-3 sm:mt-0">
           <button @click="handleSave" :disabled="!product.name || (areCategoriesEnabled() && (!selectedCategory || !selectedSubcategory)) || !selectedWarehouse || !product.unit || !product.start_count || !productId || isSavingDraft || isSavingProduct" class="bg-lime-500 hover:bg-lime-600 text-white font-semibold px-6 py-2 rounded-lg shadow transition text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
             <svg v-if="isSavingDraft || isSavingProduct" class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
             </svg>
-            {{ isSavingDraft ? 'Создание черновика...' : isSavingProduct ? 'Сохранение...' : 'Сохранить' }}
+            {{ isSavingDraft ? t('ProductCreatePage_2') : isSavingProduct ? t('ProductCreatePage_3') : t('ProductCreatePage_4') }} <!-- Создание черновика... Сохранение... Сохранить -->
           </button>
-          <button @click="showCloseModal = true" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold px-6 py-2 rounded-lg border shadow transition text-sm">Закрыть</button>
+          <button @click="showCloseModal = true" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold px-6 py-2 rounded-lg border shadow transition text-sm">{{ t('ProductCreatePage_5') }}</button> <!-- Закрыть -->
         </div>
       </div>
       <div v-if="draftError" class="text-red-500 text-xs mt-2">{{ draftError }}</div>
@@ -34,7 +34,7 @@
     <!-- Область загрузки изображений -->
     <div class="w-full mb-6">
       <div class="bg-gray-50 rounded-xl p-4 shadow-sm">
-        <div class="font-semibold mb-2">Изображения</div>
+        <div class="font-semibold mb-2">{{ t('ProductCreatePage_6') }}</div> <!-- Изображения -->
         <ImageDropzone :product-id="productId" :images="images" :disabled="!product.name || !productId" @uploaded="onImageUploaded" @deleted="handleDeleteImage" />
         <div v-if="imageUploadError" class="text-red-500 text-xs mt-2">{{ imageUploadError }}</div>
       </div>
@@ -43,19 +43,19 @@
     <div class="w-full flex flex-col gap-6">
       <!-- Общие данные -->
       <div class="bg-gray-50 rounded-xl p-4 shadow-sm">
-        <div class="font-semibold mb-2">Общие данные</div>
+        <div class="font-semibold mb-2">{{ t('ProductCreatePage_7') }}</div> <!-- Общие данные -->
         <div class="flex flex-col gap-3">
           <!-- Категория и подкатегория -->
           <div v-if="areCategoriesEnabled()" class="flex flex-col gap-2 w-full">
             <div class="w-full">
-              <label class="block text-xs text-gray-700 mb-1">Категория <span class="text-red-500">*</span></label>
+              <label class="block text-xs text-gray-700 mb-1">{{ t('ProductCreatePage_8') }} <span class="text-red-500">*</span></label> <!-- Категория -->
               <template v-if="loadingCategories">
                 <div class="w-full h-10 flex items-center justify-center bg-white border border-gray-200 rounded-lg">
                   <svg class="animate-spin h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
                   </svg>
-                  <span class="ml-2 text-xs text-gray-500">Загрузка категорий...</span>
+                  <span class="ml-2 text-xs text-gray-500">{{ t('ProductCreatePage_9') }}</span> <!-- Загрузка категорий... -->
                 </div>
               </template>
               <template v-else>
@@ -76,14 +76,14 @@
               </template>
             </div>
             <div class="w-full">
-              <label class="block text-xs text-gray-700 mb-1">Подкатегория <span class="text-red-500">*</span></label>
+              <label class="block text-xs text-gray-700 mb-1">{{ t('ProductCreatePage_12') }} <span class="text-red-500">*</span></label> <!-- Подкатегория -->
               <template v-if="loadingSubcategories">
                 <div class="w-full h-10 flex items-center justify-center bg-white border border-gray-200 rounded-lg">
                   <svg class="animate-spin h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
                   </svg>
-                  <span class="ml-2 text-xs text-gray-500">Загрузка подкатегорий...</span>
+                  <span class="ml-2 text-xs text-gray-500">{{ t('ProductCreatePage_13') }}</span> <!-- Загрузка подкатегорий... -->
                 </div>
               </template>
               <template v-else>
@@ -97,7 +97,7 @@
                   :search-placeholder="subcategorySearchPlaceholder"
                   :max-height="400"
                   :disabled="!selectedCategory"
-                  :no-options="subcategoryError || 'Нет подкатегорий'"
+                  :no-options="subcategoryError || t('ProductCreatePage_15')"
                   searchable
                   class="w-full text-xs multiselect-custom bg-white"
                   @open="onSubcategoryOpen"
@@ -108,14 +108,14 @@
           </div>
           <!-- Склад товара -->
           <div class="w-full">
-            <label class="block text-xs text-gray-700 mb-1">Склад товара <span class="text-red-500">*</span></label>
+            <label class="block text-xs text-gray-700 mb-1">{{ t('ProductCreatePage_16') }} <span class="text-red-500">*</span></label> <!-- Склад товара -->
             <template v-if="loadingWarehouses">
               <div class="w-full h-10 flex items-center justify-center bg-white border border-gray-200 rounded-lg">
                 <svg class="animate-spin h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
                 </svg>
-                <span class="ml-2 text-xs text-gray-500">Загрузка складов...</span>
+                <span class="ml-2 text-xs text-gray-500">{{ t('ProductCreatePage_17') }}</span> <!-- Загрузка складов... -->
               </div>
             </template>
             <template v-else>
@@ -125,7 +125,7 @@
                 label="label"
                 value="value"
                 :object="true"
-                placeholder="Выберите склад"
+                :placeholder="t('ProductCreatePage_18')"
                 :disabled="warehouses.length === 0"
                 :max-height="400"
                 class="w-full text-xs multiselect-custom"
@@ -133,47 +133,47 @@
             </template>
             <!-- Сообщение если складов нет -->
             <div v-if="warehouses.length === 0 && !loadingWarehouses" class="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <div class="text-sm text-yellow-800 mb-2">Для добавления товаров вам необходимо сначала добавить склад.</div>
+              <div class="text-sm text-yellow-800 mb-2">{{ t('ProductCreatePage_19') }}</div> <!-- Для добавления товаров вам необходимо сначала добавить склад. -->
               <button @click="goToCreateWarehouse" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg shadow transition text-sm">
-                Добавить склад
+                {{ t('ProductCreatePage_20') }} <!-- Добавить склад -->
               </button>
             </div>
           </div>
           <!-- Количество единиц товара и единица измерения -->
           <div class="flex flex-col sm:flex-row gap-2">
             <div class="flex-1">
-              <label class="block text-xs text-gray-700 mb-1">Начальный остаток <span class="text-red-500">*</span></label>
+              <label class="block text-xs text-gray-700 mb-1">{{ t('ProductCreatePage_21') }} <span class="text-red-500">*</span></label> <!-- Начальный остаток -->
               <input v-model.number="product.start_count" type="number" min="0" step="1" placeholder="0" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" />
             </div>
             <div class="flex-1">
-              <label class="block text-xs text-gray-700 mb-1">Ед-ца измерения <span class="text-red-500">*</span></label>
+              <label class="block text-xs text-gray-700 mb-1">{{ t('ProductCreatePage_22') }} <span class="text-red-500">*</span></label> <!-- Ед-ца измерения -->
               <Multiselect
                 v-model="product.unit"
                 :options="[
-                  { label: 'Штука', value: 'Штука' },
-                  { label: 'Килограмм', value: 'Килограмм' },
-                  { label: 'Грамм', value: 'Грамм' },
-                  { label: 'Тонна', value: 'Тонна' },
-                  { label: 'Литр', value: 'Литр' },
-                  { label: 'Миллилитр', value: 'Миллилитр' },
-                  { label: 'Метр', value: 'Метр' },
-                  { label: 'Сантиметр', value: 'Сантиметр' },
-                  { label: 'Квадратный метр', value: 'Квадратный метр' },
-                  { label: 'Кубический метр', value: 'Кубический метр' },
-                  { label: 'Упаковка', value: 'Упаковка' },
-                  { label: 'Пара', value: 'Пара' },
-                  { label: 'Рулон', value: 'Рулон' },
-                  { label: 'Блок', value: 'Блок' },
-                  { label: 'Бочка', value: 'Бочка' },
-                  { label: 'Пачка', value: 'Пачка' },
-                  { label: 'Комплект', value: 'Комплект' },
-                  { label: 'Лист', value: 'Лист' },
-                  { label: 'Погонный метр', value: 'Погонный метр' }
+                  { label: t('ProductCreatePage_23'), value: t('ProductCreatePage_23') }, // Штука
+                  { label: t('ProductCreatePage_24'), value: t('ProductCreatePage_24') }, // Килограмм
+                  { label: t('ProductCreatePage_25'), value: t('ProductCreatePage_25') }, // Грамм
+                  { label: t('ProductCreatePage_26'), value: t('ProductCreatePage_26') }, // Тонна
+                  { label: t('ProductCreatePage_27'), value: t('ProductCreatePage_27') }, // Литр
+                  { label: t('ProductCreatePage_28'), value: t('ProductCreatePage_28') }, // Миллилитр
+                  { label: t('ProductCreatePage_29'), value: t('ProductCreatePage_29') }, // Метр
+                  { label: t('ProductCreatePage_30'), value: t('ProductCreatePage_30') }, // Сантиметр
+                  { label: t('ProductCreatePage_31'), value: t('ProductCreatePage_31') }, // Квадратный метр
+                  { label: t('ProductCreatePage_32'), value: t('ProductCreatePage_32') }, // Кубический метр
+                  { label: t('ProductCreatePage_33'), value: t('ProductCreatePage_33') }, // Упаковка
+                  { label: t('ProductCreatePage_34'), value: t('ProductCreatePage_34') }, // Пара
+                  { label: t('ProductCreatePage_35'), value: t('ProductCreatePage_35') }, // Рулон
+                  { label: t('ProductCreatePage_36'), value: t('ProductCreatePage_36') }, // Блок
+                  { label: t('ProductCreatePage_37'), value: t('ProductCreatePage_37') }, // Бочка
+                  { label: t('ProductCreatePage_38'), value: t('ProductCreatePage_38') }, // Пачка
+                  { label: t('ProductCreatePage_39'), value: t('ProductCreatePage_39') }, // Комплект
+                  { label: t('ProductCreatePage_40'), value: t('ProductCreatePage_40') }, // Лист
+                  { label: t('ProductCreatePage_41'), value: t('ProductCreatePage_41') } // Погонный метр
                 ]"
                 label="label"
                 value="value"
                 :object="true"
-                placeholder="Выберите единицу измерения"
+                :placeholder="t('ProductCreatePage_42')"
                 :max-height="400"
                 class="w-full text-xs multiselect-custom bg-white"
               />
@@ -185,9 +185,9 @@
       <!-- Дополнительные данные (сворачиваемый блок) -->
       <div class="bg-gray-50 rounded-xl p-4 shadow-sm">
         <div class="flex items-center justify-between mb-4">
-          <div class="font-semibold">Дополнительные данные</div>
+          <div class="font-semibold">{{ t('ProductCreatePage_43') }}</div> <!-- Дополнительные данные -->
           <button @click="showAdditionalData = !showAdditionalData" class="flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm">
-            <span>{{ showAdditionalData ? 'Свернуть' : 'Развернуть' }}</span>
+            <span>{{ showAdditionalData ? t('ProductCreatePage_44') : t('ProductCreatePage_45') }}</span> <!-- Свернуть Развернуть -->
             <svg :class="showAdditionalData ? 'rotate-180' : ''" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
             </svg>
@@ -198,7 +198,7 @@
           <template v-if="loadingProductFields">
             <div class="flex items-center justify-center py-8">
               <Loader2 class="animate-spin h-8 w-8 text-blue-500" />
-              <span class="ml-3 text-sm text-gray-500">Загрузка полей...</span>
+              <span class="ml-3 text-sm text-gray-500">{{ t('ProductCreatePage_46') }}</span> <!-- Загрузка полей... -->
             </div>
           </template>
           <template v-else>
@@ -211,7 +211,7 @@
             </template>
             <!-- Цена отдельным блоком -->
             <div v-if="isFieldRequired('price')">
-              <label class="block text-xs text-gray-700 mb-1">Стоимость за единицу</label>
+              <label class="block text-xs text-gray-700 mb-1">{{ t('ProductCreatePage_68') }}</label> <!-- Стоимость за единицу -->
               <input v-model="product.price" type="number" min="0" step="0.01" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" />
             </div>
             <!-- Пользовательские поля -->
@@ -237,11 +237,11 @@
                 />
                 
                 <!-- Поле даты -->
-                <input 
+                <LocalizedDatePicker 
                   v-else-if="field.field_type === 'date'" 
-                  v-model="customFieldValues[field.field_name]" 
-                  type="date" 
-                  class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" 
+                  v-model="customFieldValues[field.field_name]"
+                  :enable-time-picker="false"
+                  :auto-apply="true"
                 />
                 
                 <!-- Поле списка -->
@@ -252,7 +252,7 @@
                   label="label"
                   value="value"
                   :object="false"
-                  placeholder="Выберите опцию"
+                  :placeholder="t('ProductCreatePage_69')"
                   :max-height="400"
                   class="w-full text-xs multiselect-custom bg-white"
                 />
@@ -273,11 +273,11 @@
     <!-- Модалка закрытия -->
     <div v-if="showCloseModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
       <div class="bg-white rounded-lg shadow-2xl p-8 max-w-sm w-full text-sm">
-        <div class="text-base font-semibold mb-4">Выйти без сохранения?</div>
-        <div class="mb-6 text-gray-600">Изменения не будут сохранены. Вы уверены, что хотите выйти?</div>
+        <div class="text-base font-semibold mb-4">{{ t('ProductCreatePage_70') }}</div> <!-- Выйти без сохранения? -->
+        <div class="mb-6 text-gray-600">{{ t('ProductCreatePage_71') }}</div> <!-- Изменения не будут сохранены. Вы уверены, что хотите выйти? -->
         <div class="flex justify-end gap-3">
-          <button @click="closeModalAndGo" class="bg-red-600 hover:bg-red-700 text-white font-semibold px-5 py-2 rounded-lg shadow transition text-sm">Выйти</button>
-          <button @click="showCloseModal = false" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold px-5 py-2 rounded-lg border shadow transition text-sm">Отмена</button>
+          <button @click="closeModalAndGo" class="bg-red-600 hover:bg-red-700 text-white font-semibold px-5 py-2 rounded-lg shadow transition text-sm">{{ t('ProductCreatePage_72') }}</button> <!-- Выйти -->
+          <button @click="showCloseModal = false" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold px-5 py-2 rounded-lg border shadow transition text-sm">{{ t('ProductCreatePage_73') }}</button> <!-- Отмена -->
         </div>
       </div>
     </div>
@@ -296,6 +296,7 @@ import { useRouter } from 'vue-router'
 import Multiselect from '@vueform/multiselect'
 import '@vueform/multiselect/themes/default.css'
 import { apiRequest, getFileUrl, getCategoriesByUserSettings } from '@/config/api'
+import { createReactiveCategoryOptions, createReactiveSubcategoryOptions } from '@/utils/categoryDisplayUtils'
 import { areCategoriesEnabled, isFieldRequired } from '@/utils/productFieldsUtils'
 import { getUserCategoryType, getSubcategoriesApiEndpoint } from '@/utils/categoryTypeUtils'
 import { useWarehouseCheck } from '@/composables/useWarehouseCheck'
@@ -304,6 +305,7 @@ import NoWarehousesModal from '../NoWarehousesModal.vue'
 import countriesData from '@/data/countries.json'
 import toastr from 'toastr'
 import { Loader2 } from 'lucide-vue-next'
+import { t } from '@/locales'
 
 const showCloseModal = ref(false)
 const hasUnsavedChanges = ref(false)
@@ -336,13 +338,13 @@ const isSavingProduct = ref(false)
 const draftError = ref('')
 
 /** @type {import('vue').Ref<string>} */
-const categoryPlaceholder = ref('Выберите категорию')
+const categoryPlaceholder = ref(t('ProductCreatePage_10')) // Выберите категорию
 /** @type {import('vue').Ref<string>} */
-const categorySearchPlaceholder = ref('Поиск')
+const categorySearchPlaceholder = ref(t('ProductCreatePage_11')) // Поиск
 /** @type {import('vue').Ref<string>} */
-const subcategoryPlaceholder = ref('Выберите подкатегорию')
+const subcategoryPlaceholder = ref(t('ProductCreatePage_14')) // Выберите подкатегорию
 /** @type {import('vue').Ref<string>} */
-const subcategorySearchPlaceholder = ref('Поиск')
+const subcategorySearchPlaceholder = ref(t('ProductCreatePage_11')) // Поиск
 
 /** @type {import('vue').Reactive<Object>} */
 const product = reactive({
@@ -412,27 +414,27 @@ const loadingProductFields = ref(true)
 
 // Список стандартных необязательных полей products_sklad
 const standardProductFields = [
-  { key: 'description', label: 'Описание' },
-  { key: 'country', label: 'Страна' },
-  { key: 'supplier', label: 'Поставщик' },
-  { key: 'article', label: 'Артикул' },
-  { key: 'code', label: 'Код' },
-  { key: 'external_code', label: 'Внешний код' },
-  { key: 'weight', label: 'Вес' },
-  { key: 'volume', label: 'Объем' },
-  { key: 'vat', label: 'Ставка НДС' },
-  { key: 'min_stock', label: 'Минимальный остаток' },
-  { key: 'stock_type', label: 'Тип запаса' },
-  { key: 'packing', label: 'Упаковка' },
-  { key: 'accounting_type', label: 'Тип учета' },
-  { key: 'traceable', label: 'Маркируемый' },
-  { key: 'marking', label: 'Маркировка' },
-  { key: 'product_type', label: 'Тип товара' },
-  { key: 'barcode_type', label: 'Тип штрихкода' },
-  { key: 'barcode', label: 'Штрихкод' },
-  { key: 'cash_register_tax', label: 'Налог ККМ' },
-  { key: 'cash_register_type', label: 'Тип ККМ' },
-  { key: 'price', label: 'Цена' },
+  { key: 'description', label: t('ProductCreatePage_47') }, // Описание
+  { key: 'country', label: t('ProductCreatePage_48') }, // Страна
+  { key: 'supplier', label: t('ProductCreatePage_49') }, // Поставщик
+  { key: 'article', label: t('ProductCreatePage_50') }, // Артикул
+  { key: 'code', label: t('ProductCreatePage_51') }, // Код
+  { key: 'external_code', label: t('ProductCreatePage_52') }, // Внешний код
+  { key: 'weight', label: t('ProductCreatePage_53') }, // Вес
+  { key: 'volume', label: t('ProductCreatePage_54') }, // Объем
+  { key: 'vat', label: t('ProductCreatePage_55') }, // Ставка НДС
+  { key: 'min_stock', label: t('ProductCreatePage_56') }, // Минимальный остаток
+  { key: 'stock_type', label: t('ProductCreatePage_57') }, // Тип запаса
+  { key: 'packing', label: t('ProductCreatePage_58') }, // Упаковка
+  { key: 'accounting_type', label: t('ProductCreatePage_59') }, // Тип учета
+  { key: 'traceable', label: t('ProductCreatePage_60') }, // Маркируемый
+  { key: 'marking', label: t('ProductCreatePage_61') }, // Маркировка
+  { key: 'product_type', label: t('ProductCreatePage_62') }, // Тип товара
+  { key: 'barcode_type', label: t('ProductCreatePage_63') }, // Тип штрихкода
+  { key: 'barcode', label: t('ProductCreatePage_64') }, // Штрихкод
+  { key: 'cash_register_tax', label: t('ProductCreatePage_65') }, // Налог ККМ
+  { key: 'cash_register_type', label: t('ProductCreatePage_66') }, // Тип ККМ
+  { key: 'price', label: t('ProductCreatePage_67') }, // Цена
 ]
 
 async function loadProductFieldsVisibilityAndCustomFields() {
@@ -526,10 +528,10 @@ async function handleNameBlur() {
           // Можно добавить уведомление об успешном создании черновика
         }, 500)
       } else {
-        draftError.value = 'Ошибка создания черновика товара'
+        draftError.value = t('ProductCreatePage_74') // Ошибка создания черновика товара
       }
     } catch (e) {
-      draftError.value = 'Ошибка создания черновика товара'
+      draftError.value = t('ProductCreatePage_74') // Ошибка создания черновика товара
     } finally {
       isSavingDraft.value = false
     }
@@ -613,7 +615,7 @@ onMounted(async () => {
     // Загружаем категории в зависимости от настроек пользователя
     categories.value = await getCategoriesByUserSettings()
   } catch (e) {
-    categoryError.value = 'Ошибка загрузки категорий'
+    categoryError.value = t('ProductCreatePage_79') // Ошибка загрузки категорий
   } finally {
     loadingCategories.value = false
   }
@@ -659,10 +661,10 @@ watch(selectedCategory, async (cat) => {
       if (response.ok && response.data.success) {
         subcategories.value = response.data.data || []
       } else {
-        subcategoryError.value = 'Ошибка загрузки подкатегорий'
+        subcategoryError.value = t('ProductCreatePage_80') // Ошибка загрузки подкатегорий
       }
     } catch (e) {
-      subcategoryError.value = 'Ошибка загрузки подкатегорий'
+      subcategoryError.value = t('ProductCreatePage_80') // Ошибка загрузки подкатегорий
     } finally {
       loadingSubcategories.value = false
     }
@@ -775,24 +777,8 @@ watch(images, () => {
   if (images.value.length > 0) hasUnsavedChanges.value = true
 }, { deep: true })
 
-const categoryOptions = computed(() =>
-  Array.isArray(categories.value)
-    ? categories.value.map(c => ({
-        label: c.name_ru || c.name,
-        value: c.category_id,
-        raw: c
-      }))
-    : []
-)
-const subcategoryOptions = computed(() =>
-  Array.isArray(subcategories.value)
-    ? subcategories.value.map(s => ({
-        label: s.name_ru || s.name,
-        value: s.subcategory_id,
-        raw: s
-      }))
-    : []
-)
+const categoryOptions = createReactiveCategoryOptions(categories)
+const subcategoryOptions = createReactiveSubcategoryOptions(subcategories)
 
 
 
@@ -819,14 +805,14 @@ function closeModalAndGo() {
 function handleBeforeUnload(event) {
   if (hasUnsavedChanges.value) {
     event.preventDefault()
-    event.returnValue = 'У вас есть несохраненные изменения. Вы уверены, что хотите покинуть страницу?'
-    return 'У вас есть несохраненные изменения. Вы уверены, что хотите покинуть страницу?'
+    event.returnValue = t('ProductCreatePage_81') // У вас есть несохраненные изменения. Вы уверены, что хотите покинуть страницу?
+    return t('ProductCreatePage_81') // У вас есть несохраненные изменения. Вы уверены, что хотите покинуть страницу?
   }
 }
 
 async function handleSave() {
   if (!productId.value) {
-    toastr.error('Сначала создайте черновик товара, указав название')
+    toastr.error(t('ProductCreatePage_75')) // Сначала создайте черновик товара, указав название
     return
   }
 
@@ -876,16 +862,16 @@ async function handleSave() {
 
     if (response.ok) {
       hasUnsavedChanges.value = false
-      toastr.success('Товар успешно сохранен')
+      toastr.success(t('ProductCreatePage_76')) // Товар успешно сохранен
       console.log('Сохраненные данные:', productData)
       // Перенаправляем на страницу Остатки
       router.push('/products/balances')
     } else {
-      toastr.error('Ошибка при сохранении товара: ' + (response.error || 'Неизвестная ошибка'))
+      toastr.error(t('ProductCreatePage_77') + ' ' + (response.error || t('ProductCreatePage_78'))) // Ошибка при сохранении товара: Неизвестная ошибка
     }
   } catch (error) {
     console.error('Ошибка при сохранении товара:', error)
-    toastr.error('Ошибка при сохранении товара: ' + error.message)
+    toastr.error(t('ProductCreatePage_77') + ' ' + error.message) // Ошибка при сохранении товара:
   } finally {
     isSavingProduct.value = false
   }
@@ -895,13 +881,13 @@ function onCategoryOpen() {
   categoryPlaceholder.value = ''
 }
 function onCategoryClose() {
-  categoryPlaceholder.value = 'Выберите категорию'
+  categoryPlaceholder.value = t('ProductCreatePage_10') // Выберите категорию
 }
 function onSubcategoryOpen() {
   subcategoryPlaceholder.value = ''
 }
 function onSubcategoryClose() {
-  subcategoryPlaceholder.value = 'Выберите подкатегорию'
+  subcategoryPlaceholder.value = t('ProductCreatePage_14') // Выберите подкатегорию
 }
 
 const onImageUploaded = (img) => {

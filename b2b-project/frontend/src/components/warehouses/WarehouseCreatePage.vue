@@ -3,7 +3,7 @@
     <ProductsMenu />
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div class="flex items-center justify-between mb-8">
-        <h1 class="text-2xl font-bold text-gray-900">Создать склад</h1>
+        <h1 class="text-2xl font-bold text-gray-900">{{ t('WarehouseCreatePage_1') }}</h1> <!-- Создать склад -->
         <router-link
           to="/warehouses"
           class="flex items-center gap-2 text-gray-600 hover:text-gray-900 font-medium px-4 py-2 rounded text-sm hover:bg-gray-100 transition-colors"
@@ -18,24 +18,24 @@
         <div class="bg-white rounded-xl shadow p-6">
           <div class="space-y-4">
             <div>
-              <label class="block text-sm text-gray-700 mb-1">Название склада *</label>
+              <label class="block text-sm text-gray-700 mb-1">{{ t('WarehouseCreatePage_2') }}</label> <!-- Название склада * -->
               <input 
                 v-model="form.name" 
                 type="text" 
                 class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm" 
                 :class="{'border-red-400': errors.name}"
-                placeholder="Введите название склада"
+                :placeholder="t('WarehouseCreatePage_3')"
               />
               <div v-if="errors.name" class="text-sm text-red-500 mt-1">{{ errors.name }}</div>
             </div>
             
             <div>
-              <label class="block text-sm text-gray-700 mb-1">Адрес склада</label>
+              <label class="block text-sm text-gray-700 mb-1">{{ t('WarehouseCreatePage_4') }}</label> <!-- Адрес склада -->
               <textarea 
                 v-model="form.address" 
                 rows="3" 
                 class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm"
-                placeholder="Введите адрес склада"
+                :placeholder="t('WarehouseCreatePage_5')"
               ></textarea>
             </div>
           </div>
@@ -55,8 +55,8 @@
         <div class="flex justify-end gap-2 mt-6">
           <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg shadow transition text-sm flex items-center gap-2" :disabled="saving">
             <Loader2 v-if="saving" class="animate-spin h-4 w-4" />
-            <span v-if="saving">Создание...</span>
-            <span v-else>Создать склад</span>
+            <span v-if="saving">{{ t('WarehouseCreatePage_6') }}</span> <!-- Создание... -->
+            <span v-else>{{ t('WarehouseCreatePage_7') }}</span> <!-- Создать склад -->
           </button>
         </div>
       </form>
@@ -71,6 +71,7 @@ import { useRouter } from 'vue-router'
 import { apiRequest } from '@/config/api'
 import { Loader2 } from 'lucide-vue-next'
 import toastr from 'toastr'
+import { t } from '@/locales'
 
 // Устанавливаем заголовок страницы
 document.title = 'B2B SKLAD - Склады'
@@ -96,7 +97,7 @@ function validate() {
   errors.value = {}
   
   if (!form.value.name.trim()) {
-    errors.value.name = 'Название склада обязательно'
+    errors.value.name = t('WarehouseCreatePage_8') // Название склада обязательно
     isValid = false
   }
   
@@ -117,17 +118,17 @@ async function handleSubmit() {
     })
     
     if (response.ok && response.data.success) {
-      successMessage.value = 'Склад успешно создан!'
-      toastr.success('Склад успешно создан')
+      successMessage.value = t('WarehouseCreatePage_9') // Склад успешно создан!
+      toastr.success(t('WarehouseCreatePage_10')) // Склад успешно создан
       setTimeout(() => {
         router.push('/warehouses')
       }, 1000)
     } else {
-      serverError.value = response.data.message || 'Произошла ошибка при создании склада'
+      serverError.value = response.data.message || t('WarehouseCreatePage_11') // Произошла ошибка при создании склада
     }
   } catch (error) {
-    console.error('Ошибка при создании склада:', error)
-    serverError.value = 'Произошла ошибка при создании склада'
+    console.error(t('WarehouseCreatePage_12') + error) // Ошибка при создании склада:
+    serverError.value = t('WarehouseCreatePage_11') // Произошла ошибка при создании склада
   } finally {
     saving.value = false
   }

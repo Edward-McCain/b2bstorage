@@ -572,4 +572,49 @@ class AuthController extends Controller
             ]
         ]);
     }
+
+    /**
+     * Update user language
+     */
+    public function updateLanguage(Request $request)
+    {
+        $user = $request->user();
+        
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not authenticated'
+            ], 401);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'language' => 'required|string|in:ru,en,uz,china'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $user->language = $request->language;
+            $user->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Language updated successfully',
+                'data' => [
+                    'language' => $user->language
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error updating language: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

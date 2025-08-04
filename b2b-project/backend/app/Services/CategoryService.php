@@ -4,13 +4,14 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use App\Helpers\CategoryHelper;
 
 class CategoryService
 {
     /**
      * Получить категории в зависимости от типа пользователя
      */
-    public static function getCategoriesByType($userId, $categoryType = 'system')
+    public static function getCategoriesByType($userId, $categoryType = 'system', $userLanguage = 'ru')
     {
         if ($categoryType === 'user') {
             return DB::table('user_categories')
@@ -19,17 +20,24 @@ class CategoryService
                 ->orderBy('name')
                 ->get();
         } else {
-            return DB::table('categories')
-                ->select('id', 'category_id', 'name_ru as name')
+            $categories = DB::table('categories')
+                ->select('id', 'category_id', 'name', 'name_ru', 'name_en', 'name_uz', 'name_china')
                 ->orderBy('name_ru')
                 ->get();
+            
+            // Применяем правильные названия в зависимости от языка
+            foreach ($categories as $category) {
+                $category->name = CategoryHelper::getCategoryName($category, $userLanguage);
+            }
+            
+            return $categories;
         }
     }
     
     /**
      * Получить подкатегории в зависимости от типа пользователя
      */
-    public static function getSubcategoriesByType($categoryId, $userId, $categoryType = 'system')
+    public static function getSubcategoriesByType($categoryId, $userId, $categoryType = 'system', $userLanguage = 'ru')
     {
         if ($categoryType === 'user') {
             return DB::table('user_subcategories')
@@ -39,11 +47,18 @@ class CategoryService
                 ->orderBy('name')
                 ->get();
         } else {
-            return DB::table('subcategories')
-                ->select('id', 'subcategory_id', 'name_ru as name')
+            $subcategories = DB::table('subcategories')
+                ->select('id', 'subcategory_id', 'name', 'name_ru', 'name_en', 'name_uz', 'name_china')
                 ->where('category_id', $categoryId)
                 ->orderBy('name_ru')
                 ->get();
+            
+            // Применяем правильные названия в зависимости от языка
+            foreach ($subcategories as $subcategory) {
+                $subcategory->name = CategoryHelper::getSubcategoryName($subcategory, $userLanguage);
+            }
+            
+            return $subcategories;
         }
     }
     
@@ -84,7 +99,7 @@ class CategoryService
     /**
      * Получить название категории
      */
-    public static function getCategoryName($categoryId, $userId, $categoryType = 'system')
+    public static function getCategoryName($categoryId, $userId, $categoryType = 'system', $userLanguage = 'ru')
     {
         if ($categoryType === 'user') {
             $category = DB::table('user_categories')
@@ -94,18 +109,26 @@ class CategoryService
                 ->first();
         } else {
             $category = DB::table('categories')
-                ->select('name_ru as name')
+                ->select('name', 'name_ru', 'name_en', 'name_uz', 'name_china')
                 ->where('category_id', $categoryId)
                 ->first();
         }
         
-        return $category ? $category->name : null;
+        if (!$category) {
+            return null;
+        }
+        
+        if ($categoryType === 'user') {
+            return $category->name;
+        } else {
+            return CategoryHelper::getCategoryName($category, $userLanguage);
+        }
     }
     
     /**
      * Получить название подкатегории
      */
-    public static function getSubcategoryName($subcategoryId, $userId, $categoryType = 'system')
+    public static function getSubcategoryName($subcategoryId, $userId, $categoryType = 'system', $userLanguage = 'ru')
     {
         if ($categoryType === 'user') {
             $subcategory = DB::table('user_subcategories')
@@ -115,12 +138,20 @@ class CategoryService
                 ->first();
         } else {
             $subcategory = DB::table('subcategories')
-                ->select('name_ru as name')
+                ->select('name', 'name_ru', 'name_en', 'name_uz', 'name_china')
                 ->where('subcategory_id', $subcategoryId)
                 ->first();
         }
         
-        return $subcategory ? $subcategory->name : null;
+        if (!$subcategory) {
+            return null;
+        }
+        
+        if ($categoryType === 'user') {
+            return $subcategory->name;
+        } else {
+            return CategoryHelper::getSubcategoryName($subcategory, $userLanguage);
+        }
     }
     
     /**

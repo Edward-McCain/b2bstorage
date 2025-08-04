@@ -3,8 +3,9 @@
     <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
       <!-- Заголовок -->
       <div class="flex items-center justify-between p-6 border-b border-gray-200">
+        <!-- Комментарий к товару -->
         <h3 class="text-lg font-semibold text-gray-900">
-          Комментарий к товару
+          {{ t('CommentModal_1') }}
         </h3>
         <button 
           type="button"
@@ -21,7 +22,8 @@
         <div class="mb-4 p-3 bg-gray-50 rounded-lg">
           <div class="text-sm font-medium text-gray-900">{{ productName }}</div>
           <div class="text-xs text-gray-500 mt-1">
-            <span v-if="productArticle">Артикул: {{ productArticle }}</span>
+            <!-- Артикул: -->
+            <span v-if="productArticle">{{ t('CommentModal_2') }} {{ productArticle }}</span>
             <span v-if="productArticle && differenceText"> • </span>
             <span :class="differenceClass">{{ differenceText }}</span>
           </div>
@@ -29,21 +31,24 @@
 
         <!-- Поле для комментария -->
         <div class="mb-4">
+          <!-- Комментарий о расхождении -->
           <label class="block text-sm font-medium text-gray-700 mb-2">
-            Комментарий о расхождении
+            {{ t('CommentModal_3') }}
           </label>
           <textarea
             ref="commentInput"
             v-model="tempComment"
             rows="4"
             class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm resize-none"
-            placeholder="Опишите причину недостачи или избытка..."
+            <!-- Опишите причину недостачи или избытка... -->
+            :placeholder="t('CommentModal_4')"
           ></textarea>
         </div>
 
         <!-- Подсказка -->
         <div class="text-xs text-gray-500 mb-6">
-          Комментарий поможет объяснить причину расхождения между расчетным и фактическим остатком.
+          <!-- Комментарий поможет объяснить причину расхождения между расчетным и фактическим остатком. -->
+          {{ t('CommentModal_5') }}
         </div>
       </div>
 
@@ -55,7 +60,8 @@
           @click.prevent.stop="handleDelete" 
           class="px-4 py-2 text-sm font-medium text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
         >
-          Удалить комментарий
+          <!-- Удалить комментарий -->
+          {{ t('CommentModal_6') }}
         </button>
         <div v-else></div>
         
@@ -65,14 +71,16 @@
             @click.prevent.stop="handleClose" 
             class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
           >
-            Отмена
+            <!-- Отмена -->
+            {{ t('CommentModal_7') }}
           </button>
           <button 
             type="button"
             @click.prevent.stop="handleSave" 
             class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
           >
-            Сохранить
+            <!-- Сохранить -->
+            {{ t('CommentModal_8') }}
           </button>
         </div>
       </div>
@@ -83,6 +91,7 @@
 <script setup>
 import { ref, watch, nextTick } from 'vue'
 import { X } from 'lucide-vue-next'
+import { t } from '../locales/index.js'
 
 const props = defineProps({
   isVisible: {
@@ -145,7 +154,7 @@ function handleSave() {
 }
 
 function handleDelete() {
-  if (confirm('Вы уверены, что хотите удалить комментарий?')) {
+  if (confirm(t('CommentModal_9'))) {
     emit('delete')
   }
 }

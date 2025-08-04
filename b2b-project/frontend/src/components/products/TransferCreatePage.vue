@@ -7,7 +7,7 @@
       <!-- Заголовок страницы -->
       <div class="mb-6 sm:mb-8">
         <div class="flex items-center justify-between">
-          <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Создание перемещения</h1>
+          <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">{{ t('TransferCreatePage_1') }}</h1> <!-- Создание перемещения -->
           <router-link
             to="/products/transfers"
             class="flex items-center gap-2 text-gray-600 hover:text-gray-900 font-medium px-4 py-2 rounded text-sm hover:bg-gray-100 transition-colors"
@@ -25,14 +25,14 @@
           <!-- Основная информация -->
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">От склада *</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('TransferCreatePage_2') }}</label> <!-- От склада * -->
               <Multiselect
                 v-model="form.from_warehouse_id"
                 :options="warehouseOptions"
                 label="label"
                 value="value"
                 :object="false"
-                placeholder="Выберите склад"
+                :placeholder="t('TransferCreatePage_3')"
                 :max-height="400"
                 class="w-full text-sm multiselect-custom"
                 :loading="loadingWarehouses"
@@ -42,14 +42,14 @@
               />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">В склад *</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('TransferCreatePage_4') }}</label> <!-- В склад * -->
               <Multiselect
                 v-model="form.to_warehouse_id"
                 :options="availableToWarehouseOptions"
                 label="label"
                 value="value"
                 :object="false"
-                placeholder="Выберите склад"
+                :placeholder="t('TransferCreatePage_3')"
                 :max-height="400"
                 class="w-full text-sm multiselect-custom"
                 :loading="loadingWarehouses"
@@ -61,21 +61,21 @@
 
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Дата перемещения *</label>
-              <input
+              <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('TransferCreatePage_5') }}</label> <!-- Дата перемещения * -->
+              <LocalizedDatePicker 
                 v-model="form.transfer_date"
-                type="date"
-                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white"
+                :enable-time-picker="false"
+                :auto-apply="true"
                 required
               />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Примечания</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('TransferCreatePage_6') }}</label> <!-- Примечания -->
               <input
                 v-model="form.notes"
                 type="text"
                 class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white"
-                placeholder="Введите примечания к перемещению..."
+                :placeholder="t('TransferCreatePage_7')"
               />
             </div>
           </div>
@@ -83,7 +83,7 @@
           <!-- Список товаров -->
           <div class="mb-6">
             <div class="flex justify-between items-center mb-4">
-              <h3 class="text-base sm:text-lg font-medium text-gray-900">Товары для перемещения</h3>
+              <h3 class="text-base sm:text-lg font-medium text-gray-900">{{ t('TransferCreatePage_8') }}</h3> <!-- Товары для перемещения -->
             </div>
 
             <!-- Сообщение о выборе склада -->
@@ -91,18 +91,18 @@
               <svg class="mx-auto h-8 w-8 sm:h-12 sm:w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
               </svg>
-              <p class="mt-2 text-xs sm:text-sm">Сначала выберите склад, откуда перемещаем товары</p>
+              <p class="mt-2 text-xs sm:text-sm">{{ t('TransferCreatePage_9') }}</p> <!-- Сначала выберите склад, откуда перемещаем товары -->
             </div>
 
             <!-- Поиск товаров -->
             <div v-else class="mb-4">
-              <label class="block text-sm font-medium text-gray-700 mb-2">Поиск товаров</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('TransferCreatePage_10') }}</label> <!-- Поиск товаров -->
               <div class="relative">
                 <input
                   v-model="productSearch"
                   type="text"
                   class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white pr-10"
-                  placeholder="Поиск по названию или артикулу..."
+                  :placeholder="t('TransferCreatePage_11')"
                   @input="onProductSearch"
                 />
                 <div v-if="loadingSearch" class="absolute inset-y-0 right-0 flex items-center pr-3">
@@ -118,19 +118,19 @@
                   <thead class="bg-gray-50">
                     <tr>
                       <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Товар
+                        {{ t('TransferCreatePage_12') }} <!-- Товар -->
                       </th>
                       <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Артикул
+                        {{ t('TransferCreatePage_13') }} <!-- Артикул -->
                       </th>
                       <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        На складе
+                        {{ t('TransferCreatePage_14') }} <!-- На складе -->
                       </th>
                       <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Переместить
+                        {{ t('TransferCreatePage_15') }} <!-- Переместить -->
                       </th>
                       <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Примечание
+                        {{ t('TransferCreatePage_16') }} <!-- Примечание -->
                       </th>
                     </tr>
                   </thead>
@@ -145,11 +145,11 @@
                         </div>
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {{ product.article || 'Не указан' }}
+                        {{ product.article || t('TransferCreatePage_17') }} <!-- Не указан -->
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap">
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          {{ product.warehouse_quantity }} шт.
+                          {{ product.warehouse_quantity }} {{ t('TransferCreatePage_18') }} <!-- шт. -->
                         </span>
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap">
@@ -167,7 +167,7 @@
                           v-model="product.notes"
                           type="text"
                           class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition shadow-sm"
-                          placeholder="Примечание..."
+                          :placeholder="t('TransferCreatePage_19')"
                         />
                       </td>
                     </tr>
@@ -188,21 +188,21 @@
                   
                   <!-- Артикул -->
                   <div class="flex justify-between items-center">
-                    <span class="text-xs text-gray-500">Артикул:</span>
-                    <span class="text-xs text-gray-900">{{ product.article || 'Не указан' }}</span>
+                    <span class="text-xs text-gray-500">{{ t('TransferCreatePage_20') }}</span> <!-- Артикул: -->
+                    <span class="text-xs text-gray-900">{{ product.article || t('TransferCreatePage_17') }}</span> <!-- Не указан -->
                   </div>
                   
                   <!-- Количество на складе -->
                   <div class="flex justify-between items-center">
-                    <span class="text-xs text-gray-500">На складе:</span>
+                    <span class="text-xs text-gray-500">{{ t('TransferCreatePage_21') }}</span> <!-- На складе: -->
                     <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                      {{ product.warehouse_quantity }} шт.
+                      {{ product.warehouse_quantity }} {{ t('TransferCreatePage_18') }} <!-- шт. -->
                     </span>
                   </div>
                   
                   <!-- Количество для перемещения -->
                   <div class="flex justify-between items-center">
-                    <span class="text-xs text-gray-500">Переместить:</span>
+                    <span class="text-xs text-gray-500">{{ t('TransferCreatePage_22') }}</span> <!-- Переместить: -->
                     <input
                       v-model.number="product.selected_quantity"
                       type="number"
@@ -215,12 +215,12 @@
                   
                   <!-- Примечание -->
                   <div>
-                    <label class="block text-xs text-gray-500 mb-1">Примечание:</label>
+                    <label class="block text-xs text-gray-500 mb-1">{{ t('TransferCreatePage_23') }}</label> <!-- Примечание: -->
                     <input
                       v-model="product.notes"
                       type="text"
                       class="w-full border border-gray-300 rounded-md px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition shadow-sm"
-                      placeholder="Примечание..."
+                      :placeholder="t('TransferCreatePage_19')"
                     />
                   </div>
                 </div>
@@ -232,14 +232,14 @@
               <svg class="mx-auto h-8 w-8 sm:h-12 sm:w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
               </svg>
-              <p class="mt-2 text-xs sm:text-sm">На выбранном складе нет доступных товаров</p>
+              <p class="mt-2 text-xs sm:text-sm">{{ t('TransferCreatePage_24') }}</p> <!-- На выбранном складе нет доступных товаров -->
             </div>
 
             <!-- Загрузка товаров -->
             <div v-else-if="loadingProducts" class="text-center py-6 sm:py-8">
               <div class="flex items-center justify-center">
                 <Loader2 class="animate-spin h-5 w-5 sm:h-6 sm:w-6 text-blue-600 mr-2" />
-                <span class="text-xs sm:text-sm text-gray-500">Загрузка товаров склада...</span>
+                <span class="text-xs sm:text-sm text-gray-500">{{ t('TransferCreatePage_25') }}</span> <!-- Загрузка товаров склада... -->
               </div>
             </div>
           </div>
@@ -250,21 +250,21 @@
             <div class="flex-1">
               <!-- Подсказки -->
               <div v-if="!isFormValid && !loading && !creatingTransfer" class="text-xs sm:text-sm text-gray-500">
-                <div v-if="!form.from_warehouse_id" class="mb-1">• Выберите склад отправления</div>
-                <div v-if="!form.to_warehouse_id" class="mb-1">• Выберите склад назначения</div>
-                <div v-if="form.from_warehouse_id === form.to_warehouse_id && form.from_warehouse_id" class="mb-1">• Склады должны быть разными</div>
-                <div v-if="!hasSelectedProducts && form.from_warehouse_id && form.to_warehouse_id" class="mb-1">• Выберите товары для перемещения</div>
+                <div v-if="!form.from_warehouse_id" class="mb-1">• {{ t('TransferCreatePage_26') }}</div> <!-- Выберите склад отправления -->
+                <div v-if="!form.to_warehouse_id" class="mb-1">• {{ t('TransferCreatePage_27') }}</div> <!-- Выберите склад назначения -->
+                <div v-if="form.from_warehouse_id === form.to_warehouse_id && form.from_warehouse_id" class="mb-1">• {{ t('TransferCreatePage_28') }}</div> <!-- Склады должны быть разными -->
+                <div v-if="!hasSelectedProducts && form.from_warehouse_id && form.to_warehouse_id" class="mb-1">• {{ t('TransferCreatePage_29') }}</div> <!-- Выберите товары для перемещения -->
               </div>
               
               <!-- Позитивное сообщение -->
               <div v-if="isFormValid && !loading && !creatingTransfer" class="text-xs sm:text-sm text-green-600 font-medium">
-                ✓ Можно перемещать
+                ✓ {{ t('TransferCreatePage_30') }} <!-- Можно перемещать -->
               </div>
 
               <!-- Сообщение о процессе создания -->
               <div v-if="creatingTransfer" class="text-xs sm:text-sm text-blue-600 font-medium flex items-center">
                 <Loader2 class="animate-spin h-4 w-4 mr-2" />
-                В процессе...
+                {{ t('TransferCreatePage_31') }} <!-- В процессе... -->
               </div>
             </div>
             
@@ -274,14 +274,14 @@
                 to="/products/transfers"
                 class="w-full sm:w-auto px-4 py-3 sm:py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm text-center"
               >
-                Отмена
+                {{ t('TransferCreatePage_32') }} <!-- Отмена -->
               </router-link>
               <button
                 type="submit"
                 :disabled="loading || creatingTransfer || !isFormValid"
                 class="w-full sm:w-auto px-4 py-3 sm:py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed text-sm"
               >
-                {{ creatingTransfer ? 'В процессе...' : (loading ? 'Сохранение...' : 'Создать перемещение') }}
+                {{ creatingTransfer ? t('TransferCreatePage_31') : (loading ? t('TransferCreatePage_34') : t('TransferCreatePage_33')) }} <!-- В процессе... : Сохранение... : Создать перемещение -->
               </button>
             </div>
           </div>
@@ -307,6 +307,7 @@ import { useWarehouseCheck } from '@/composables/useWarehouseCheck'
 import Multiselect from '@vueform/multiselect'
 import '@vueform/multiselect/themes/default.css'
 import { Loader2 } from 'lucide-vue-next'
+import { t } from '@/locales'
 
 const router = useRouter()
 const route = useRoute()
@@ -441,7 +442,7 @@ const loadAvailableProducts = async () => {
     // Устанавливаем предвыбранный товар из URL параметра
     setProductFromUrl()
   } catch (error) {
-    console.error('loadAvailableProducts: Ошибка загрузки доступных товаров:', error)
+    console.error('loadAvailableProducts: ' + t('TransferCreatePage_37') + error) // Ошибка сохранения перемещения:
     availableProducts.value = []
     originalProducts.value = []
   } finally {
@@ -496,12 +497,12 @@ const saveTransfer = async () => {
     }))
 
   if (selectedPositions.length === 0) {
-    alert('Выберите товары для перемещения')
+    alert(t('TransferCreatePage_35')) // Выберите товары для перемещения
     return
   }
 
   if (form.from_warehouse_id === form.to_warehouse_id) {
-    alert('Склад отправления и назначения не могут быть одинаковыми')
+    alert(t('TransferCreatePage_36')) // Склад отправления и назначения не могут быть одинаковыми
     return
   }
 
@@ -515,8 +516,8 @@ const saveTransfer = async () => {
     await api.post('/transfers', transferData)
     router.push('/products/transfers')
   } catch (error) {
-    console.error('Ошибка сохранения перемещения:', error)
-    alert('Ошибка сохранения перемещения')
+    console.error(t('TransferCreatePage_37') + error) // Ошибка сохранения перемещения:
+    alert(t('TransferCreatePage_38')) // Ошибка сохранения перемещения
   } finally {
     creatingTransfer.value = false
   }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use App\Helpers\CategoryHelper;
 
 class CategoryController extends Controller
 {
@@ -15,6 +16,7 @@ class CategoryController extends Controller
     {
         try {
             $user = Auth::user();
+            $userLanguage = $user->language ?? 'ru';
             
             // Получаем тип категорий пользователя
             $catsType = $user->cats_type ?? 'system';
@@ -27,11 +29,13 @@ class CategoryController extends Controller
                     ->orderBy('name')
                     ->get();
             } else {
-                // Возвращаем системные категории
+                // Возвращаем системные категории с поддержкой многоязычности
                 $categories = DB::table('categories')
-                    ->select('id', 'category_id', 'name_ru as name')
+                    ->select('id', 'category_id', 'name', 'name_ru', 'name_en', 'name_uz', 'name_china')
                     ->orderBy('name_ru')
                     ->get();
+                
+                // НЕ применяем перевод на сервере - пусть фронтенд сам обрабатывает
             }
             
             return response()->json([
@@ -54,6 +58,7 @@ class CategoryController extends Controller
     {
         try {
             $user = Auth::user();
+            $userLanguage = $user->language ?? 'ru';
             $category_id = $id ?: $request->query('category_id');
             
             if (!$category_id) {
@@ -85,12 +90,14 @@ class CategoryController extends Controller
                     ->orderBy('name')
                     ->get();
             } else {
-                // Возвращаем системные подкатегории
+                // Возвращаем системные подкатегории с поддержкой многоязычности
                 $subcategories = DB::table('subcategories')
-                    ->select('id', 'subcategory_id', 'name_ru as name')
+                    ->select('id', 'subcategory_id', 'name', 'name_ru', 'name_en', 'name_uz', 'name_china')
                     ->where('category_id', $category_id)
                     ->orderBy('name_ru')
                     ->get();
+                
+                // НЕ применяем перевод на сервере - пусть фронтенд сам обрабатывает
             }
             
             return response()->json([

@@ -10,7 +10,7 @@
           <div class="block sm:hidden w-full">
             <!-- Первая строка: заголовок и кнопка фильтра -->
             <div class="flex items-center justify-between mb-2">
-              <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Остатки</h1>
+              <h1 class="text-2xl md:text-3xl font-bold text-gray-900">{{ t('BalancesPage_1') }}</h1> <!-- Остатки -->
               <button
                 @click="toggleFilters"
                 class="flex items-center gap-2 text-gray-700 font-medium px-4 py-2 rounded text-sm hover:bg-gray-100 transition-colors cursor-pointer group"
@@ -18,7 +18,7 @@
                 <Filter v-if="!showFilters" class="w-4 h-4" />
                 <FunnelX v-else class="w-4 h-4" />
                 <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
-                  {{ showFilters ? 'Скрыть фильтры' : 'Показать фильтры' }}
+                  {{ showFilters ? t('BalancesPage_2') : t('BalancesPage_3') }} <!-- Скрыть фильтры : Показать фильтры -->
                   <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
                 </div>
               </button>
@@ -30,9 +30,9 @@
                 class="flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-700 font-medium px-4 py-2 rounded text-sm hover:bg-blue-100 transition-colors relative group"
               >
                 <Plus class="w-4 h-4 text-blue-700" />
-                Остаток
+                {{ t('BalancesPage_4') }} <!-- Остаток -->
                 <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
-                  Добавить новый остаток
+                  {{ t('BalancesPage_5') }} <!-- Добавить новый остаток -->
                   <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
                 </div>
               </router-link>
@@ -42,9 +42,9 @@
                 class="bg-white border border-gray-300 px-4 py-2 rounded font-medium text-sm hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2 relative group"
               >
                 <Loader2 v-if="importLoading" class="w-4 h-4 animate-spin" />
-                {{ importLoading ? 'Обработка...' : 'Импорт' }}
+                {{ importLoading ? t('BalancesPage_6') : t('BalancesPage_7') }} <!-- Обработка... : Импорт -->
                 <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
-                  {{ importLoading ? 'Обработка файла...' : 'Импорт остатков из файла Excel' }}
+                  {{ importLoading ? t('BalancesPage_8') : t('BalancesPage_9') }} <!-- Обработка файла... : Импорт остатков из файла Excel -->
                   <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
                 </div>
               </button>
@@ -54,9 +54,9 @@
                 class="bg-white border border-gray-300 px-4 py-2 rounded font-medium text-sm hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2 relative group"
               >
                 <Loader2 v-if="exportLoading" class="w-4 h-4 animate-spin" />
-                {{ exportLoading ? 'Экспорт...' : 'Экспорт' }}
+                {{ exportLoading ? t('BalancesPage_10') : t('BalancesPage_11') }} <!-- Экспорт... : Экспорт -->
                 <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
-                  {{ exportLoading ? 'Выполняется экспорт...' : 'Экспорт остатков в файл Excel' }}
+                  {{ exportLoading ? t('BalancesPage_12') : t('BalancesPage_13') }} <!-- Выполняется экспорт... : Экспорт остатков в файл Excel -->
                   <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
                 </div>
               </button>
@@ -65,7 +65,7 @@
           
           <!-- ПК версия: однострочная как раньше -->
           <div class="hidden items-center justify-between sm:flex w-full">
-            <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Остатки</h1>
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-900">{{ t('BalancesPage_1') }}</h1> <!-- Остатки -->
             <div class="flex items-center gap-2">
               <button
                 @click="toggleFilters"
@@ -74,7 +74,7 @@
                 <Filter v-if="!showFilters" class="w-4 h-4" />
                 <FunnelX v-else class="w-4 h-4" />
                 <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
-                  {{ showFilters ? 'Скрыть фильтры' : 'Показать фильтры' }}
+                  {{ showFilters ? t('BalancesPage_2') : t('BalancesPage_3') }} <!-- Скрыть фильтры : Показать фильтры -->
                   <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
                 </div>
               </button>
@@ -83,9 +83,9 @@
                 class="flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-700 font-medium px-4 py-2 rounded text-sm hover:bg-blue-100 transition-colors relative group"
               >
                 <Plus class="w-4 h-4 text-blue-700" />
-                Остаток
+                {{ t('BalancesPage_4') }} <!-- Остаток -->
                 <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
-                  Добавить новый остаток
+                  {{ t('BalancesPage_5') }} <!-- Добавить новый остаток -->
                   <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
                 </div>
               </router-link>
@@ -95,9 +95,9 @@
                 class="bg-white border border-gray-300 px-4 py-2 rounded font-medium text-sm hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2 relative group"
               >
                 <Loader2 v-if="importLoading" class="w-4 h-4 animate-spin" />
-                {{ importLoading ? 'Обработка...' : 'Импорт' }}
+                {{ importLoading ? t('BalancesPage_6') : t('BalancesPage_7') }} <!-- Обработка... : Импорт -->
                 <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
-                  {{ importLoading ? 'Обработка файла...' : 'Импорт остатков из файла Excel' }}
+                  {{ importLoading ? t('BalancesPage_8') : t('BalancesPage_9') }} <!-- Обработка файла... : Импорт остатков из файла Excel -->
                   <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
                 </div>
               </button>
@@ -107,9 +107,9 @@
                 class="bg-white border border-gray-300 px-4 py-2 rounded font-medium text-sm hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2 relative group"
               >
                 <Loader2 v-if="exportLoading" class="w-4 h-4 animate-spin" />
-                {{ exportLoading ? 'Экспорт...' : 'Экспорт' }}
+                {{ exportLoading ? t('BalancesPage_10') : t('BalancesPage_11') }} <!-- Экспорт... : Экспорт -->
                 <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
-                  {{ exportLoading ? 'Выполняется экспорт...' : 'Экспорт остатков в файл Excel' }}
+                  {{ exportLoading ? t('BalancesPage_12') : t('BalancesPage_13') }} <!-- Выполняется экспорт... : Экспорт остатков в файл Excel -->
                   <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
                 </div>
               </button>
@@ -122,14 +122,14 @@
         <!-- Основные фильтры -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <div>
-            <label class="block text-sm text-gray-700 mb-1">Склад</label>
+            <label class="block text-sm text-gray-700 mb-1">{{ t('BalancesPage_14') }}</label> <!-- Склад -->
             <Multiselect
               v-model="filters.warehouse_id"
               :options="warehouseOptions"
               label="label"
               value="value"
               :object="false"
-              placeholder="Все склады"
+              :placeholder="t('BalancesPage_15')"
               :max-height="400"
               class="w-full text-sm multiselect-custom"
               :loading="loadingWarehouses"
@@ -137,16 +137,16 @@
             />
           </div>
           <div>
-            <label class="block text-sm text-gray-700 mb-1">Поиск товара</label>
+            <label class="block text-sm text-gray-700 mb-1">{{ t('BalancesPage_16') }}</label> <!-- Поиск товара -->
             <input
               v-model="filters.search"
               type="text"
-              placeholder="Название товара..."
+              :placeholder="t('BalancesPage_17')"
               class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm"
             />
           </div>
           <div>
-            <label class="block text-sm text-gray-700 mb-1">Мин. остаток</label>
+            <label class="block text-sm text-gray-700 mb-1">{{ t('BalancesPage_18') }}</label> <!-- Мин. остаток -->
             <input
               v-model.number="filters.min_quantity"
               type="number"
@@ -155,7 +155,7 @@
             />
           </div>
           <div>
-            <label class="block text-sm text-gray-700 mb-1">Макс. остаток</label>
+            <label class="block text-sm text-gray-700 mb-1">{{ t('BalancesPage_19') }}</label> <!-- Макс. остаток -->
             <input
               v-model.number="filters.max_quantity"
               type="number"
@@ -167,19 +167,19 @@
 
         <!-- Дополнительные фильтры -->
         <div v-if="!loadingProductFields" class="pt-6">
-          <h3 class="text-lg font-medium text-gray-900 mb-4">Дополнительные фильтры</h3>
+          <h3 class="text-lg font-medium text-gray-900 mb-4">{{ t('BalancesPage_20') }}</h3> <!-- Дополнительные фильтры -->
           
           <!-- Обязательные поля -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <div>
-              <label class="block text-sm text-gray-700 mb-1">Категория</label>
+              <label class="block text-sm text-gray-700 mb-1">{{ t('BalancesPage_21') }}</label> <!-- Категория -->
               <Multiselect
                 v-model="selectedCategory"
                 :options="categoryOptions"
                 label="label"
                 value="value"
                 :object="true"
-                placeholder="Выберите категорию"
+                :placeholder="t('BalancesPage_22')"
                 searchable
                 :max-height="400"
                 class="w-full text-sm multiselect-custom"
@@ -187,14 +187,14 @@
               />
             </div>
             <div>
-              <label class="block text-sm text-gray-700 mb-1">Подкатегория</label>
+              <label class="block text-sm text-gray-700 mb-1">{{ t('BalancesPage_23') }}</label> <!-- Подкатегория -->
               <Multiselect
                 v-model="selectedSubcategory"
                 :options="subcategoryOptions"
                 label="label"
                 value="value"
                 :object="true"
-                placeholder="Выберите подкатегорию"
+                :placeholder="t('BalancesPage_24')"
                 searchable
                 :max-height="400"
                 class="w-full text-sm multiselect-custom"
@@ -203,12 +203,11 @@
               />
             </div>
             <div>
-              <label class="block text-sm text-gray-700 mb-1">Дата создания</label>
-              <input
+              <label class="block text-sm text-gray-700 mb-1">{{ t('BalancesPage_25') }}</label> <!-- Дата создания -->
+              <LocalizedDatePicker 
                 v-model="filters.created_at"
-                type="date"
-                placeholder="дд.мм.гггг"
-                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm"
+                :enable-time-picker="false"
+                :auto-apply="true"
               />
             </div>
           </div>
@@ -233,7 +232,7 @@
         <div v-else class="pt-6">
           <div class="flex items-center justify-center py-4">
             <Loader2 class="animate-spin h-6 w-6 text-blue-500" />
-            <span class="ml-2 text-gray-500 text-sm">Загрузка полей...</span>
+            <span class="ml-2 text-gray-500 text-sm">{{ t('BalancesPage_27') }}</span> <!-- Загрузка полей... -->
           </div>
         </div>
 
@@ -243,14 +242,14 @@
             :disabled="loading"
             class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm transition"
           >
-            Сбросить
+            {{ t('BalancesPage_28') }} <!-- Сбросить -->
           </button>
           <button
             @click="loadBalances"
             :disabled="loading"
             class="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg text-sm transition"
           >
-            Применить фильтры
+            {{ t('BalancesPage_29') }} <!-- Применить фильтры -->
           </button>
         </div>
       </div>
@@ -264,7 +263,7 @@
           <div class="flex justify-center items-center py-8">
             <div class="text-center">
               <Loader2 class="animate-spin h-8 w-8 text-blue-600 mx-auto mb-4" />
-              <div class="text-gray-600 text-sm">Загрузка сводки...</div>
+              <div class="text-gray-600 text-sm">{{ t('BalancesPage_30') }}</div> <!-- Загрузка сводки... -->
             </div>
           </div>
         </div>
@@ -274,27 +273,27 @@
           <div class="grid grid-cols-2 md:grid-cols-6 gap-4">
             <div class="text-center">
               <div class="text-2xl font-bold text-blue-600" style="font-size: 20px;">{{ summary.total_products }}</div>
-              <div class="text-sm text-gray-600">Товаров</div>
+              <div class="text-sm text-gray-600">{{ t('BalancesPage_31') }}</div> <!-- Товаров -->
             </div>
             <div class="text-center">
               <div class="text-2xl font-bold text-green-600" style="font-size: 20px;">{{ summary.total_warehouses }}</div>
-              <div class="text-sm text-gray-600">Складов</div>
+              <div class="text-sm text-gray-600">{{ t('BalancesPage_32') }}</div> <!-- Складов -->
             </div>
             <div class="text-center">
               <div class="text-2xl font-bold text-purple-600" style="font-size: 20px;">{{ summary.total_quantity }}</div>
-              <div class="text-sm text-gray-600">Общее количество</div>
+              <div class="text-sm text-gray-600">{{ t('BalancesPage_33') }}</div> <!-- Общее количество -->
             </div>
             <div class="text-center">
               <div class="text-2xl font-bold text-indigo-600" style="font-size: 20px;">{{ formatCurrency(summary.total_value) }}</div>
-              <div class="text-sm text-gray-600">Общая стоимость</div>
+              <div class="text-sm text-gray-600">{{ t('BalancesPage_34') }}</div> <!-- Общая стоимость -->
             </div>
             <div class="text-center">
               <div class="text-2xl font-bold text-orange-600" style="font-size: 20px;">{{ summary.low_stock_items }}</div>
-              <div class="text-sm text-gray-600">Низкий остаток</div>
+              <div class="text-sm text-gray-600">{{ t('BalancesPage_35') }}</div> <!-- Низкий остаток -->
             </div>
             <div class="text-center">
               <div class="text-2xl font-bold text-red-600" style="font-size: 20px;">{{ summary.out_of_stock_items }}</div>
-              <div class="text-sm text-gray-600">Нет в наличии</div>
+              <div class="text-sm text-gray-600">{{ t('BalancesPage_36') }}</div> <!-- Нет в наличии -->
             </div>
           </div>
         </div>
@@ -303,7 +302,7 @@
         <div v-if="loading" class="flex justify-center items-center py-12">
           <div class="text-center">
             <Loader2 class="animate-spin h-8 w-8 text-blue-600 mx-auto mb-4" />
-            <div class="text-gray-600 text-sm">Загрузка остатков...</div>
+            <div class="text-gray-600 text-sm">{{ t('BalancesPage_37') }}</div> <!-- Загрузка остатков... -->
           </div>
         </div>
         
@@ -312,19 +311,19 @@
             <thead class="bg-gray-50">
               <tr>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500">
-                  Товар
+                  {{ t('BalancesPage_38') }} <!-- Товар -->
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500">
-                  Остаток
+                  {{ t('BalancesPage_39') }} <!-- Остаток -->
                 </th>
                 <th v-if="productFieldsVisibility.price !== false" class="px-6 py-3 text-left text-xs font-medium text-gray-500">
-                  Цена ед/итого
+                  {{ t('BalancesPage_40') }} <!-- Цена ед/итого -->
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500">
-                  Статус
+                  {{ t('BalancesPage_41') }} <!-- Статус -->
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500">
-                  Действия
+                  {{ t('BalancesPage_42') }} <!-- Действия -->
                 </th>
               </tr>
             </thead>
@@ -377,7 +376,7 @@
                           <ArrowRightLeft class="w-4 h-4" />
                         </button>
                         <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
-                          Движение товара
+                          {{ t('BalancesPage_43') }} <!-- Движение товара -->
                           <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
                         </div>
                       </div>
@@ -390,7 +389,7 @@
                           <Edit class="w-4 h-4" />
                         </router-link>
                         <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
-                          Редактировать товар
+                          {{ t('BalancesPage_44') }} <!-- Редактировать товар -->
                           <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
                         </div>
                       </div>
@@ -402,7 +401,7 @@
                           <Trash2 class="w-4 h-4" />
                         </button>
                         <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
-                          Удалить товар
+                          {{ t('BalancesPage_45') }} <!-- Удалить товар -->
                           <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
                         </div>
                       </div>
@@ -415,101 +414,101 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
                       <!-- Обязательные поля -->
                       <div v-if="product?.category_name || product?.category" class="flex items-center gap-2">
-                        <span class="font-medium text-gray-600">Категория:</span>
+                        <span class="font-medium text-gray-600">{{ t('BalancesPage_46') }}</span> <!-- Категория: -->
                         <span class="text-gray-900">{{ product.category_name || product.category }}</span>
                       </div>
                       <div v-if="product?.subcategory_name || product?.subcategory" class="flex items-center gap-2">
-                        <span class="font-medium text-gray-600">Подкатегория:</span>
+                        <span class="font-medium text-gray-600">{{ t('BalancesPage_47') }}</span> <!-- Подкатегория: -->
                         <span class="text-gray-900">{{ product.subcategory_name || product.subcategory }}</span>
                       </div>
                       
                       <!-- Дополнительные поля (активные) -->
                       <div v-if="productFieldsVisibility.description && product?.description" class="flex items-center gap-2">
-                        <span class="font-medium text-gray-600">Описание:</span>
+                        <span class="font-medium text-gray-600">{{ t('BalancesPage_48') }}</span> <!-- Описание: -->
                         <span class="text-gray-900">{{ product.description }}</span>
                       </div>
                       <div v-if="productFieldsVisibility.country && product?.country" class="flex items-center gap-2">
-                        <span class="font-medium text-gray-600">Страна:</span>
+                        <span class="font-medium text-gray-600">{{ t('BalancesPage_49') }}</span> <!-- Страна: -->
                         <span class="text-gray-900">{{ product.country }}</span>
                       </div>
                       <div v-if="productFieldsVisibility.supplier && product?.supplier" class="flex items-center gap-2">
-                        <span class="font-medium text-gray-600">Поставщик:</span>
+                        <span class="font-medium text-gray-600">{{ t('BalancesPage_50') }}</span> <!-- Поставщик: -->
                         <span class="text-gray-900">{{ product.supplier }}</span>
                       </div>
                       <div v-if="productFieldsVisibility.article && product?.article" class="flex items-center gap-2">
-                        <span class="font-medium text-gray-600">Артикул:</span>
+                        <span class="font-medium text-gray-600">{{ t('BalancesPage_51') }}</span> <!-- Артикул: -->
                         <span class="text-gray-900">{{ product.article }}</span>
                       </div>
                       <div v-if="productFieldsVisibility.code && product?.code" class="flex items-center gap-2">
-                        <span class="font-medium text-gray-600">Код:</span>
+                        <span class="font-medium text-gray-600">{{ t('BalancesPage_52') }}</span> <!-- Код: -->
                         <span class="text-gray-900">{{ product.code }}</span>
                       </div>
                       <div v-if="productFieldsVisibility.external_code && product?.external_code" class="flex items-center gap-2">
-                        <span class="font-medium text-gray-600">Внешний код:</span>
+                        <span class="font-medium text-gray-600">{{ t('BalancesPage_53') }}</span> <!-- Внешний код: -->
                         <span class="text-gray-900">{{ product.external_code }}</span>
                       </div>
                       <div v-if="productFieldsVisibility.unit && product?.unit" class="flex items-center gap-2">
-                        <span class="font-medium text-gray-600">Единица измерения:</span>
+                        <span class="font-medium text-gray-600">{{ t('BalancesPage_54') }}</span> <!-- Единица измерения: -->
                         <span class="text-gray-900">{{ product.unit }}</span>
                       </div>
                       <div v-if="productFieldsVisibility.weight && product?.weight" class="flex items-center gap-2">
-                        <span class="font-medium text-gray-600">Вес:</span>
+                        <span class="font-medium text-gray-600">{{ t('BalancesPage_55') }}</span> <!-- Вес: -->
                         <span class="text-gray-900">{{ product.weight }}</span>
                       </div>
                       <div v-if="productFieldsVisibility.volume && product?.volume" class="flex items-center gap-2">
-                        <span class="font-medium text-gray-600">Объем:</span>
+                        <span class="font-medium text-gray-600">{{ t('BalancesPage_56') }}</span> <!-- Объем: -->
                         <span class="text-gray-900">{{ product.volume }}</span>
                       </div>
                       <div v-if="productFieldsVisibility.vat && product?.vat" class="flex items-center gap-2">
-                        <span class="font-medium text-gray-600">Ставка НДС:</span>
+                        <span class="font-medium text-gray-600">{{ t('BalancesPage_57') }}</span> <!-- Ставка НДС: -->
                         <span class="text-gray-900">{{ product.vat }}</span>
                       </div>
                       <div v-if="productFieldsVisibility.min_stock && product?.min_stock" class="flex items-center gap-2">
-                        <span class="font-medium text-gray-600">Минимальный остаток:</span>
+                        <span class="font-medium text-gray-600">{{ t('BalancesPage_58') }}</span> <!-- Минимальный остаток: -->
                         <span class="text-gray-900">{{ product.min_stock }}</span>
                       </div>
                       <div v-if="productFieldsVisibility.stock_type && product?.stock_type" class="flex items-center gap-2">
-                        <span class="font-medium text-gray-600">Тип запаса:</span>
+                        <span class="font-medium text-gray-600">{{ t('BalancesPage_59') }}</span> <!-- Тип запаса: -->
                         <span class="text-gray-900">{{ product.stock_type }}</span>
                       </div>
                       <div v-if="productFieldsVisibility.packing && product?.packing" class="flex items-center gap-2">
-                        <span class="font-medium text-gray-600">Упаковка:</span>
+                        <span class="font-medium text-gray-600">{{ t('BalancesPage_60') }}</span> <!-- Упаковка: -->
                         <span class="text-gray-900">{{ product.packing }}</span>
                       </div>
                       <div v-if="productFieldsVisibility.accounting_type && product?.accounting_type" class="flex items-center gap-2">
-                        <span class="font-medium text-gray-600">Тип учета:</span>
+                        <span class="font-medium text-gray-600">{{ t('BalancesPage_61') }}</span> <!-- Тип учета: -->
                         <span class="text-gray-900">{{ product.accounting_type }}</span>
                       </div>
                       <div v-if="productFieldsVisibility.traceable && product?.traceable" class="flex items-center gap-2">
-                        <span class="font-medium text-gray-600">Маркируемый:</span>
-                        <span class="text-gray-900">{{ product.traceable ? 'Да' : 'Нет' }}</span>
+                        <span class="font-medium text-gray-600">{{ t('BalancesPage_62') }}</span> <!-- Маркируемый: -->
+                        <span class="text-gray-900">{{ product.traceable ? t('BalancesPage_70') : t('BalancesPage_71') }}</span> <!-- Да : Нет -->
                       </div>
                       <div v-if="productFieldsVisibility.marking && product?.marking" class="flex items-center gap-2">
-                        <span class="font-medium text-gray-600">Маркировка:</span>
+                        <span class="font-medium text-gray-600">{{ t('BalancesPage_63') }}</span> <!-- Маркировка: -->
                         <span class="text-gray-900">{{ product.marking }}</span>
                       </div>
                       <div v-if="productFieldsVisibility.product_type && product?.product_type" class="flex items-center gap-2">
-                        <span class="font-medium text-gray-600">Тип товара:</span>
+                        <span class="font-medium text-gray-600">{{ t('BalancesPage_64') }}</span> <!-- Тип товара: -->
                         <span class="text-gray-900">{{ product.product_type }}</span>
                       </div>
                       <div v-if="productFieldsVisibility.barcode_type && product?.barcode_type" class="flex items-center gap-2">
-                        <span class="font-medium text-gray-600">Тип штрихкода:</span>
+                        <span class="font-medium text-gray-600">{{ t('BalancesPage_65') }}</span> <!-- Тип штрихкода: -->
                         <span class="text-gray-900">{{ product.barcode_type }}</span>
                       </div>
                       <div v-if="productFieldsVisibility.barcode && product?.barcode" class="flex items-center gap-2">
-                        <span class="font-medium text-gray-600">Штрихкод:</span>
+                        <span class="font-medium text-gray-600">{{ t('BalancesPage_66') }}</span> <!-- Штрихкод: -->
                         <span class="text-gray-900">{{ product.barcode }}</span>
                       </div>
                       <div v-if="productFieldsVisibility.cash_register_tax && product?.cash_register_tax" class="flex items-center gap-2">
-                        <span class="font-medium text-gray-600">Налог ККМ:</span>
+                        <span class="font-medium text-gray-600">{{ t('BalancesPage_67') }}</span> <!-- Налог ККМ: -->
                         <span class="text-gray-900">{{ product.cash_register_tax }}</span>
                       </div>
                       <div v-if="productFieldsVisibility.cash_register_type && product?.cash_register_type" class="flex items-center gap-2">
-                        <span class="font-medium text-gray-600">Тип ККМ:</span>
+                        <span class="font-medium text-gray-600">{{ t('BalancesPage_68') }}</span> <!-- Тип ККМ: -->
                         <span class="text-gray-900">{{ product.cash_register_type }}</span>
                       </div>
                       <div v-if="productFieldsVisibility.price && product?.price" class="flex items-center gap-2">
-                        <span class="font-medium text-gray-600">Цена:</span>
+                        <span class="font-medium text-gray-600">{{ t('BalancesPage_69') }}</span> <!-- Цена: -->
                         <span class="text-gray-900">{{ formatCurrency(product.price) }}</span>
                       </div>
                       
@@ -531,7 +530,7 @@
         <!-- Пагинация -->
         <div v-if="pagination" class="mt-6 flex justify-between items-center">
           <div class="text-sm text-gray-700">
-            Показано {{ pagination.from }}-{{ pagination.to }} из {{ pagination.total }}
+            {{ t('BalancesPage_72') }} {{ pagination.from }}-{{ pagination.to }} {{ t('BalancesPage_73') }} {{ pagination.total }} <!-- Показано : из -->
           </div>
           <div class="flex gap-2">
             <button
@@ -541,8 +540,8 @@
               class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400 text-sm flex items-center gap-2"
             >
               <Loader2 v-if="loading" class="animate-spin h-4 w-4" />
-              <span v-if="loading">Загрузка...</span>
-              <span v-else>Назад</span>
+              <span v-if="loading">{{ t('BalancesPage_74') }}</span> <!-- Загрузка... -->
+              <span v-else>{{ t('BalancesPage_75') }}</span> <!-- Назад -->
             </button>
             <button
               v-if="pagination.next_page_url"
@@ -551,8 +550,8 @@
               class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400 text-sm flex items-center gap-2"
             >
               <Loader2 v-if="loading" class="animate-spin h-4 w-4" />
-              <span v-if="loading">Загрузка...</span>
-              <span v-else>Вперед</span>
+              <span v-if="loading">{{ t('BalancesPage_74') }}</span> <!-- Загрузка... -->
+              <span v-else>{{ t('BalancesPage_76') }}</span> <!-- Вперед -->
             </button>
           </div>
         </div>
@@ -577,8 +576,8 @@
             </div>
           </div>
           <div class="ml-4">
-            <h3 class="text-lg font-semibold text-gray-900">Удалить товар?</h3>
-            <p class="text-sm text-gray-500">Это действие нельзя отменить. Товар будет удален навсегда.</p>
+            <h3 class="text-lg font-semibold text-gray-900">{{ t('BalancesPage_77') }}</h3> <!-- Удалить товар? -->
+            <p class="text-sm text-gray-500">{{ t('BalancesPage_78') }}</p> <!-- Это действие нельзя отменить. Товар будет удален навсегда. -->
           </div>
         </div>
         <div class="flex gap-3">
@@ -587,7 +586,7 @@
             :disabled="deletingProductId !== null"
             class="flex-1 bg-gray-100 hover:bg-gray-200 disabled:bg-gray-50 disabled:cursor-not-allowed text-gray-800 font-semibold px-4 py-2 rounded-lg transition-colors text-sm cursor-pointer"
           >
-            Отмена
+            {{ t('BalancesPage_79') }} <!-- Отмена -->
           </button>
           <button 
             @click="confirmDelete" 
@@ -595,7 +594,7 @@
             class="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-red-400 disabled:cursor-not-allowed text-white font-semibold px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer text-sm"
           >
             <Loader2 v-if="deletingProductId !== null" class="w-4 h-4 animate-spin" />
-            {{ deletingProductId !== null ? 'Удаление...' : 'Удалить' }}
+            {{ deletingProductId !== null ? t('BalancesPage_80') : t('BalancesPage_81') }} <!-- Удаление... : Удалить -->
           </button>
         </div>
       </div>
@@ -605,7 +604,7 @@
     <div v-if="showImportModal" class="fixed inset-0 z-[99999999] flex items-center justify-center bg-white/90 bg-opacity-50">
       <div class="bg-white rounded-lg shadow-lg w-full max-w-6xl mx-4 p-6 max-h-[90vh] overflow-y-auto">
         <div class="flex items-center justify-between mb-6">
-          <h2 class="text-xl font-bold">Импорт начальных остатков</h2>
+          <h2 class="text-xl font-bold">{{ t('BalancesPage_82') }}</h2> <!-- Импорт начальных остатков -->
           <button @click="closeImportModal" class="text-gray-400 hover:text-gray-700 p-1 rounded hover:bg-gray-100 transition-colors">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -623,7 +622,7 @@
             </div>
             <div class="mb-4">
               <label for="file-upload" class="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors">
-                Выбрать Excel файл
+                {{ t('BalancesPage_83') }} <!-- Выбрать Excel файл -->
               </label>
               <input 
                 id="file-upload" 
@@ -633,16 +632,16 @@
                 class="hidden"
               />
             </div>
-            <p class="text-sm text-gray-500">Поддерживаются файлы .xlsx и .xls</p>
+            <p class="text-sm text-gray-500">{{ t('BalancesPage_84') }}</p> <!-- Поддерживаются файлы .xlsx и .xls -->
             <div class="text-xs text-gray-600 mt-4 space-y-2">
-              <p><strong>Обязательные поля:</strong> Наименование, Стоимость</p>
-              <p v-if="areCategoriesEnabled()"><strong>Дополнительные поля:</strong> Категория, Подкатегория, Артикул, Единица измерения, Начальный остаток.</p>
-              <p v-else><strong>Дополнительные поля:</strong> Артикул, Единица измерения, Начальный остаток.</p>
-              <p class="text-gray-500">Поддерживаемые названия колонок:</p>
-              <p v-if="areCategoriesEnabled()" class="text-gray-500 text-xs">• Категория: "Категория", "Категория товара"</p>
-              <p class="text-gray-500 text-xs">• Единица измерения: "Единица измерения", "Ед. изм.", "Единица"</p>
-              <p class="text-gray-500">Если в файле есть эти колонки - они будут автоматически заполнены при загрузке</p>
-              <p class="text-gray-500">Остальные поля можно будет заполнить после загрузки файла в форме на сайте</p>
+              <p><strong>{{ t('BalancesPage_85') }}</strong> {{ t('BalancesPage_86') }}</p> <!-- Обязательные поля: : Наименование, Стоимость -->
+              <p v-if="areCategoriesEnabled()"><strong>{{ t('BalancesPage_87') }}</strong> {{ t('BalancesPage_88') }}</p> <!-- Дополнительные поля: : Категория, Подкатегория, Артикул, Единица измерения, Начальный остаток. -->
+              <p v-else><strong>{{ t('BalancesPage_87') }}</strong> {{ t('BalancesPage_89') }}</p> <!-- Дополнительные поля: : Артикул, Единица измерения, Начальный остаток. -->
+              <p class="text-gray-500">{{ t('BalancesPage_90') }}</p> <!-- Поддерживаемые названия колонок: -->
+              <p v-if="areCategoriesEnabled()" class="text-gray-500 text-xs">• {{ t('BalancesPage_91') }} "{{ t('BalancesPage_92') }}"</p> <!-- Категория: : Категория товара -->
+              <p class="text-gray-500 text-xs">• {{ t('BalancesPage_93') }} "{{ t('BalancesPage_94') }}", "{{ t('BalancesPage_95') }}"</p> <!-- Единица измерения: : Ед. изм. : Единица -->
+              <p class="text-gray-500">{{ t('BalancesPage_96') }}</p> <!-- Если в файле есть эти колонки - они будут автоматически заполнены при загрузке -->
+              <p class="text-gray-500">{{ t('BalancesPage_97') }}</p> <!-- Остальные поля можно будет заполнить после загрузки файла в форме на сайте -->
             </div>
           </div>
         </div>
@@ -661,10 +660,10 @@
         <!-- Таблица с товарами -->
         <div v-if="parsedProducts.length && !importLoading" class="mb-6">
           <div class="flex items-center justify-between mb-4">
-            <h3 class="text-sm font-semibold">Найдено товаров: {{ parsedProducts.length }}</h3>
+            <h3 class="text-sm font-semibold">{{ t('BalancesPage_98') }} {{ parsedProducts.length }}</h3> <!-- Найдено товаров: -->
             <div class="flex items-center gap-4">
               <div class="flex items-center gap-2">
-                <label class="text-sm font-medium text-gray-700">Склад:</label>
+                <label class="text-sm font-medium text-gray-700">{{ t('BalancesPage_99') }}</label> <!-- Склад: -->
                 <div class="relative">
                   <Multiselect
                     v-model="selectedWarehouseForImport"
@@ -672,7 +671,7 @@
                     label="label"
                     value="value"
                     :object="true"
-                    placeholder="Выберите склад"
+                    :placeholder="t('BalancesPage_100')"
                     :max-height="200"
                     :disabled="loadingWarehouses"
                     class="w-64 min-w-[200px] text-xs multiselect-custom"
@@ -688,7 +687,7 @@
                 class="bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white font-semibold px-6 py-2 rounded-lg transition-colors flex items-center gap-2 text-sm"
               >
                 <Loader2 v-if="importSaving" class="animate-spin h-4 w-4" />
-                {{ importSaving ? 'Сохранение...' : 'Сохранить начальные остатки' }}
+                {{ importSaving ? t('BalancesPage_101') : t('BalancesPage_102') }} <!-- Сохранение... : Сохранить начальные остатки -->
               </button>
             </div>
           </div>
@@ -697,26 +696,26 @@
             <table class="min-w-full divide-y divide-gray-200 text-sm">
               <thead class="bg-gray-50">
                 <tr>
-                  <th class="px-3 py-2 text-left text-sm font-medium text-gray-500 whitespace-nowrap">Наименование</th>
-                  <th v-if="areCategoriesEnabled()" class="px-3 py-2 text-left text-sm font-medium text-gray-500 whitespace-nowrap">Категория</th>
-                  <th v-if="areCategoriesEnabled()" class="px-3 py-2 text-left text-sm font-medium text-gray-500 whitespace-nowrap">Подкатегория</th>
-                  <th class="px-3 py-2 text-left text-sm font-medium text-gray-500 whitespace-nowrap">Остаток</th>
-                  <th v-if="productFieldsVisibility.price !== false" class="px-3 py-2 text-left text-sm font-medium text-gray-500 whitespace-nowrap">Цена</th>
-                  <th class="px-3 py-2 text-left text-sm font-medium text-gray-500 whitespace-nowrap">Ед.изм</th>
-                  <th v-if="productFieldsVisibility.article === true" class="px-3 py-2 text-left text-sm font-medium text-gray-500 whitespace-nowrap">Артикул</th>
+                  <th class="px-3 py-2 text-left text-sm font-medium text-gray-500 whitespace-nowrap">{{ t('BalancesPage_103') }}</th> <!-- Наименование -->
+                  <th v-if="areCategoriesEnabled()" class="px-3 py-2 text-left text-sm font-medium text-gray-500 whitespace-nowrap">{{ t('BalancesPage_21') }}</th> <!-- Категория -->
+                  <th v-if="areCategoriesEnabled()" class="px-3 py-2 text-left text-sm font-medium text-gray-500 whitespace-nowrap">{{ t('BalancesPage_23') }}</th> <!-- Подкатегория -->
+                  <th class="px-3 py-2 text-left text-sm font-medium text-gray-500 whitespace-nowrap">{{ t('BalancesPage_104') }}</th> <!-- Остаток -->
+                  <th v-if="productFieldsVisibility.price !== false" class="px-3 py-2 text-left text-sm font-medium text-gray-500 whitespace-nowrap">{{ t('BalancesPage_105') }}</th> <!-- Цена -->
+                  <th class="px-3 py-2 text-left text-sm font-medium text-gray-500 whitespace-nowrap">{{ t('BalancesPage_106') }}</th> <!-- Ед.изм -->
+                  <th v-if="productFieldsVisibility.article === true" class="px-3 py-2 text-left text-sm font-medium text-gray-500 whitespace-nowrap">{{ t('BalancesPage_107') }}</th> <!-- Артикул -->
                   
                   <!-- Кастомные поля в заголовке -->
                   <th v-for="field in customFields" :key="field.id" class="px-3 py-2 text-left text-sm font-medium text-gray-500 whitespace-nowrap">
                     {{ field.field_name }}
                   </th>
                   
-                  <th class="px-3 py-2 text-left text-sm font-medium text-gray-500 whitespace-nowrap">Действия</th>
+                  <th class="px-3 py-2 text-left text-sm font-medium text-gray-500 whitespace-nowrap">{{ t('BalancesPage_42') }}</th> <!-- Действия -->
                 </tr>
               </thead>
               <tbody class="bg-white divide-y divide-gray-200">
                 <tr v-for="(product, index) in parsedProducts" :key="index" class="hover:bg-gray-50">
                   <td class="px-3 py-2 text-sm text-gray-900 whitespace-nowrap">
-                    <input v-model="product.name" type="text" class="w-full sm:w-32 text-sm border border-gray-300 rounded px-2 py-1" placeholder="Наименование" />
+                    <input v-model="product.name" type="text" class="w-full sm:w-32 text-sm border border-gray-300 rounded px-2 py-1" :placeholder="t('BalancesPage_103')" />
                   </td>
                   
                   <td v-if="areCategoriesEnabled()" class="px-3 py-2 text-sm text-gray-900 whitespace-nowrap">
@@ -726,7 +725,7 @@
                       label="label"
                       value="value"
                       :object="true"
-                      placeholder="Выберите категорию"
+                      :placeholder="t('BalancesPage_22')"
                       :max-height="200"
                       class="w-32 text-xs multiselect-custom"
                       @update:model-value="(val) => handleCategoryChange(product, val)"
@@ -740,7 +739,7 @@
                       label="label"
                       value="value"
                       :object="true"
-                      placeholder="Выберите подкатегорию"
+                      :placeholder="t('BalancesPage_24')"
                       :max-height="200"
                       :disabled="!product.selectedCategory"
                       class="w-32 text-xs multiselect-custom"
@@ -759,37 +758,37 @@
                     <Multiselect
                       v-model="product.unit"
                       :options="[
-                        { label: 'Штука', value: 'Штука' },
-                        { label: 'Килограмм', value: 'Килограмм' },
-                        { label: 'Грамм', value: 'Грамм' },
-                        { label: 'Тонна', value: 'Тонна' },
-                        { label: 'Литр', value: 'Литр' },
-                        { label: 'Миллилитр', value: 'Миллилитр' },
-                        { label: 'Метр', value: 'Метр' },
-                        { label: 'Сантиметр', value: 'Сантиметр' },
-                        { label: 'Квадратный метр', value: 'Квадратный метр' },
-                        { label: 'Кубический метр', value: 'Кубический метр' },
-                        { label: 'Упаковка', value: 'Упаковка' },
-                        { label: 'Пара', value: 'Пара' },
-                        { label: 'Рулон', value: 'Рулон' },
-                        { label: 'Блок', value: 'Блок' },
-                        { label: 'Бочка', value: 'Бочка' },
-                        { label: 'Пачка', value: 'Пачка' },
-                        { label: 'Комплект', value: 'Комплект' },
-                        { label: 'Лист', value: 'Лист' },
-                        { label: 'Погонный метр', value: 'Погонный метр' }
+                        { label: t('BalancesPage_109'), value: t('BalancesPage_109') },
+                        { label: t('BalancesPage_110'), value: t('BalancesPage_110') },
+                        { label: t('BalancesPage_111'), value: t('BalancesPage_111') },
+                        { label: t('BalancesPage_112'), value: t('BalancesPage_112') },
+                        { label: t('BalancesPage_113'), value: t('BalancesPage_113') },
+                        { label: t('BalancesPage_114'), value: t('BalancesPage_114') },
+                        { label: t('BalancesPage_115'), value: t('BalancesPage_115') },
+                        { label: t('BalancesPage_116'), value: t('BalancesPage_116') },
+                        { label: t('BalancesPage_117'), value: t('BalancesPage_117') },
+                        { label: t('BalancesPage_118'), value: t('BalancesPage_118') },
+                        { label: t('BalancesPage_119'), value: t('BalancesPage_119') },
+                        { label: t('BalancesPage_120'), value: t('BalancesPage_120') },
+                        { label: t('BalancesPage_121'), value: t('BalancesPage_121') },
+                        { label: t('BalancesPage_122'), value: t('BalancesPage_122') },
+                        { label: t('BalancesPage_123'), value: t('BalancesPage_123') },
+                        { label: t('BalancesPage_124'), value: t('BalancesPage_124') },
+                        { label: t('BalancesPage_125'), value: t('BalancesPage_125') },
+                        { label: t('BalancesPage_126'), value: t('BalancesPage_126') },
+                        { label: t('BalancesPage_127'), value: t('BalancesPage_127') }
                       ]"
                       label="label"
                       value="value"
                       :object="true"
-                      placeholder="Выберите"
+                      :placeholder="t('BalancesPage_108')"
                       :max-height="200"
                       class="w-24 text-xs multiselect-custom"
                     />
                   </td>
                   
                   <td v-if="productFieldsVisibility.article === true" class="px-3 py-2 text-sm text-gray-900 whitespace-nowrap">
-                    <input v-model="product.article" type="text" class="w-24 text-sm border border-gray-300 rounded px-2 py-1" placeholder="Артикул" />
+                    <input v-model="product.article" type="text" class="w-24 text-sm border border-gray-300 rounded px-2 py-1" :placeholder="t('BalancesPage_107')" />
                   </td>
                   
                   <!-- Кастомные поля в строках -->
@@ -810,12 +809,13 @@
                       class="w-20 text-sm border border-gray-300 rounded px-2 py-1" 
                     />
                     <!-- Поле даты -->
-                    <input 
-                      v-else-if="field.field_type === 'date'" 
-                      v-model="product.customFields[field.field_name]" 
-                      type="date" 
-                      class="w-28 text-sm border border-gray-300 rounded px-2 py-1" 
-                    />
+                    <div v-else-if="field.field_type === 'date'" class="w-32">
+                      <LocalizedDatePicker 
+                        v-model="product.customFields[field.field_name]"
+                        :enable-time-picker="false"
+                        :auto-apply="true"
+                      />
+                    </div>
                     <!-- Поле списка -->
                     <Multiselect
                       v-else-if="field.field_type === 'list'"
@@ -858,6 +858,7 @@
 <script>
 import { ref, reactive, onMounted, computed, watch } from 'vue'
 import api, { apiRequest, getCategoriesByUserSettings } from '@/config/api'
+import { transformCategoriesToOptions, transformSubcategoriesToOptions } from '@/utils/categoryDisplayUtils'
 import ProductsMenu from './ProductsMenu.vue'
 import MovementsModal from './MovementsModal.vue'
 import Multiselect from '@vueform/multiselect'
@@ -866,6 +867,7 @@ import { Filter, FunnelX, Loader2, ArrowRightLeft, Edit, Trash2, Plus } from 'lu
 import * as XLSX from 'xlsx'
 import { areCategoriesEnabled, isFieldRequired } from '@/utils/productFieldsUtils'
 import { getSubcategoriesApiEndpoint } from '@/utils/categoryTypeUtils'
+import { t } from '@/locales'
 
 // Импорт для уведомлений
 const showNotification = (message, type = 'success') => {
@@ -944,28 +946,28 @@ export default {
 
     // Список стандартных необязательных полей products_sklad
     const standardProductFields = [
-      { key: 'description', label: 'Описание' },
-      { key: 'country', label: 'Страна' },
-      { key: 'supplier', label: 'Поставщик' },
-      { key: 'article', label: 'Артикул' },
-      { key: 'code', label: 'Код' },
-      { key: 'external_code', label: 'Внешний код' },
-      { key: 'unit', label: 'Единица измерения' },
-      { key: 'weight', label: 'Вес' },
-      { key: 'volume', label: 'Объем' },
-      { key: 'vat', label: 'Ставка НДС' },
-      { key: 'min_stock', label: 'Минимальный остаток' },
-      { key: 'stock_type', label: 'Тип запаса' },
-      { key: 'packing', label: 'Упаковка' },
-      { key: 'accounting_type', label: 'Тип учета' },
-      { key: 'traceable', label: 'Маркируемый' },
-      { key: 'marking', label: 'Маркировка' },
-      { key: 'product_type', label: 'Тип товара' },
-      { key: 'barcode_type', label: 'Тип штрихкода' },
-      { key: 'barcode', label: 'Штрихкод' },
-      { key: 'cash_register_tax', label: 'Налог ККМ' },
-      { key: 'cash_register_type', label: 'Тип ККМ' },
-      { key: 'price', label: 'Цена' },
+      { key: 'description', label: t('BalancesPage_48').replace(':', '') }, // Описание
+      { key: 'country', label: t('BalancesPage_49').replace(':', '') }, // Страна
+      { key: 'supplier', label: t('BalancesPage_50').replace(':', '') }, // Поставщик
+      { key: 'article', label: t('BalancesPage_51').replace(':', '') }, // Артикул
+      { key: 'code', label: t('BalancesPage_52').replace(':', '') }, // Код
+      { key: 'external_code', label: t('BalancesPage_53').replace(':', '') }, // Внешний код
+      { key: 'unit', label: t('BalancesPage_54').replace(':', '') }, // Единица измерения
+      { key: 'weight', label: t('BalancesPage_55').replace(':', '') }, // Вес
+      { key: 'volume', label: t('BalancesPage_56').replace(':', '') }, // Объем
+      { key: 'vat', label: t('BalancesPage_57').replace(':', '') }, // Ставка НДС
+      { key: 'min_stock', label: t('BalancesPage_58').replace(':', '') }, // Минимальный остаток
+      { key: 'stock_type', label: t('BalancesPage_59').replace(':', '') }, // Тип запаса
+      { key: 'packing', label: t('BalancesPage_60').replace(':', '') }, // Упаковка
+      { key: 'accounting_type', label: t('BalancesPage_61').replace(':', '') }, // Тип учета
+      { key: 'traceable', label: t('BalancesPage_62').replace(':', '') }, // Маркируемый
+      { key: 'marking', label: t('BalancesPage_63').replace(':', '') }, // Маркировка
+      { key: 'product_type', label: t('BalancesPage_64').replace(':', '') }, // Тип товара
+      { key: 'barcode_type', label: t('BalancesPage_65').replace(':', '') }, // Тип штрихкода
+      { key: 'barcode', label: t('BalancesPage_66').replace(':', '') }, // Штрихкод
+      { key: 'cash_register_tax', label: t('BalancesPage_67').replace(':', '') }, // Налог ККМ
+      { key: 'cash_register_type', label: t('BalancesPage_68').replace(':', '') }, // Тип ККМ
+      { key: 'price', label: t('BalancesPage_69').replace(':', '') }, // Цена
     ]
 
     // Computed свойства
@@ -1011,11 +1013,7 @@ export default {
         
         // Проверяем структуру данных
         if (Array.isArray(categoriesData)) {
-          categoryOptions.value = categoriesData.map(cat => ({
-            label: cat.name_ru || cat.name || 'Без названия',
-            value: cat.category_id || cat.id,
-            category_id: cat.category_id || cat.id
-          }))
+          categoryOptions.value = transformCategoriesToOptions(categoriesData)
           console.log('Категории обработаны:', categoryOptions.value)
         } else {
           console.error('Неверная структура данных категорий:', categoriesData)
@@ -1030,22 +1028,26 @@ export default {
     }
 
     const loadSubcategories = async (categoryId) => {
+      console.log('=== loadSubcategories called ===')
+      console.log('CategoryId parameter:', categoryId)
+      console.log('Type of categoryId:', typeof categoryId)
+      
       if (!categoryId) {
+        console.log('CategoryId is empty, clearing subcategories')
         subcategoryOptions.value = []
         return
       }
       loadingSubcategories.value = true
       try {
         console.log('Загружаем подкатегории для категории:', categoryId)
-        const res = await apiRequest(`/subcategories?category_id=${categoryId}`)
+        // Используем правильный endpoint в зависимости от типа категорий
+        const endpoint = getSubcategoriesApiEndpoint(categoryId)
+        console.log('Используем endpoint:', endpoint)
+        const res = await apiRequest(endpoint)
         console.log('Ответ API подкатегорий:', res)
         
         if (res.ok && res.data && res.data.data && Array.isArray(res.data.data)) {
-          subcategoryOptions.value = res.data.data.map(subcat => ({ 
-            label: subcat.name_ru || subcat.name || 'Без названия', 
-            value: subcat.subcategory_id || subcat.id,
-            subcategory_id: subcat.subcategory_id || subcat.id
-          }))
+          subcategoryOptions.value = transformSubcategoriesToOptions(res.data.data)
           console.log('Подкатегории обработаны:', subcategoryOptions.value)
         } else {
           console.error('Неверная структура данных подкатегорий:', res.data)
@@ -1114,9 +1116,9 @@ export default {
     }
 
     const getStatusText = (quantity) => {
-      if (quantity === 0) return 'Нет в наличии'
-      if (quantity <= 10) return 'Низкий остаток'
-      return 'В наличии'
+      if (quantity === 0) return t('BalancesPage_128') // Нет в наличии
+      if (quantity <= 10) return t('BalancesPage_129') // Низкий остаток
+      return t('BalancesPage_130') // В наличии
     }
     
     // Загрузка настроек полей товара
@@ -1174,15 +1176,15 @@ export default {
             product.id !== productIdToDelete.value
           )
           
-          showNotification('Товар успешно удален', 'success')
+          showNotification(t('BalancesPage_135'), 'success') // Товар успешно удален
           closeDeleteModal()
         } else {
-          showNotification(response.data.message || 'Ошибка при удалении товара', 'error')
+          showNotification(response.data.message || t('BalancesPage_134'), 'error') // Ошибка при удалении товара
         }
-      } catch (err) {
-        console.error('Ошибка удаления товара:', err)
-        showNotification('Ошибка при удалении товара', 'error')
-      } finally {
+              } catch (err) {
+          console.error('Ошибка удаления товара:', err)
+          showNotification(t('BalancesPage_134'), 'error') // Ошибка при удалении товара
+        } finally {
         deletingProductId.value = null
       }
     }
@@ -1231,10 +1233,15 @@ export default {
 
     // Watchers для категорий и подкатегорий
     watch(selectedCategory, (val) => {
-      filters.category = val ? val.category_id : null
+      console.log('=== Category Selection Debug ===')
+      console.log('Selected category object:', val)
+      console.log('Category value:', val ? val.value : null)
+      console.log('Category category_id:', val ? val.category_id : null)
+      
+      filters.category = val ? val.value : null
       selectedSubcategory.value = null
       filters.subcategory = null
-      loadSubcategories(val ? val.category_id : null)
+      loadSubcategories(val ? val.value : null)
     })
 
     watch(selectedSubcategory, (val) => {
@@ -1302,7 +1309,7 @@ export default {
         // Проверяем расширение файла
         const fileName = file.name.toLowerCase()
         if (!fileName.endsWith('.xlsx') && !fileName.endsWith('.xls')) {
-          throw new Error('Поддерживаются только файлы .xlsx и .xls')
+          throw new Error(t('BalancesPage_139')) // Поддерживаются только файлы .xlsx и .xls
         }
 
         // Читаем файл
@@ -1317,18 +1324,18 @@ export default {
         const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 })
         
         if (jsonData.length < 2) {
-          throw new Error('Файл не содержит данных')
+          throw new Error(t('BalancesPage_140')) // Файл не содержит данных
         }
 
         // Получаем заголовки (первая строка)
         const headers = jsonData[0]
         
         // Проверяем обязательные колонки
-        const requiredColumns = ['Название', 'Стоимость']
+        const requiredColumns = [t('BalancesPage_143'), t('BalancesPage_144')] // Название, Стоимость
         const missingColumns = requiredColumns.filter(col => !headers.includes(col))
         
         if (missingColumns.length > 0) {
-          throw new Error(`Отсутствуют обязательные колонки: ${missingColumns.join(', ')}`)
+          throw new Error(`${t('BalancesPage_141')} ${missingColumns.join(', ')}`) // Отсутствуют обязательные колонки:
         }
 
         // Парсим данные
@@ -1343,18 +1350,18 @@ export default {
           })
           
           // Проверяем обязательные поля
-          if (!product['Название'] || !product['Стоимость']) {
+          if (!product[t('BalancesPage_143')] || !product[t('BalancesPage_144')]) { // Название, Стоимость
             continue // Пропускаем строки без обязательных полей
           }
           
           // Преобразуем данные в нужный формат
-          const unitValue = product['Единица измерения'] || product['Ед. изм.'] || product['Единица'] || 'Штука'
+          const unitValue = product[t('BalancesPage_147')] || product[t('BalancesPage_148')] || product[t('BalancesPage_149')] || t('BalancesPage_109') // Единица измерения, Ед. изм., Единица, Штука
           const parsedProduct = {
-            name: product['Название']?.toString() || '',
-            price: parseFloat(product['Стоимость']) || 0,
-            quantity: parseFloat(product['Начальный остаток'] || product['Остаток'] || 0) || 0,
+            name: product[t('BalancesPage_143')]?.toString() || '', // Название
+            price: parseFloat(product[t('BalancesPage_144')]) || 0, // Стоимость
+            quantity: parseFloat(product[t('BalancesPage_145')] || product[t('BalancesPage_146')] || 0) || 0, // Начальный остаток, Остаток
             unit: { label: unitValue, value: unitValue },
-            article: product['Артикул'] || '',
+            article: product[t('BalancesPage_107')] || '', // Артикул
             selectedCategory: null,
             selectedSubcategory: null,
             subcategoryOptions: [],
@@ -1363,14 +1370,14 @@ export default {
           
           // Добавляем категории только если они включены в настройках
           if (areCategoriesEnabled()) {
-            parsedProduct.category = product['Категория'] || product['Категория товара'] || ''
+            parsedProduct.category = product[t('BalancesPage_21')] || product[t('BalancesPage_150')] || '' // Категория, Категория товара
           }
           
           products.push(parsedProduct)
         }
         
         if (products.length === 0) {
-          throw new Error('Не найдено товаров для импорта')
+          throw new Error(t('BalancesPage_142')) // Не найдено товаров для импорта
         }
         
         // Убеждаемся, что категории загружены (только если они включены)
@@ -1398,10 +1405,7 @@ export default {
                 )
                 if (foundCategory) {
                   product.selectedCategory = foundCategory;
-                  product.subcategoryOptions = localCategory.subcategories.map(sub => ({
-                    label: sub.name_ru || sub.name || 'Без названия',
-                    value: sub.subcategory_id
-                  }))
+                  product.subcategoryOptions = transformSubcategoriesToOptions(localCategory.subcategories)
                   if (product.subcategory) {
                     const localSubcategory = findSubcategoryByName(localCategory.category_id, product.subcategory)
                     if (localSubcategory) {
@@ -1471,7 +1475,7 @@ export default {
 
     const saveImportedProducts = async () => {
       if (!selectedWarehouseForImport.value) {
-        importError.value = 'Выберите склад для импорта'
+        importError.value = t('BalancesPage_131') // Выберите склад для импорта
         return
       }
       
@@ -1533,16 +1537,16 @@ export default {
         })
         
         if (response.data.success) {
-          showNotification('Товары успешно импортированы', 'success')
+          showNotification(t('BalancesPage_132'), 'success') // Товары успешно импортированы
           closeImportModal()
           loadBalances() // Перезагружаем остатки
         } else {
-          importError.value = response.data.message || 'Ошибка импорта товаров'
+          importError.value = response.data.message || t('BalancesPage_133') // Ошибка импорта товаров
         }
-      } catch (error) {
-        console.error('Ошибка импорта:', error)
-        importError.value = 'Ошибка импорта товаров'
-      } finally {
+              } catch (error) {
+          console.error('Ошибка импорта:', error)
+          importError.value = t('BalancesPage_133') // Ошибка импорта товаров
+        } finally {
         importSaving.value = false
       }
     }
@@ -1585,20 +1589,20 @@ export default {
             
             // Базовые поля
             const exportRow = {
-              'Название': product.name || '-',
-              'Категория': product.category_name || product.category || '-',
-              'Подкатегория': product.subcategory_name || product.subcategory || '-',
-              'Общий остаток': formatQuantity(product.total_quantity),
-              'Единица измерения': product.unit || '-',
-              'Стоимость': formatPrice(product.price),
-              'Артикул': product.article || '-'
+              [t('BalancesPage_143')]: product.name || '-', // Название
+              [t('BalancesPage_21')]: product.category_name || product.category || '-', // Категория
+              [t('BalancesPage_23')]: product.subcategory_name || product.subcategory || '-', // Подкатегория
+              [t('BalancesPage_151')]: formatQuantity(product.total_quantity), // Общий остаток
+              [t('BalancesPage_152')]: product.unit || '-', // Единица измерения
+              [t('BalancesPage_144')]: formatPrice(product.price), // Стоимость
+              [t('BalancesPage_107')]: product.article || '-' // Артикул
             }
             
             // Добавляем информацию по складам
             if (product.warehouse_balances && Array.isArray(product.warehouse_balances)) {
               product.warehouse_balances.forEach((warehouseBalance, index) => {
-                const warehouseName = warehouseBalance.warehouse_name || `Склад ${warehouseBalance.warehouse_id}`
-                exportRow[`Остаток на ${warehouseName}`] = formatQuantity(warehouseBalance.quantity)
+                const warehouseName = warehouseBalance.warehouse_name || `${t('BalancesPage_154')} ${warehouseBalance.warehouse_id}` // Склад
+                exportRow[`${t('BalancesPage_153')} ${warehouseName}`] = formatQuantity(warehouseBalance.quantity) // Остаток на
               })
             }
             
@@ -1657,18 +1661,18 @@ export default {
           const now = new Date()
           const dateStr = now.toISOString().split('T')[0]
           const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '-')
-          const fileName = `остатки_${dateStr}_${timeStr}.xlsx`
+          const fileName = `${t('BalancesPage_155')}_${dateStr}_${timeStr}.xlsx` // остатки
           
           // Скачиваем файл
           XLSX.writeFile(workbook, fileName)
           
-          showNotification(`Экспортировано ${exportData.length} товаров`, 'success')
+          showNotification(`${t('BalancesPage_136')} ${exportData.length} ${t('BalancesPage_137')}`, 'success') // Экспортировано : товаров
         }
         
-      } catch (error) {
-        console.error('Ошибка экспорта:', error)
-        showNotification('Ошибка экспорта остатков', 'error')
-      } finally {
+              } catch (error) {
+          console.error('Ошибка экспорта:', error)
+          showNotification(t('BalancesPage_138'), 'error') // Ошибка экспорта остатков
+        } finally {
         exportLoading.value = false
       }
     }
@@ -1706,15 +1710,14 @@ export default {
       
       try {
         console.log('Загружаем подкатегории для товара, категория:', categoryId)
-        const res = await apiRequest(`/subcategories?category_id=${categoryId}`)
+        // Используем правильный endpoint в зависимости от типа категорий
+        const endpoint = getSubcategoriesApiEndpoint(categoryId)
+        console.log('Используем endpoint для товара:', endpoint)
+        const res = await apiRequest(endpoint)
         console.log('Ответ API подкатегорий для товара:', res)
         
         if (res.ok && res.data && res.data.data && Array.isArray(res.data.data)) {
-          product.subcategoryOptions = res.data.data.map(subcat => ({ 
-            label: subcat.name_ru || subcat.name || 'Без названия', 
-            value: subcat.subcategory_id || subcat.id,
-            subcategory_id: subcat.subcategory_id || subcat.id
-          }))
+          product.subcategoryOptions = transformSubcategoriesToOptions(res.data.data)
           console.log('Подкатегории для товара загружены:', product.subcategoryOptions)
         } else {
           console.error('Неверная структура данных подкатегорий для товара:', res.data)
@@ -1782,6 +1785,7 @@ export default {
     })
 
     return {
+      t,
       getListOptions,
       getListOptionsForMultiselect,
       balances,

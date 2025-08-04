@@ -24,7 +24,12 @@
           </div>
           <div>
             <label class="block text-sm text-gray-700 mb-1">Дата *</label>
-            <input v-model="form.date" type="datetime-local" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" :class="{'border-red-400': errors.date}" />
+            <LocalizedDatePicker 
+              v-model="form.date"
+              :enable-time-picker="true"
+              :auto-apply="true"
+              :class="{'border-red-400': errors.date}"
+            />
             <div v-if="errors.date" class="text-sm text-red-500 mt-1">{{ errors.date }}</div>
           </div>
         </div>

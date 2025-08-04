@@ -56,7 +56,7 @@
       <!-- Дни недели -->
       <div class="grid grid-cols-7 gap-1 mb-2">
         <div
-          v-for="day in weekDays"
+          v-for="day in weekDaysLocalized"
           :key="day"
           class="text-xs font-medium text-gray-500 text-center py-1"
         >
@@ -110,6 +110,7 @@
 
 <script>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { currentLocale } from '../locales/index.js'
 
 export default {
   name: 'CustomDatePicker',
@@ -137,19 +138,43 @@ export default {
     const currentDate = ref(new Date())
     const selectedDate = ref(props.modelValue ? new Date(props.modelValue) : null)
 
-    // Дни недели на русском
-    const weekDays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
+    // Локализованные дни недели
+    const weekDaysLocalized = computed(() => {
+      const weekDaysMap = {
+        ru: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
+        en: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        uz: ['Dush', 'Sesh', 'Chor', 'Pay', 'Jum', 'Shan', 'Yak'],
+        china: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+      }
+      return weekDaysMap[currentLocale.value] || weekDaysMap.ru
+    })
 
-    // Названия месяцев на русском
-    const monthNames = [
-      'январь', 'февраль', 'март', 'апрель', 'май', 'июнь',
-      'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь'
-    ]
+    // Локализованные названия месяцев
+    const monthNamesLocalized = computed(() => {
+      const monthNamesMap = {
+        ru: ['январь', 'февраль', 'март', 'апрель', 'май', 'июнь', 'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь'],
+        en: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+        uz: ['Yanvar', 'Fevral', 'Mart', 'Aprel', 'May', 'Iyun', 'Iyul', 'Avgust', 'Sentyabr', 'Oktyabr', 'Noyabr', 'Dekabr'],
+        china: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月']
+      }
+      return monthNamesMap[currentLocale.value] || monthNamesMap.ru
+    })
+
+    // Локализованные тексты кнопок
+    const buttonTextsLocalized = computed(() => {
+      const buttonTextsMap = {
+        ru: { clear: 'Удалить', today: 'Сегодня', placeholder: 'Выберите дату' },
+        en: { clear: 'Clear', today: 'Today', placeholder: 'Select date' },
+        uz: { clear: 'Tozalash', today: 'Bugun', placeholder: 'Sanani tanlang' },
+        china: { clear: '清除', today: '今天', placeholder: '选择日期' }
+      }
+      return buttonTextsMap[currentLocale.value] || buttonTextsMap.ru
+    })
 
     // Вычисляемые свойства
     const currentYear = computed(() => currentDate.value.getFullYear())
     const currentMonth = computed(() => currentDate.value.getMonth())
-    const currentMonthName = computed(() => monthNames[currentMonth.value])
+    const currentMonthName = computed(() => monthNamesLocalized.value[currentMonth.value])
 
     const displayValue = computed(() => {
       if (!selectedDate.value) return ''

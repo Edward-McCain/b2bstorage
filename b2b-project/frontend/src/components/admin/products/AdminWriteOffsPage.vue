@@ -37,20 +37,20 @@
           <!-- Фильтр по дате от -->
           <div>
             <label class="block text-sm text-gray-700 mb-1">Дата от</label>
-            <input 
-              v-model="filters.date_from" 
-              type="date" 
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm"
+            <LocalizedDatePicker 
+              v-model="filters.date_from"
+              :enable-time-picker="false"
+              :auto-apply="true"
             />
           </div>
 
           <!-- Фильтр по дате до -->
           <div>
             <label class="block text-sm text-gray-700 mb-1">Дата до</label>
-            <input 
-              v-model="filters.date_to" 
-              type="date" 
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm"
+            <LocalizedDatePicker 
+              v-model="filters.date_to"
+              :enable-time-picker="false"
+              :auto-apply="true"
             />
           </div>
 

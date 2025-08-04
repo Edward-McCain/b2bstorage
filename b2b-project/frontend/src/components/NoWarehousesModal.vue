@@ -6,11 +6,13 @@
           <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Package class="w-8 h-8 text-blue-600" />
           </div>
+          <!-- Необходимо добавить склад -->
           <h3 class="text-lg font-semibold text-gray-900 mb-2">
-            Необходимо добавить склад
+            {{ t('NoWarehousesModal_1') }}
           </h3>
+          <!-- Для работы с разделами сначала добавьте ваш склад -->
           <p class="text-gray-600 mb-6">
-            Для работы с разделами сначала добавьте ваш склад
+            {{ t('NoWarehousesModal_2') }}
           </p>
         </div>
         
@@ -19,13 +21,15 @@
             @click="closeModal"
             class="flex-1 bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors font-medium"
           >
-            Отмена
+            <!-- Отмена -->
+            {{ t('NoWarehousesModal_3') }}
           </button>
           <button
             @click="goToCreateWarehouse"
             class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
           >
-            Добавить склад
+            <!-- Добавить склад -->
+            {{ t('NoWarehousesModal_4') }}
           </button>
         </div>
       </div>
@@ -36,6 +40,7 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import { Package } from 'lucide-vue-next'
+import { t } from '../locales/index.js'
 
 const router = useRouter()
 

@@ -3,7 +3,7 @@
     <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
       <div class="mt-3">
         <div class="flex justify-between items-center mb-4">
-          <h3 class="text-lg font-medium text-gray-900">Просмотр перемещения #{{ transfer?.id }}</h3>
+          <h3 class="text-lg font-medium text-gray-900">{{ t('TransferViewModal_1') }}{{ transfer?.id }}</h3> <!-- Просмотр перемещения # -->
           <button
             @click="$emit('close')"
             class="text-gray-400 hover:text-gray-600"
@@ -18,19 +18,19 @@
           <!-- Основная информация -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">От склада</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('TransferViewModal_2') }}</label> <!-- От склада -->
               <div class="text-sm text-gray-900">{{ transfer.from_warehouse?.name }}</div>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">В склад</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('TransferViewModal_3') }}</label> <!-- В склад -->
               <div class="text-sm text-gray-900">{{ transfer.to_warehouse?.name }}</div>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Дата</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('TransferViewModal_4') }}</label> <!-- Дата -->
               <div class="text-sm text-gray-900">{{ formatDate(transfer.transfer_date) }}</div>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Статус</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('TransferViewModal_5') }}</label> <!-- Статус -->
               <span
                 :class="getStatusClass(transfer.status)"
                 class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
@@ -42,13 +42,13 @@
 
           <!-- Примечания -->
           <div v-if="transfer.notes">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Примечания</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('TransferViewModal_6') }}</label> <!-- Примечания -->
             <div class="text-sm text-gray-900">{{ transfer.notes }}</div>
           </div>
 
           <!-- Позиции -->
           <div>
-            <h4 class="text-md font-medium text-gray-900 mb-2">Товары для перемещения</h4>
+            <h4 class="text-md font-medium text-gray-900 mb-2">{{ t('TransferViewModal_7') }}</h4> <!-- Товары для перемещения -->
             <div class="space-y-2">
               <div
                 v-for="position in transfer.positions"
@@ -59,9 +59,9 @@
                   <div>
                     <div class="font-medium text-gray-900">{{ position.product?.name }}</div>
                     <div class="text-sm text-gray-500">
-                      Количество: {{ parseFloat(position.quantity) }}
+                      {{ t('TransferViewModal_8') }} {{ parseFloat(position.quantity) }} <!-- Количество: -->
                       <span v-if="position.actual_quantity !== null">
-                        (фактически: {{ parseFloat(position.actual_quantity) }})
+                        ({{ t('TransferViewModal_9') }} {{ parseFloat(position.actual_quantity) }}) <!-- фактически: -->
                       </span>
                     </div>
                     <div v-if="position.notes" class="text-sm text-gray-500 mt-1">
@@ -76,10 +76,10 @@
           <!-- Информация о создании -->
           <div class="border-t pt-4">
             <div class="text-sm text-gray-500">
-              Создал: {{ transfer.created_by_user?.name }} {{ formatDateTime(transfer.created_at) }}
+              {{ t('TransferViewModal_10') }} {{ transfer.created_by_user?.name }} {{ formatDateTime(transfer.created_at) }} <!-- Создал: -->
             </div>
             <div v-if="transfer.completed_by_user" class="text-sm text-gray-500 mt-1">
-              Выполнил: {{ transfer.completed_by_user?.name }} {{ formatDateTime(transfer.completed_at) }}
+              {{ t('TransferViewModal_11') }} {{ transfer.completed_by_user?.name }} {{ formatDateTime(transfer.completed_at) }} <!-- Выполнил: -->
             </div>
           </div>
         </div>
@@ -89,7 +89,7 @@
             @click="$emit('close')"
             class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm"
           >
-            Закрыть
+            {{ t('TransferViewModal_12') }} <!-- Закрыть -->
           </button>
         </div>
       </div>
@@ -98,6 +98,8 @@
 </template>
 
 <script>
+import { t } from '@/locales'
+
 export default {
   name: 'TransferViewModal',
   props: {
@@ -136,7 +138,8 @@ export default {
     return {
       formatDate,
       formatDateTime,
-      getStatusClass
+      getStatusClass,
+      t
     }
   }
 }

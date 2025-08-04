@@ -16,7 +16,8 @@ class Subcategory extends Model
         'product_count',
         'name_en',
         'name_ru',
-        'name_uz'
+        'name_uz',
+        'name_china'
     ];
 
     /**

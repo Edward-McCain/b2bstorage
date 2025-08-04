@@ -3,7 +3,7 @@
     <ProductsMenu />
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div class="flex items-center justify-between mb-6">
-        <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Логи операций</h1>
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-900">{{ t('ProductsLogs_1') }}</h1> <!-- Логи операций -->
         <div class="flex items-center gap-2">
           <button
             @click="toggleFilters"
@@ -20,14 +20,14 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <!-- Фильтр по типу операции -->
           <div>
-            <label class="block text-sm text-gray-700 mb-1">Тип операции</label>
+            <label class="block text-sm text-gray-700 mb-1">{{ t('ProductsLogs_2') }}</label> <!-- Тип операции -->
             <Multiselect
               v-model="filters.operation_type"
               :options="operationTypeOptions"
               label="label"
               value="value"
               :object="false"
-              placeholder="Все типы"
+              :placeholder="t('ProductsLogs_3')" 
               :max-height="400"
               class="w-full text-sm multiselect-custom"
             />
@@ -35,14 +35,14 @@
 
           <!-- Фильтр по складу -->
           <div>
-            <label class="block text-sm text-gray-700 mb-1">Склад</label>
+            <label class="block text-sm text-gray-700 mb-1">{{ t('ProductsLogs_4') }}</label> <!-- Склад -->
             <Multiselect
               v-model="filters.warehouse"
               :options="warehouseOptions"
               label="label"
               value="value"
               :object="false"
-              placeholder="Все склады"
+              :placeholder="t('ProductsLogs_5')" 
               :max-height="400"
               class="w-full text-sm multiselect-custom"
               :loading="loadingWarehouses"
@@ -52,21 +52,21 @@
 
           <!-- Фильтр по дате от -->
           <div>
-            <label class="block text-sm text-gray-700 mb-1">Дата от</label>
-            <input 
-              v-model="filters.date_from" 
-              type="date" 
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm"
+            <label class="block text-sm text-gray-700 mb-1">{{ t('ProductsLogs_6') }}</label> <!-- Дата от -->
+            <LocalizedDatePicker 
+              v-model="filters.date_from"
+              :enable-time-picker="false"
+              :auto-apply="true"
             />
           </div>
 
           <!-- Фильтр по дате до -->
           <div>
-            <label class="block text-sm text-gray-700 mb-1">Дата до</label>
-            <input 
-              v-model="filters.date_to" 
-              type="date" 
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm"
+            <label class="block text-sm text-gray-700 mb-1">{{ t('ProductsLogs_7') }}</label> <!-- Дата до -->
+            <LocalizedDatePicker 
+              v-model="filters.date_to"
+              :enable-time-picker="false"
+              :auto-apply="true"
             />
           </div>
 
@@ -77,13 +77,13 @@
               class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg text-sm transition"
               :disabled="loading"
             >
-              Применить
+              {{ t('ProductsLogs_8') }} <!-- Применить -->
             </button>
             <button 
               @click="clearFilters" 
               class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium px-4 py-2 rounded-lg text-sm transition"
             >
-              Сбросить
+              {{ t('ProductsLogs_9') }} <!-- Сбросить -->
             </button>
           </div>
         </div>
@@ -93,23 +93,23 @@
       <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
         <div v-if="loading" class="flex items-center justify-center py-8">
           <Loader2 class="animate-spin h-6 w-6 text-blue-600 mr-2" />
-          <span class="text-sm text-gray-600">Загрузка логов...</span>
+          <span class="text-sm text-gray-600">{{ t('ProductsLogs_10') }}</span> <!-- Загрузка логов... -->
         </div>
         <div v-else>
           <div class="mb-4 text-sm text-gray-600">
-            Найдено записей: {{ logs.length }}
+            {{ t('ProductsLogs_11') }} {{ logs.length }} <!-- Найдено записей: -->
           </div>
           <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200 text-sm">
             <thead>
               <tr class="bg-gray-50">
-                <th class="px-3 py-2 text-left font-semibold text-gray-700">Дата</th>
-                <th class="px-3 py-2 text-left font-semibold text-gray-700">Товар</th>
-                <th class="px-3 py-2 text-left font-semibold text-gray-700">Склад</th>
-                <th class="px-3 py-2 text-center font-semibold text-gray-700 min-w-[140px]">Тип операции</th>
-                <th class="px-3 py-2 text-center font-semibold text-gray-700">Количество</th>
-                <th class="px-3 py-2 text-left font-semibold text-gray-700">Пользователь</th>
-                <th class="px-3 py-2 text-left font-semibold text-gray-700">Примечания</th>
+                <th class="px-3 py-2 text-left font-semibold text-gray-700">{{ t('ProductsLogs_12') }}</th> <!-- Дата -->
+                <th class="px-3 py-2 text-left font-semibold text-gray-700">{{ t('ProductsLogs_13') }}</th> <!-- Товар -->
+                <th class="px-3 py-2 text-left font-semibold text-gray-700">{{ t('ProductsLogs_14') }}</th> <!-- Склад -->
+                <th class="px-3 py-2 text-center font-semibold text-gray-700 min-w-[140px]">{{ t('ProductsLogs_15') }}</th> <!-- Тип операции -->
+                <th class="px-3 py-2 text-center font-semibold text-gray-700">{{ t('ProductsLogs_16') }}</th> <!-- Количество -->
+                <th class="px-3 py-2 text-left font-semibold text-gray-700">{{ t('ProductsLogs_17') }}</th> <!-- Пользователь -->
+                <th class="px-3 py-2 text-left font-semibold text-gray-700">{{ t('ProductsLogs_18') }}</th> <!-- Примечания -->
               </tr>
             </thead>
             <tbody>
@@ -139,7 +139,7 @@
             </tbody>
           </table>
           </div>
-          <div v-if="logs.length === 0" class="text-center text-gray-500 py-8">Логи не найдены</div>
+          <div v-if="logs.length === 0" class="text-center text-gray-500 py-8">{{ t('ProductsLogs_19') }}</div> <!-- Логи не найдены -->
         </div>
       </div>
     </div>
@@ -153,6 +153,7 @@ import { apiRequest } from '@/config/api'
 import { Loader2, Filter, FunnelX } from 'lucide-vue-next'
 import Multiselect from '@vueform/multiselect'
 import '@vueform/multiselect/themes/default.css'
+import { t } from '@/locales'
 
 // Устанавливаем заголовок страницы
 document.title = 'B2B SKLAD - Логи операций'
@@ -171,12 +172,12 @@ const filters = ref({
 })
 
 const operationTypeOptions = [
-  // { label: 'Приход', value: 'income' },
-  // { label: 'Расход', value: 'expense' },
-  { label: 'Оприходование', value: 'receipt' },
-  { label: 'Списание', value: 'write_off' },
-  { label: 'Вх. перемещение', value: 'transfer_in' },
-  { label: 'Исх. перемещение', value: 'transfer_out' }
+  // { label: t('ProductsLogs_20'), value: 'income' }, // Приход
+  // { label: t('ProductsLogs_21'), value: 'expense' }, // Расход
+  { label: t('ProductsLogs_22'), value: 'receipt' }, // Оприходование
+  { label: t('ProductsLogs_23'), value: 'write_off' }, // Списание
+  { label: t('ProductsLogs_24'), value: 'transfer_in' }, // Вх. перемещение
+  { label: t('ProductsLogs_25'), value: 'transfer_out' } // Исх. перемещение
 ]
 
 const warehouseOptions = computed(() => {
@@ -205,12 +206,12 @@ function formatQuantity(quantity) {
 
 function getOperationTypeText(type) {
   const types = {
-    'income': 'Приход',
-    'expense': 'Расход',
-    'receipt': 'Оприходование',
-    'write_off': 'Списание',
-    'transfer_in': 'Вх. перемещение',
-    'transfer_out': 'Исх. перемещение'
+    'income': t('ProductsLogs_20'), // Приход
+    'expense': t('ProductsLogs_21'), // Расход
+    'receipt': t('ProductsLogs_22'), // Оприходование
+    'write_off': t('ProductsLogs_23'), // Списание
+    'transfer_in': t('ProductsLogs_24'), // Вх. перемещение
+    'transfer_out': t('ProductsLogs_25') // Исх. перемещение
   }
   return types[type] || type
 }
@@ -241,10 +242,10 @@ function getQuantityClass(type) {
 
 function getReferenceTypeText(type) {
   const types = {
-    'receipt': 'Оприходование',
-    'write_off': 'Списание',
-    'transfer': 'Перемещение',
-    'inventory': 'Инвентаризация'
+    'receipt': t('ProductsLogs_22'), // Оприходование
+    'write_off': t('ProductsLogs_23'), // Списание
+    'transfer': t('ProductsLogs_26'), // Перемещение
+    'inventory': t('ProductsLogs_27') // Инвентаризация
   }
   return types[type] || type
 }
@@ -268,7 +269,7 @@ async function fetchLogs() {
       logs.value = []
     }
   } catch (error) {
-    console.error('Ошибка загрузки логов:', error)
+    console.error(t('ProductsLogs_28') + error) // Ошибка загрузки логов:
     logs.value = []
   } finally {
     loading.value = false
@@ -285,7 +286,7 @@ async function loadWarehouses() {
       warehouses.value = []
     }
   } catch (error) {
-    console.error('Ошибка загрузки складов:', error)
+    console.error(t('ProductsLogs_29') + error) // Ошибка загрузки складов:
     warehouses.value = []
   } finally {
     loadingWarehouses.value = false

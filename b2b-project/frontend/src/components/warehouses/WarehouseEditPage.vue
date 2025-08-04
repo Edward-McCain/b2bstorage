@@ -3,7 +3,7 @@
     <ProductsMenu />
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div class="flex items-center justify-between mb-8">
-        <h1 class="text-2xl font-bold text-gray-900">Редактировать склад</h1>
+        <h1 class="text-2xl font-bold text-gray-900">{{ t('WarehouseEditPage_1') }}</h1> <!-- Редактировать склад -->
         <router-link
           to="/warehouses"
           class="flex items-center gap-2 text-gray-600 hover:text-gray-900 font-medium px-4 py-2 rounded text-sm hover:bg-gray-100 transition-colors"
@@ -16,31 +16,31 @@
       
       <div v-if="loading" class="flex items-center justify-center py-8">
         <Loader2 class="animate-spin h-6 w-6 text-blue-600 mr-2" />
-        <span class="text-sm text-gray-600">Загрузка данных склада...</span>
+        <span class="text-sm text-gray-600">{{ t('WarehouseEditPage_2') }}</span> <!-- Загрузка данных склада... -->
       </div>
       
       <form v-else @submit.prevent="handleSubmit" class="space-y-6">
         <div class="bg-white rounded-xl shadow p-6">
           <div class="space-y-4">
             <div>
-              <label class="block text-sm text-gray-700 mb-1">Название склада *</label>
+              <label class="block text-sm text-gray-700 mb-1">{{ t('WarehouseEditPage_3') }}</label> <!-- Название склада * -->
               <input 
                 v-model="form.name" 
                 type="text" 
                 class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm" 
                 :class="{'border-red-400': errors.name}"
-                placeholder="Введите название склада"
+                :placeholder="t('WarehouseEditPage_4')"   
               />
               <div v-if="errors.name" class="text-sm text-red-500 mt-1">{{ errors.name }}</div>
             </div>
             
             <div>
-              <label class="block text-sm text-gray-700 mb-1">Адрес склада</label>
+              <label class="block text-sm text-gray-700 mb-1">{{ t('WarehouseEditPage_5') }}</label> <!-- Адрес склада -->
               <textarea 
                 v-model="form.address" 
                 rows="3" 
                 class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm"
-                placeholder="Введите адрес склада"
+                :placeholder="t('WarehouseEditPage_6')"
               ></textarea>
             </div>
           </div>
@@ -60,8 +60,8 @@
         <div class="flex justify-end gap-2 mt-6">
           <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg shadow transition text-sm flex items-center gap-2" :disabled="saving">
             <Loader2 v-if="saving" class="animate-spin h-4 w-4" />
-            <span v-if="saving">Сохранение...</span>
-            <span v-else>Сохранить</span>
+            <span v-if="saving">{{ t('WarehouseEditPage_7') }}</span> <!-- Сохранение... -->
+            <span v-else>{{ t('WarehouseEditPage_8') }}</span> <!-- Сохранить -->
           </button>
         </div>
       </form>
@@ -76,6 +76,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { apiRequest } from '@/config/api'
 import { Loader2 } from 'lucide-vue-next'
 import toastr from 'toastr'
+import { t } from '@/locales'
 
 // Устанавливаем заголовок страницы
 document.title = 'B2B SKLAD - Склады'
@@ -112,7 +113,7 @@ async function fetchWarehouse() {
       router.push('/warehouses')
     }
   } catch (error) {
-    console.error('Ошибка загрузки склада:', error)
+    console.error(t('WarehouseEditPage_13') + error) // Ошибка загрузки склада:
     router.push('/warehouses')
   } finally {
     loading.value = false
@@ -124,7 +125,7 @@ function validate() {
   errors.value = {}
   
   if (!form.value.name.trim()) {
-    errors.value.name = 'Название склада обязательно'
+    errors.value.name = t('WarehouseEditPage_9') // Название склада обязательно
     isValid = false
   }
   
@@ -146,17 +147,17 @@ async function handleSubmit() {
     })
     
     if (response.ok && response.data.success) {
-      successMessage.value = 'Склад успешно обновлен!'
-      toastr.success('Склад успешно обновлен')
+      successMessage.value = t('WarehouseEditPage_10') // Склад успешно обновлен!
+      toastr.success(t('WarehouseEditPage_11')) // Склад успешно обновлен
       setTimeout(() => {
         router.push('/warehouses')
       }, 1000)
     } else {
-      serverError.value = response.data.message || 'Произошла ошибка при обновлении склада'
+      serverError.value = response.data.message || t('WarehouseEditPage_12') // Произошла ошибка при обновлении склада
     }
   } catch (error) {
-    console.error('Ошибка при обновлении склада:', error)
-    serverError.value = 'Произошла ошибка при обновлении склада'
+    console.error(t('WarehouseEditPage_14') + error) // Ошибка при обновлении склада:
+    serverError.value = t('WarehouseEditPage_12') // Произошла ошибка при обновлении склада
   } finally {
     saving.value = false
   }

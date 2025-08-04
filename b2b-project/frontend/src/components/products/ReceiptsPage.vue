@@ -3,7 +3,7 @@
     <ProductsMenu />
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div class="flex items-center justify-between mb-6">
-        <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Оприходования</h1>
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-900">{{ t('ReceiptsPage_1') }}</h1> <!-- Оприходования -->
         <div class="flex items-center gap-2">
           <button
             @click="toggleFilters"
@@ -19,7 +19,7 @@
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>
-            Добавить
+            {{ t('ReceiptsPage_2') }} <!-- Добавить -->
           </router-link>
         </div>
       </div>
@@ -29,11 +29,11 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <!-- Поиск по номеру -->
           <div>
-            <label class="block text-sm text-gray-700 mb-1">Поиск по номеру</label>
+            <label class="block text-sm text-gray-700 mb-1">{{ t('ReceiptsPage_3') }}</label> <!-- Поиск по номеру -->
             <input 
               v-model="filters.number" 
               type="text" 
-              placeholder="Введите номер оприходования"
+              :placeholder="t('ReceiptsPage_4')"
               class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm"
               @keyup.enter="applyFilters"
             />
@@ -41,34 +41,34 @@
 
           <!-- Фильтр по дате от -->
           <div>
-            <label class="block text-sm text-gray-700 mb-1">Дата от</label>
-            <input 
-              v-model="filters.date_from" 
-              type="date" 
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm"
+            <label class="block text-sm text-gray-700 mb-1">{{ t('ReceiptsPage_5') }}</label> <!-- Дата от -->
+            <LocalizedDatePicker 
+              v-model="filters.date_from"
+              :enable-time-picker="false"
+              :auto-apply="true"
             />
           </div>
 
           <!-- Фильтр по дате до -->
           <div>
-            <label class="block text-sm text-gray-700 mb-1">Дата до</label>
-            <input 
-              v-model="filters.date_to" 
-              type="date" 
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm"
+            <label class="block text-sm text-gray-700 mb-1">{{ t('ReceiptsPage_6') }}</label> <!-- Дата до -->
+            <LocalizedDatePicker 
+              v-model="filters.date_to"
+              :enable-time-picker="false"
+              :auto-apply="true"
             />
           </div>
 
           <!-- Фильтр по складу -->
           <div>
-            <label class="block text-sm text-gray-700 mb-1">Склад</label>
+            <label class="block text-sm text-gray-700 mb-1">{{ t('ReceiptsPage_7') }}</label> <!-- Склад -->
             <Multiselect
               v-model="filters.warehouse"
               :options="warehouseOptions"
               label="label"
               value="value"
               :object="false"
-              placeholder="Все склады"
+              :placeholder="t('ReceiptsPage_8')"
               :max-height="400"
               class="w-full text-sm multiselect-custom"
               :loading="loadingWarehouses"
@@ -78,14 +78,14 @@
 
           <!-- Фильтр по статусу -->
           <div>
-            <label class="block text-sm text-gray-700 mb-1">Статус</label>
+            <label class="block text-sm text-gray-700 mb-1">{{ t('ReceiptsPage_9') }}</label> <!-- Статус -->
             <Multiselect
               v-model="filters.status"
               :options="statusOptions"
               label="label"
               value="value"
               :object="false"
-              placeholder="Все статусы"
+              :placeholder="t('ReceiptsPage_10')"
               :max-height="400"
               class="w-full text-sm multiselect-custom"
             />
@@ -98,13 +98,13 @@
               class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg text-sm transition"
               :disabled="loading"
             >
-              Применить
+              {{ t('ReceiptsPage_11') }} <!-- Применить -->
             </button>
             <button 
               @click="clearFilters" 
               class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium px-4 py-2 rounded-lg text-sm transition"
             >
-              Сбросить
+              {{ t('ReceiptsPage_12') }} <!-- Сбросить -->
             </button>
           </div>
         </div>
@@ -113,24 +113,24 @@
       <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
         <div v-if="loading" class="flex items-center justify-center py-8">
           <Loader2 class="animate-spin h-6 w-6 text-blue-600 mr-2" />
-          <span class="text-sm text-gray-600">Загрузка оприходований...</span>
+          <span class="text-sm text-gray-600">{{ t('ReceiptsPage_13') }}</span> <!-- Загрузка оприходований... -->
         </div>
         <div v-else>
           <div class="mb-4 text-sm text-gray-600">
-            Найдено записей: {{ receipts.length }}
+            {{ t('ReceiptsPage_14') }} {{ receipts.length }} <!-- Найдено записей: -->
           </div>
           <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200 text-sm">
               <thead>
                 <tr class="bg-gray-50">
-                  <th class="px-3 py-2 text-left font-semibold text-gray-700">№</th>
-                  <th class="px-3 py-2 text-left font-semibold text-gray-700">Дата</th>
-                  <th class="px-3 py-2 text-left font-semibold text-gray-700">Заметка</th>
-                  <th class="px-3 py-2 text-left font-semibold text-gray-700">Склад</th>
-                  <th class="px-3 py-2 text-left font-semibold text-gray-700">Статус</th>
-                  <th class="px-3 py-2 text-left font-semibold text-gray-700">Сумма</th>
-                  <th class="px-3 py-2 text-left font-semibold text-gray-700">Пользователь</th>
-                  <th class="px-3 py-2 text-left font-semibold text-gray-700">Действия</th>
+                  <th class="px-3 py-2 text-left font-semibold text-gray-700">{{ t('ReceiptsPage_15') }}</th> <!-- № -->
+                  <th class="px-3 py-2 text-left font-semibold text-gray-700">{{ t('ReceiptsPage_16') }}</th> <!-- Дата -->
+                  <th class="px-3 py-2 text-left font-semibold text-gray-700">{{ t('ReceiptsPage_17') }}</th> <!-- Заметка -->
+                  <th class="px-3 py-2 text-left font-semibold text-gray-700">{{ t('ReceiptsPage_18') }}</th> <!-- Склад -->
+                  <th class="px-3 py-2 text-left font-semibold text-gray-700">{{ t('ReceiptsPage_19') }}</th> <!-- Статус -->
+                  <th class="px-3 py-2 text-left font-semibold text-gray-700">{{ t('ReceiptsPage_20') }}</th> <!-- Сумма -->
+                  <th class="px-3 py-2 text-left font-semibold text-gray-700">{{ t('ReceiptsPage_21') }}</th> <!-- Пользователь -->
+                  <th class="px-3 py-2 text-left font-semibold text-gray-700">{{ t('ReceiptsPage_22') }}</th> <!-- Действия -->
                 </tr>
               </thead>
               <tbody>
@@ -146,11 +146,11 @@
                         <span class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></span>
                       </span>
                     </span>
-                    <span v-else class="text-gray-400 cursor-pointer">Склад #{{ receipt.warehouse_id }}</span>
+                    <span v-else class="text-gray-400 cursor-pointer">{{ t('ReceiptsPage_23') }}{{ receipt.warehouse_id }}</span> <!-- Склад # -->
                   </td>
                   <td class="px-3 py-2">
                     <span :class="receipt.status === 'posted' ? 'text-green-600' : 'text-gray-500'">
-                      {{ receipt.status === 'posted' ? 'Проведено' : 'Черновик' }}
+                      {{ receipt.status === 'posted' ? t('ReceiptsPage_24') : t('ReceiptsPage_25') }} <!-- Проведено : Черновик -->
                     </span>
                   </td>
                   <td class="px-3 py-2">{{ Number(receipt.total).toFixed(2) }}</td>
@@ -175,20 +175,20 @@
               </tbody>
             </table>
           </div>
-          <div v-if="receipts.length === 0" class="text-center text-gray-500 py-8">Нет оприходований</div>
+          <div v-if="receipts.length === 0" class="text-center text-gray-500 py-8">{{ t('ReceiptsPage_26') }}</div> <!-- Нет оприходований -->
         </div>
       </div>
     </div>
   </div>
   <div v-if="showDeleteModal" class="fixed inset-0 z-50 flex items-center justify-center bg-white/90">
     <div class="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full relative">
-      <div class="text-lg font-semibold mb-2">Удалить оприходование?</div>
-      <div class="text-gray-600 mb-4 text-sm">Вы действительно хотите удалить это оприходование? Это действие необратимо.</div>
+      <div class="text-lg font-semibold mb-2">{{ t('ReceiptsPage_27') }}</div> <!-- Удалить оприходование? -->
+      <div class="text-gray-600 mb-4 text-sm">{{ t('ReceiptsPage_28') }}</div> <!-- Вы действительно хотите удалить это оприходование? Это действие необратимо. -->
       <div class="flex justify-end gap-2 mt-4">
-        <button @click="closeDeleteModal" class="px-4 py-2 rounded bg-gray-100 text-gray-700 hover:bg-gray-200 text-sm">Отмена</button>
+        <button @click="closeDeleteModal" class="px-4 py-2 rounded bg-gray-100 text-gray-700 hover:bg-gray-200 text-sm">{{ t('ReceiptsPage_29') }}</button> <!-- Отмена -->
         <button @click="deleteReceiptConfirmed" :disabled="deleting" class="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700 text-sm flex items-center min-w-[90px] justify-center">
           <Loader2 v-if="deleting" class="animate-spin h-4 w-4 mr-2" />
-          <span v-if="!deleting">Удалить</span>
+          <span v-if="!deleting">{{ t('ReceiptsPage_30') }}</span> <!-- Удалить -->
         </button>
       </div>
     </div>
@@ -204,6 +204,8 @@ import { Loader2, Plus, Edit, Trash2, Eye, Filter, FunnelX } from 'lucide-vue-ne
 import Multiselect from '@vueform/multiselect'
 import '@vueform/multiselect/themes/default.css'
 import toastr from 'toastr'
+import { t } from '../../locales/index.js'
+import { formatDate } from '../../utils/dateUtils.js'
 
 // Устанавливаем заголовок страницы
 document.title = 'B2B SKLAD - Оприходования'
@@ -240,8 +242,8 @@ const warehouseOptions = computed(() => {
 })
 
 const statusOptions = [
-  { label: 'Черновик', value: 'draft' },
-  { label: 'Проведено', value: 'posted' }
+  { label: t('ReceiptsPage_25'), value: 'draft' }, // Черновик
+  { label: t('ReceiptsPage_24'), value: 'posted' } // Проведено
 ]
 
 function openDeleteModal(id) {
@@ -253,10 +255,7 @@ function closeDeleteModal() {
   deleteTarget.value = null
 }
 
-function formatDate(date) {
-  if (!date) return ''
-  return new Date(date).toLocaleString('ru-RU')
-}
+// formatDate теперь импортируется из utils/dateUtils.js
 
 async function fetchReceipts() {
   loading.value = true
@@ -303,7 +302,7 @@ async function loadWarehouses() {
       warehouses.value = []
     }
   } catch (error) {
-    console.error('Ошибка загрузки складов:', error)
+    console.error(t('ReceiptsPage_33') + error) // Ошибка загрузки складов:
     warehouses.value = []
   } finally {
     loadingWarehouses.value = false
@@ -348,13 +347,13 @@ async function deleteReceiptConfirmed() {
     const res = await apiRequest(`/receipts/${deleteTarget.value}`, { method: 'DELETE' })
     if (res.ok && res.data && res.data.success) {
       receipts.value = receipts.value.filter(r => r.id !== deleteTarget.value)
-      toastr.success('Оприходование удалено')
+      toastr.success(t('ReceiptsPage_31')) // Оприходование удалено
       closeDeleteModal()
     } else {
-      toastr.error(res.data?.message || 'Ошибка при удалении')
+      toastr.error(res.data?.message || t('ReceiptsPage_32')) // Ошибка при удалении
     }
   } catch (e) {
-    toastr.error('Ошибка при удалении')
+    toastr.error(t('ReceiptsPage_32')) // Ошибка при удалении
   } finally {
     deleting.value = false
   }

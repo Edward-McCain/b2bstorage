@@ -12,6 +12,7 @@ use App\Models\Subcategory;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Models\ProductBalance; // Added this import
+use App\Helpers\CategoryHelper;
 
 class AdminController extends Controller
 {
@@ -208,16 +209,30 @@ class AdminController extends Controller
                     $category = DB::table('categories')
                         ->where('name', $product->category)
                         ->orWhere('name_ru', $product->category)
-                        ->select('id as category_id', 'name_ru as name')
+                        ->orWhere('name_en', $product->category)
+                        ->orWhere('name_uz', $product->category)
+                        ->orWhere('name_china', $product->category)
+                        ->select('id as category_id', 'name', 'name_ru', 'name_en', 'name_uz', 'name_china')
                         ->first();
+                    
+                    if ($category) {
+                        $category->name = CategoryHelper::getCategoryName($category, 'ru'); // Админка всегда на русском
+                    }
                 }
                 
                 if ($product->subcategory) {
                     $subcategory = DB::table('subcategories')
                         ->where('name', $product->subcategory)
                         ->orWhere('name_ru', $product->subcategory)
-                        ->select('id as subcategory_id', 'name_ru as name')
+                        ->orWhere('name_en', $product->subcategory)
+                        ->orWhere('name_uz', $product->subcategory)
+                        ->orWhere('name_china', $product->subcategory)
+                        ->select('id as subcategory_id', 'name', 'name_ru', 'name_en', 'name_uz', 'name_china')
                         ->first();
+                    
+                    if ($subcategory) {
+                        $subcategory->name = CategoryHelper::getSubcategoryName($subcategory, 'ru'); // Админка всегда на русском
+                    }
                 }
                 
                 return [
@@ -239,7 +254,12 @@ class AdminController extends Controller
             
             // Получаем списки для фильтров
             $warehouses = Warehouse::select('id', 'name')->get();
-            $categories = Category::select('category_id', 'name_ru as name')->orderBy('name_ru')->get();
+            $categories = Category::select('category_id', 'name', 'name_ru', 'name_en', 'name_uz', 'name_china')->orderBy('name_ru')->get();
+            
+            // Применяем правильные названия для админки (всегда русский)
+            foreach ($categories as $category) {
+                $category->name = CategoryHelper::getCategoryName($category, 'ru');
+            }
             
             return response()->json([
                 'success' => true,
@@ -461,11 +481,16 @@ class AdminController extends Controller
                     ->orderBy('name')
                     ->get();
             } else {
-                // Получаем системные подкатегории
+                // Получаем системные подкатегории с поддержкой многоязычности
                 $subcategories = Subcategory::where('category_id', $categoryId)
-                    ->select('subcategory_id', 'name_ru as name')
+                    ->select('subcategory_id', 'name', 'name_ru', 'name_en', 'name_uz', 'name_china')
                     ->orderBy('name_ru')
                     ->get();
+                
+                // Применяем правильные названия для админки (всегда русский)
+                foreach ($subcategories as $subcategory) {
+                    $subcategory->name = CategoryHelper::getSubcategoryName($subcategory, 'ru');
+                }
             }
             
             Log::info('AdminController getSubcategories result', [

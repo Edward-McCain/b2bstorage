@@ -16,7 +16,7 @@
             </svg>
           </div>
           <div class="text-sm text-gray-500">
-            Сначала укажите наименование товара
+            {{ t('ImageDropzone_1') }} <!-- Сначала укажите наименование товара -->
           </div>
         </div>
         
@@ -28,10 +28,10 @@
             </svg>
           </div>
           <div class="text-sm text-gray-700 font-medium mb-1">
-            Перетащите изображения сюда или кликните для выбора
+            {{ t('ImageDropzone_2') }} <!-- Перетащите изображения сюда или кликните для выбора -->
           </div>
           <div class="text-xs text-gray-500">
-            Поддерживаются JPG, PNG, GIF, WEBP до 8 МБ
+            {{ t('ImageDropzone_3') }} <!-- Поддерживаются JPG, PNG, GIF, WEBP до 8 МБ -->
           </div>
         </div>
         
@@ -47,7 +47,7 @@
             <!-- Изображение -->
             <img 
               :src="imageSrc(image)" 
-              :alt="image.alt_text || 'Изображение товара'"
+              :alt="image.alt_text || t('ImageDropzone_4')"
               class="w-full h-full object-cover"
               @error="handleImageError"
             />
@@ -59,7 +59,7 @@
                 <button 
                   @click.stop.prevent="deleteImage(image.id)"
                   class="bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center shadow-lg transition-colors"
-                  title="Удалить изображение"
+                  :title="t('ImageDropzone_5')"
                 >
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -73,7 +73,7 @@
               <div class="text-center text-white">
                 <Loader2 class="w-8 h-8 mx-auto mb-2 animate-spin" />
                 <div class="text-sm">
-                  Удаление...
+                  {{ t('ImageDropzone_6') }} <!-- Удаление... -->
                 </div>
               </div>
             </div>
@@ -95,7 +95,7 @@
               v-if="upload.preview" 
               :src="upload.preview" 
               class="w-full h-full object-cover"
-              alt="Превью загружаемого изображения"
+              :alt="t('ImageDropzone_7')"
             />
             
             <!-- Прогресс overlay -->
@@ -130,7 +130,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
               </svg>
               <div class="text-xs text-gray-500">
-                Добавить еще
+                {{ t('ImageDropzone_8') }} <!-- Добавить еще -->
               </div>
             </div>
           </div>
@@ -146,6 +146,7 @@ import Dropzone from 'dropzone'
 import 'dropzone/dist/dropzone.css'
 import { apiConfig } from '@/config/api'
 import { Loader2 } from 'lucide-vue-next'
+import { t } from '@/locales'
 
 const props = defineProps({
   productId: { type: [String, Number, null], required: false, default: null },
@@ -208,7 +209,7 @@ function handleImageError(event) {
   if (!parent.querySelector('.error-indicator')) {
     const errorDiv = document.createElement('div')
     errorDiv.className = 'error-indicator absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded'
-    errorDiv.textContent = 'Ошибка загрузки'
+    errorDiv.textContent = t('ImageDropzone_17') // Ошибка загрузки
     parent.appendChild(errorDiv)
   }
 }
@@ -252,7 +253,7 @@ async function deleteImage(id) {
     return
   }
   
-  if (!confirm('Вы уверены, что хотите удалить это изображение?')) {
+  if (!confirm(t('ImageDropzone_9'))) { // Вы уверены, что хотите удалить это изображение?
     return
   }
   
@@ -289,11 +290,11 @@ async function deleteImage(id) {
       const errorData = await response.json()
       console.error('Delete error response:', errorData)
       
-      let message = 'Ошибка удаления изображения'
+      let message = t('ImageDropzone_10') // Ошибка удаления изображения
       if (response.status === 401) {
-        message = 'Ошибка авторизации. Пожалуйста, войдите в систему заново.'
+        message = t('ImageDropzone_11') // Ошибка авторизации. Пожалуйста, войдите в систему заново.
       } else if (response.status === 404) {
-        message = 'Изображение не найдено'
+        message = t('ImageDropzone_12') // Изображение не найдено
       } else if (errorData.message || errorData.error) {
         message = errorData.message || errorData.error
       }
@@ -305,7 +306,7 @@ async function deleteImage(id) {
     deletingImages.value = deletingImages.value.filter(imageId => imageId !== id)
     
     console.error('Error deleting image:', error)
-    alert('Ошибка удаления изображения: ' + error.message)
+    alert(t('ImageDropzone_13') + ' ' + error.message) // Ошибка удаления изображения:
   }
 }
 
@@ -387,13 +388,13 @@ function initDropzone() {
       uploadingFiles.value = uploadingFiles.value.filter(item => item.fileName !== file.name)
       
       // Более детальная обработка ошибок
-      let message = 'Ошибка загрузки изображения'
+      let message = t('ImageDropzone_14') // Ошибка загрузки изображения
       if (xhr && xhr.status === 401) {
-        message = 'Ошибка авторизации. Пожалуйста, войдите в систему заново.'
+        message = t('ImageDropzone_11') // Ошибка авторизации. Пожалуйста, войдите в систему заново.
       } else if (xhr && xhr.status === 413) {
-        message = 'Файл слишком большой. Максимальный размер: 8 МБ'
+        message = t('ImageDropzone_15') // Файл слишком большой. Максимальный размер: 8 МБ
       } else if (xhr && xhr.status === 422) {
-        message = 'Неподдерживаемый формат файла. Используйте JPG, PNG, GIF или WEBP'
+        message = t('ImageDropzone_16') // Неподдерживаемый формат файла. Используйте JPG, PNG, GIF или WEBP
       } else if (errorMessage?.message) {
         message = errorMessage.message
       } else if (typeof errorMessage === 'string') {

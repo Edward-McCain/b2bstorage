@@ -3,7 +3,7 @@
     <ProductsMenu />
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div class="flex items-center justify-between mb-8">
-        <h1 class="text-2xl font-bold text-gray-900">Новое оприходование</h1>
+        <h1 class="text-2xl font-bold text-gray-900">{{ t('ReceiptCreatePage_1') }}</h1> <!-- Новое оприходование -->
         <router-link
           to="/products/receipts"
           class="flex items-center gap-2 text-gray-600 hover:text-gray-900 font-medium px-4 py-2 rounded text-sm hover:bg-gray-100 transition-colors"
@@ -19,36 +19,41 @@
           <!-- Основные поля -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm text-gray-700 mb-1">Номер *</label>
+              <label class="block text-sm text-gray-700 mb-1">{{ t('ReceiptCreatePage_2') }}</label> <!-- Номер * -->
               <input v-model="form.number" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" :class="{'border-red-400': errors.number}" />
               <div v-if="errors.number" class="text-sm text-red-500 mt-1">{{ errors.number }}</div>
             </div>
             <div>
-              <label class="block text-sm text-gray-700 mb-1">Дата *</label>
-              <input v-model="form.date" type="datetime-local" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" :class="{'border-red-400': errors.date}" />
+              <label class="block text-sm text-gray-700 mb-1">{{ t('ReceiptCreatePage_3') }}</label> <!-- Дата * -->
+              <LocalizedDatePicker 
+                v-model="form.date"
+                :enable-time-picker="true"
+                :auto-apply="true"
+                :class="{'border-red-400': errors.date}"
+              />
               <div v-if="errors.date" class="text-sm text-red-500 mt-1">{{ errors.date }}</div>
             </div>
           </div>
 
           <div class="flex flex-col sm:flex-row gap-2">
             <div class="flex-1">
-              <label class="block text-sm text-gray-700 mb-1">Организация *</label>
+              <label class="block text-sm text-gray-700 mb-1">{{ t('ReceiptCreatePage_4') }}</label> <!-- Организация * -->
               <div v-if="loadingUserData" class="w-full h-10 bg-gray-100 rounded-lg flex items-center justify-center">
                 <Loader2 class="animate-spin h-4 w-4 text-gray-400 mr-2" />
-                <span class="text-xs text-gray-500">Загрузка данных пользователя...</span>
+                <span class="text-xs text-gray-500">{{ t('ReceiptCreatePage_5') }}</span> <!-- Загрузка данных пользователя... -->
               </div>
               <input v-else v-model="form.organization" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" :class="{'border-red-400': errors.organization}" />
               <div v-if="errors.organization" class="text-sm text-red-500 mt-1">{{ errors.organization }}</div>
             </div>
             <div class="flex-1">
-              <label class="block text-sm text-gray-700 mb-1">Склад *</label>
+              <label class="block text-sm text-gray-700 mb-1">{{ t('ReceiptCreatePage_6') }}</label> <!-- Склад * -->
               <Multiselect
                 v-model="form.warehouse"
                 :options="warehouseOptions"
                 label="label"
                 value="value"
                 :object="false"
-                placeholder="Выберите склад"
+                :placeholder="t('ReceiptCreatePage_7')"
                 :max-height="400"
                 class="w-full text-sm multiselect-custom"
                 :loading="loadingWarehouses"
@@ -59,17 +64,17 @@
               
               <!-- Блок добавления склада -->
               <div v-if="showWarehouseForm" class="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <h3 class="text-sm font-medium text-gray-700 mb-3">Создать новый склад</h3>
+                <h3 class="text-sm font-medium text-gray-700 mb-3">{{ t('ReceiptCreatePage_8') }}</h3> <!-- Создать новый склад -->
                 
                 <form @submit.prevent="createWarehouse" class="space-y-3">
                   <div>
-                    <label class="block text-xs text-gray-600 mb-1">Название склада *</label>
+                    <label class="block text-xs text-gray-600 mb-1">{{ t('ReceiptCreatePage_9') }}</label> <!-- Название склада * -->
                     <input v-model="warehouseForm.name" type="text" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" :class="{'border-red-400': warehouseErrors.name}" required />
                     <div v-if="warehouseErrors.name" class="text-xs text-red-500 mt-1">{{ warehouseErrors.name }}</div>
                   </div>
                   
                   <div>
-                    <label class="block text-xs text-gray-600 mb-1">Адрес склада</label>
+                    <label class="block text-xs text-gray-600 mb-1">{{ t('ReceiptCreatePage_10') }}</label> <!-- Адрес склада -->
                     <textarea v-model="warehouseForm.address" rows="2" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white"></textarea>
                   </div>
 
@@ -81,12 +86,12 @@
                   <!-- Кнопки -->
                   <div class="flex justify-end gap-2">
                     <button type="button" @click="closeWarehouseForm" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium px-3 py-1.5 rounded text-sm transition">
-                      Отмена
+                      {{ t('ReceiptCreatePage_11') }} <!-- Отмена -->
                     </button>
                     <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-3 py-1.5 rounded text-sm transition flex items-center gap-2" :disabled="warehouseSaving">
                       <Loader2 v-if="warehouseSaving" class="animate-spin h-4 w-4" />
-                      <span v-if="warehouseSaving">Создание...</span>
-                      <span v-else>Создать склад</span>
+                      <span v-if="warehouseSaving">{{ t('ReceiptCreatePage_12') }}</span> <!-- Создание... -->
+                      <span v-else>{{ t('ReceiptCreatePage_13') }}</span> <!-- Создать склад -->
                     </button>
                   </div>
                 </form>
@@ -96,14 +101,14 @@
 
           <div class="flex gap-4">
             <div class="flex-1">
-              <label class="block text-sm text-gray-700 mb-1">Статус</label>
+              <label class="block text-sm text-gray-700 mb-1">{{ t('ReceiptCreatePage_14') }}</label> <!-- Статус -->
               <Multiselect
                 v-model="form.status"
                 :options="statusOptions"
                 label="label"
                 value="value"
                 :object="false"
-                placeholder="Выберите статус"
+                :placeholder="t('ReceiptCreatePage_15')"
                 :max-height="400"
                 class="w-full text-sm multiselect-custom"
               />
@@ -112,50 +117,50 @@
 
           <div class="flex flex-col md:flex-row gap-4 mt-4">
             <div class="flex-1">
-              <label class="block text-sm text-gray-700 mb-1">Проект</label>
+              <label class="block text-sm text-gray-700 mb-1">{{ t('ReceiptCreatePage_16') }}</label> <!-- Проект -->
               <input v-model="form.project" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" />
             </div>
             <div class="flex-1">
-              <label class="block text-sm text-gray-700 mb-1">Накладные расходы</label>
-              <input v-model="form.overhead_costs" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" placeholder="0.00" />
+              <label class="block text-sm text-gray-700 mb-1">{{ t('ReceiptCreatePage_17') }}</label> <!-- Накладные расходы -->
+              <input v-model="form.overhead_costs" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" :placeholder="t('ReceiptCreatePage_18')" /> <!-- 0.00 -->
             </div>
           </div>
 
           <div>
-            <label class="block text-sm text-gray-700 mb-1">Комментарий</label>
+            <label class="block text-sm text-gray-700 mb-1">{{ t('ReceiptCreatePage_19') }}</label> <!-- Комментарий -->
             <textarea v-model="form.comment" rows="3" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white"></textarea>
           </div>
 
           <!-- Загрузка файлов -->
           <div>
-            <label class="block text-sm text-gray-700 mb-1">Файлы</label>
+            <label class="block text-sm text-gray-700 mb-1">{{ t('ReceiptCreatePage_20') }}</label> <!-- Файлы -->
             <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center relative" :class="{ 'border-blue-400 bg-blue-50': uploading }">
               <div v-if="uploading" class="absolute inset-0 bg-blue-50 bg-opacity-75 flex items-center justify-center rounded-lg z-10">
                 <div class="text-center flex flex-col items-center">
                   <Loader2 class="animate-spin h-8 w-8 text-blue-600 mb-2" />
-                  <p class="text-sm text-blue-700">Загрузка файлов...</p>
+                  <p class="text-sm text-blue-700">{{ t('ReceiptCreatePage_21') }}</p> <!-- Загрузка файлов... -->
                 </div>
               </div>
               <input ref="fileInput" type="file" multiple @change="handleFileUpload" class="hidden" :disabled="uploading" />
               <button type="button" @click="$refs.fileInput.click()" class="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold px-4 py-2 rounded-lg transition text-sm" :disabled="uploading">
-                <span v-if="uploading">Загрузка...</span>
-                <span v-else>Выбрать файлы</span>
+                <span v-if="uploading">{{ t('ReceiptCreatePage_23') }}</span> <!-- Загрузка... -->
+                <span v-else>{{ t('ReceiptCreatePage_22') }}</span> <!-- Выбрать файлы -->
               </button>
-              <p class="text-xs text-gray-500 mt-2">Перетащите файлы сюда или нажмите кнопку</p>
+              <p class="text-xs text-gray-500 mt-2">{{ t('ReceiptCreatePage_24') }}</p> <!-- Перетащите файлы сюда или нажмите кнопку -->
             </div>
             <div v-if="uploadedFiles.length > 0" class="mt-4">
-              <h4 class="text-sm font-medium text-gray-700 mb-2">Загруженные файлы:</h4>
+              <h4 class="text-sm font-medium text-gray-700 mb-2">{{ t('ReceiptCreatePage_25') }}</h4> <!-- Загруженные файлы: -->
               <div class="space-y-2">
                 <div v-for="(file, index) in uploadedFiles" :key="`file-${index}-${file.id}`" class="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
                   <div class="flex items-center gap-3">
                     <div v-if="file.uploading" class="flex items-center gap-2">
                       <Loader2 class="animate-spin h-4 w-4 text-blue-600" />
-                      <span class="text-sm text-gray-500">Загрузка...</span>
+                      <span class="text-sm text-gray-500">{{ t('ReceiptCreatePage_26') }}</span> <!-- Загрузка... -->
                     </div>
                     <template v-else>
                       <a v-if="file.file_url" :href="file.file_url" target="_blank" class="text-blue-600 hover:underline text-sm">{{ file.filename }}</a>
                       <span v-else class="text-sm text-gray-700">{{ file.filename }}</span>
-                      <span class="text-xs text-gray-500">{{ file.size_mb }} МБ</span>
+                      <span class="text-xs text-gray-500">{{ file.size_mb }} {{ t('ReceiptCreatePage_27') }}</span> <!-- МБ -->
                       <span class="text-xs text-gray-500">{{ file.employee }}</span>
                     </template>
                   </div>
@@ -171,7 +176,7 @@
 
           <!-- Добавление товаров -->
           <div>
-            <label class="block text-sm text-gray-700 mb-1">Товары</label>
+            <label class="block text-sm text-gray-700 mb-1">{{ t('ReceiptCreatePage_28') }}</label> <!-- Товары -->
             <div class="flex gap-2">
               <div class="flex-1">
                 <Multiselect
@@ -180,9 +185,9 @@
                   label="label"
                   value="value"
                   :object="true"
-                  placeholder="Выберите товар"
+                  :placeholder="t('ReceiptCreatePage_29')"
                   searchable
-                  :search-placeholder="'Поиск товара'"
+                  :search-placeholder="t('ReceiptCreatePage_30')"
                   :max-height="400"
                   class="w-full text-sm multiselect-custom"
                   :loading="loadingProducts"
@@ -191,7 +196,7 @@
                 />
               </div>
               <button type="button" @click="addProduct" :disabled="!selectedProduct" class="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-semibold px-4 py-2 rounded-lg transition text-sm">
-                Добавить
+                {{ t('ReceiptCreatePage_31') }} <!-- Добавить -->
               </button>
             </div>
           </div>
@@ -202,11 +207,11 @@
               <table class="min-w-full divide-y divide-gray-200 text-sm">
               <thead>
                 <tr class="bg-gray-50">
-                  <th class="px-3 py-2 text-left font-semibold text-gray-700">Товар</th>
-                  <th class="px-3 py-2 text-center font-semibold text-gray-700">Количество</th>
-                  <th class="px-3 py-2 text-center font-semibold text-gray-700">Цена</th>
-                  <th class="px-3 py-2 text-center font-semibold text-gray-700">Сумма</th>
-                  <th class="px-3 py-2 text-center font-semibold text-gray-700">Действия</th>
+                  <th class="px-3 py-2 text-left font-semibold text-gray-700">{{ t('ReceiptCreatePage_32') }}</th> <!-- Товар -->
+                  <th class="px-3 py-2 text-center font-semibold text-gray-700">{{ t('ReceiptCreatePage_33') }}</th> <!-- Количество -->
+                  <th class="px-3 py-2 text-center font-semibold text-gray-700">{{ t('ReceiptCreatePage_34') }}</th> <!-- Цена -->
+                  <th class="px-3 py-2 text-center font-semibold text-gray-700">{{ t('ReceiptCreatePage_35') }}</th> <!-- Сумма -->
+                  <th class="px-3 py-2 text-center font-semibold text-gray-700">{{ t('ReceiptCreatePage_36') }}</th> <!-- Действия -->
                 </tr>
               </thead>
               <tbody>
@@ -235,7 +240,7 @@
           <!-- Итого -->
           <div v-if="positions.length > 0" class="text-right">
             <div class="text-lg font-semibold text-gray-900">
-              Итого: {{ total.toFixed(2) }} ₽
+              {{ t('ReceiptCreatePage_37') }} {{ total.toFixed(2) }}  <!-- Итого: -->
             </div>
           </div>
 
@@ -253,8 +258,8 @@
           <div class="flex justify-end gap-2 mt-6">
             <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg shadow transition text-sm flex items-center gap-2" :disabled="saving || uploading">
               <Loader2 v-if="saving" class="animate-spin h-4 w-4" />
-              <span v-if="saving">Сохранение...</span>
-              <span v-else>Сохранить</span>
+              <span v-if="saving">{{ t('ReceiptCreatePage_39') }}</span> <!-- Сохранение... -->
+              <span v-else>{{ t('ReceiptCreatePage_40') }}</span> <!-- Сохранить -->
             </button>
           </div>
         </form>
@@ -280,6 +285,7 @@ import Multiselect from '@vueform/multiselect'
 import '@vueform/multiselect/themes/default.css'
 import toastr from 'toastr'
 import { Loader2 } from 'lucide-vue-next'
+import { t } from '@/locales'
 
 // Устанавливаем заголовок страницы
 document.title = 'B2B SKLAD - Оприходования'
@@ -339,8 +345,8 @@ const warehouseServerError = ref('')
 const warehouseSaving = ref(false)
 
 const statusOptions = [
-  { label: 'Черновик', value: 'draft' },
-  { label: 'Проведено', value: 'posted' }
+  { label: t('ReceiptCreatePage_54'), value: 'draft' }, // Черновик
+  { label: t('ReceiptCreatePage_55'), value: 'posted' } // Проведено
 ]
 
 const productOptions = computed(() => {
@@ -389,7 +395,7 @@ async function loadUserData() {
       }
     }
   } catch (error) {
-    console.error('Ошибка загрузки данных пользователя:', error)
+    console.error(t('ReceiptCreatePage_52') + error) // Ошибка загрузки данных пользователя:
   } finally {
     loadingUserData.value = false
   }
@@ -409,7 +415,7 @@ async function loadProducts(search = '') {
       products.value = Array.isArray(productsData) ? productsData : []
     }
   } catch (error) {
-    console.error('Ошибка загрузки товаров:', error)
+    console.error(t('ReceiptCreatePage_53') + error) // Ошибка загрузки товаров:
     products.value = []
   } finally {
     loadingProducts.value = false
@@ -460,13 +466,13 @@ async function createWarehouse() {
       closeWarehouseForm()
       
       // Показываем уведомление
-      toastr.success('Склад успешно создан')
+      toastr.success(t('ReceiptCreatePage_49')) // Склад успешно создан
     } else {
-      warehouseServerError.value = response.data.message || 'Ошибка при создании склада'
+      warehouseServerError.value = response.data.message || t('ReceiptCreatePage_50') // Ошибка при создании склада
     }
   } catch (error) {
-    console.error('Ошибка при создании склада:', error)
-    warehouseServerError.value = 'Произошла ошибка при создании склада'
+    console.error(t('ReceiptCreatePage_50') + error) // Ошибка при создании склада:
+    warehouseServerError.value = t('ReceiptCreatePage_51') // Произошла ошибка при создании склада
   } finally {
     warehouseSaving.value = false
   }
@@ -491,23 +497,23 @@ function validate() {
   let isValid = true
   errors.value = {}
   if (!form.value.number) {
-    errors.value.number = 'Номер обязателен'
+    errors.value.number = t('ReceiptCreatePage_41') // Номер обязателен
     isValid = false
   }
   if (!form.value.date) {
-    errors.value.date = 'Дата обязательна'
+    errors.value.date = t('ReceiptCreatePage_42') // Дата обязательна
     isValid = false
   }
   if (!form.value.organization) {
-    errors.value.organization = 'Организация обязательна'
+    errors.value.organization = t('ReceiptCreatePage_43') // Организация обязательна
     isValid = false
   }
   if (!form.value.warehouse) {
-    errors.value.warehouse = 'Склад обязателен'
+    errors.value.warehouse = t('ReceiptCreatePage_44') // Склад обязателен
     isValid = false
   }
   if (positions.value.length === 0) {
-    errors.value.positions = 'Добавьте хотя бы одну позицию'
+    errors.value.positions = t('ReceiptCreatePage_45') // Добавьте хотя бы одну позицию
     isValid = false
   }
   return isValid
@@ -534,16 +540,16 @@ async function handleSubmit() {
       body: JSON.stringify(receiptData)
     })
     if (response.ok && response.data.success) {
-      successMessage.value = 'Оприходование успешно создано!'
+      successMessage.value = t('ReceiptCreatePage_46') // Оприходование успешно создано!
       setTimeout(() => {
         router.push('/products/receipts')
       }, 1000)
     } else {
-      serverError.value = response.data.message || 'Произошла ошибка при создании оприходования.'
+      serverError.value = response.data.message || t('ReceiptCreatePage_47') // Произошла ошибка при создании оприходования.
     }
   } catch (error) {
-    console.error('Ошибка при создании оприходования:', error)
-    serverError.value = 'Произошла ошибка при создании оприходования.'
+    console.error(t('ReceiptCreatePage_48') + error) // Ошибка при создании оприходования:
+    serverError.value = t('ReceiptCreatePage_47') // Произошла ошибка при создании оприходования.
   } finally {
     saving.value = false
   }
@@ -600,7 +606,7 @@ async function handleFileUpload(event) {
       filename: file.name,
       size_mb: (file.size / 1048576).toFixed(2),
       uploading: true,
-      employee: userData.value?.username || 'Неизвестный'
+      employee: userData.value?.username || t('ReceiptCreatePage_56') // Неизвестный
     })
     
     try {
@@ -622,7 +628,7 @@ async function handleFileUpload(event) {
             filename: response.data.filename || file.name,
             size_mb: response.data.size_mb || (file.size / 1048576).toFixed(2),
             file_url: response.data.file_url || '',
-            employee: response.data.employee || (userData.value?.username || 'Неизвестный'),
+            employee: response.data.employee || (userData.value?.username || t('ReceiptCreatePage_56')), // Неизвестный
             uploading: false
           }
         }

@@ -356,6 +356,7 @@ import api from '../../../config/api.js'
 import Multiselect from '@vueform/multiselect'
 import '@vueform/multiselect/themes/default.css'
 import { getCategoriesByUserSettings } from '../../../config/api.js'
+import { transformCategoriesToOptions, transformSubcategoriesToOptions } from '../../../utils/categoryDisplayUtils'
 
 // Данные
 const products = ref([])
@@ -408,10 +409,7 @@ const loadSubcategories = async (categoryId) => {
     const response = await api.get(`/subcategories?category_id=${encodeURIComponent(categoryId)}`)
     
     if (response.data.success) {
-      subcategoryOptions.value = response.data.data.map(s => ({
-        label: s.name_ru || s.name,
-        value: s.subcategory_id
-      }))
+      subcategoryOptions.value = transformSubcategoriesToOptions(response.data.data)
     }
   } catch (error) {
     console.error('Ошибка загрузки подкатегорий:', error)
@@ -445,10 +443,7 @@ const loadCategories = async () => {
   try {
     loadingCategories.value = true
     categories.value = await getCategoriesByUserSettings()
-    categoryOptions.value = categories.value.map(c => ({
-      label: c.name_ru || c.name,
-      value: c.category_id
-    }))
+    categoryOptions.value = transformCategoriesToOptions(categories.value)
   } catch (error) {
     console.error('Ошибка загрузки категорий:', error)
     categoryOptions.value = []
@@ -473,10 +468,7 @@ watch(selectedCategory, async (cat) => {
       const response = await api.get(`/subcategories?category_id=${encodeURIComponent(cat.value)}`)
       if (response.data.success) {
         subcategories.value = response.data.data || []
-        subcategoryOptions.value = subcategories.value.map(s => ({
-          label: s.name_ru || s.name,
-          value: s.subcategory_id
-        }))
+        subcategoryOptions.value = transformSubcategoriesToOptions(subcategories.value)
       }
     } catch (error) {
       console.error('Ошибка загрузки подкатегорий:', error)

@@ -5,8 +5,10 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Уведомления</h1>
-            <p class="mt-1 text-sm text-gray-500">Управление уведомлениями и рекомендациями</p>
+            <!-- Уведомления -->
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">{{ t('NotificationsPage_1') }}</h1>
+            <!-- Управление уведомлениями и рекомендациями -->
+            <p class="mt-1 text-sm text-gray-500">{{ t('NotificationsPage_2') }}</p>
           </div>
           
           <!-- Actions -->
@@ -16,8 +18,9 @@
               :disabled="loading || unreadCount === 0"
               class="inline-flex items-center justify-center px-3 sm:px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <span class="hidden sm:inline">Отметить все как прочитанные</span>
-              <span class="sm:hidden">Все прочитано</span>
+              <!-- Отметить все как прочитанные / Все прочитано -->
+              <span class="hidden sm:inline">{{ t('NotificationsPage_3') }}</span>
+              <span class="sm:hidden">{{ t('NotificationsPage_4') }}</span>
             </button>
             
             <button
@@ -27,10 +30,12 @@
             >
               <Loader2 v-if="aiLoading" class="animate-spin h-4 w-4 mr-2" />
               <Sparkles v-else class="h-4 w-4 mr-2" />
-              <span v-if="aiLoading" class="hidden sm:inline">Ждем ответа AI</span>
-              <span v-else class="hidden sm:inline">Получить AI рекомендации</span>
-              <span v-if="aiLoading" class="sm:hidden">Ждем ответа AI</span>
-              <span v-else class="sm:hidden">AI рекомендации</span>
+              <!-- Ждем ответа AI / Получить AI рекомендации -->
+              <span v-if="aiLoading" class="hidden sm:inline">{{ t('NotificationsPage_7') }}</span>
+              <span v-else class="hidden sm:inline">{{ t('NotificationsPage_5') }}</span>
+              <!-- Ждем ответа AI / AI рекомендации -->
+              <span v-if="aiLoading" class="sm:hidden">{{ t('NotificationsPage_7') }}</span>
+              <span v-else class="sm:hidden">{{ t('NotificationsPage_6') }}</span>
             </button>
           </div>
         </div>
@@ -42,21 +47,22 @@
       <div class="bg-white rounded-lg shadow p-4 mb-4 sm:mb-6">
         <div class="flex flex-col sm:flex-row sm:items-center gap-4">
           <div class="flex-1 min-w-0">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Тип уведомления</label>
+            <!-- Тип уведомления -->
+            <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('NotificationsPage_8') }}</label>
             <Multiselect
               v-model="filters.type"
               :options="[
-                { label: 'Все типы', value: '' },
-                { label: 'Информация', value: 'info' },
-                { label: 'Предупреждение', value: 'warning' },
-                { label: 'Рекомендация', value: 'recommendation' },
-                { label: 'Низкие остатки', value: 'low_stock' },
-                { label: 'Просроченные документы', value: 'overdue' }
+                { label: t('NotificationsPage_9'), value: '' },
+                { label: t('NotificationsPage_10'), value: 'info' },
+                { label: t('NotificationsPage_11'), value: 'warning' },
+                { label: t('NotificationsPage_12'), value: 'recommendation' },
+                { label: t('NotificationsPage_13'), value: 'low_stock' },
+                { label: t('NotificationsPage_14'), value: 'overdue' }
               ]"
               label="label"
               value="value"
               :object="true"
-              placeholder="Все типы"
+              :placeholder="t('NotificationsPage_9')"
               :max-height="400"
               class="w-full text-sm multiselect-custom"
               @input="onTypeChange"
@@ -66,18 +72,19 @@
           </div>
           
           <div class="flex-1 min-w-0">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Статус</label>
+            <!-- Статус -->
+            <label class="block text-sm font-medium text-gray-700 mb-1">{{ t('NotificationsPage_15') }}</label>
             <Multiselect
               v-model="filters.isRead"
               :options="[
-                { label: 'Все', value: '' },
-                { label: 'Непрочитанные', value: 'false' },
-                { label: 'Прочитанные', value: 'true' }
+                { label: t('NotificationsPage_16'), value: '' },
+                { label: t('NotificationsPage_17'), value: 'false' },
+                { label: t('NotificationsPage_18'), value: 'true' }
               ]"
               label="label"
               value="value"
               :object="true"
-              placeholder="Все"
+              :placeholder="t('NotificationsPage_16')"
               :max-height="400"
               class="w-full text-sm multiselect-custom"
               @input="onReadStatusChange"
@@ -88,7 +95,8 @@
           
           <div class="flex items-center justify-between sm:justify-end hidden">
             <span v-if="totalCount > 0" class="text-sm text-gray-500 ml-4">
-              Всего: {{ totalCount }} | Непрочитанных: {{ unreadCount }}
+              <!-- Всего: / Непрочитанных: -->
+              {{ t('NotificationsPage_19') }} {{ totalCount }} | {{ t('NotificationsPage_20') }} {{ unreadCount }}
             </span>
           </div>
         </div>
@@ -102,12 +110,14 @@
         
         <div v-if="loading" class="flex items-center justify-center py-8">
           <Loader2 class="animate-spin h-6 w-6 text-blue-600 mr-2" />
-          <span class="text-sm text-gray-600">Загрузка уведомлений...</span>
+          <!-- Загрузка уведомлений... -->
+          <span class="text-sm text-gray-600">{{ t('NotificationsPage_21') }}</span>
         </div>
         
         <div v-else-if="notifications.length === 0" class="text-center py-8">
           <Bell class="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <p class="text-gray-500">Уведомлений пока нет</p>
+          <!-- Уведомлений пока нет -->
+          <p class="text-gray-500">{{ t('NotificationsPage_22') }}</p>
         </div>
         
         <NotificationItem 
@@ -127,6 +137,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { Bell, Sparkles, Loader2, X } from 'lucide-vue-next'
 import { apiRequest } from '../config/api'
+import { t } from '../locales/index.js'
 import Multiselect from '@vueform/multiselect'
 import NotificationItem from './NotificationItem.vue'
 

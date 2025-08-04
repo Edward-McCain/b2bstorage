@@ -43,18 +43,18 @@
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Дата с</label>
-              <input
+              <LocalizedDatePicker 
                 v-model="filters.date_from"
-                type="date"
-                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                :enable-time-picker="false"
+                :auto-apply="true"
               />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Дата по</label>
-              <input
+              <LocalizedDatePicker 
                 v-model="filters.date_to"
-                type="date"
-                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                :enable-time-picker="false"
+                :auto-apply="true"
               />
             </div>
             <div class="flex items-end">

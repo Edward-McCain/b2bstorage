@@ -30,7 +30,8 @@
       <div v-if="loading" class="flex items-center justify-center h-64">
         <div class="flex items-center space-x-2">
           <Loader2 class="w-6 h-6 animate-spin text-blue-600" />
-          <span class="text-gray-600">Загрузка данных...</span>
+          <!-- Загрузка данных... -->
+          <span class="text-gray-600">{{ t('ProductsChart_4') }}</span>
         </div>
       </div>
       
@@ -42,8 +43,10 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
             </svg>
           </div>
-          <h3 class="text-lg font-medium text-gray-900 mb-1">Нет данных</h3>
-          <p class="text-sm text-gray-500">За выбранный период нет операций</p>
+          <!-- Нет данных -->
+          <h3 class="text-lg font-medium text-gray-900 mb-1">{{ t('ProductsChart_5') }}</h3>
+          <!-- За выбранный период нет операций -->
+          <p class="text-sm text-gray-500">{{ t('ProductsChart_6') }}</p>
         </div>
       </div>
       
@@ -63,15 +66,18 @@
       <div class="md:hidden space-y-3">
         <div class="flex items-center space-x-2">
           <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
-          <span class="text-sm text-gray-600">Оприходования</span>
+          <!-- Оприходования -->
+          <span class="text-sm text-gray-600">{{ t('ProductsChart_7') }}</span>
         </div>
         <div class="flex items-center space-x-2">
           <div class="w-3 h-3 bg-purple-500 rounded-full"></div>
-          <span class="text-sm text-gray-600">Списания</span>
+          <!-- Списания -->
+          <span class="text-sm text-gray-600">{{ t('ProductsChart_8') }}</span>
         </div>
         <div class="flex items-center space-x-2">
           <div class="w-3 h-3 bg-green-500 rounded-full"></div>
-          <span class="text-sm text-gray-600">Перемещения</span>
+          <!-- Перемещения -->
+          <span class="text-sm text-gray-600">{{ t('ProductsChart_9') }}</span>
         </div>
       </div>
       
@@ -80,15 +86,18 @@
         <div class="flex items-center space-x-4">
           <div class="flex items-center space-x-2">
             <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
-            <span class="text-sm text-gray-600">Оприходования</span>
+            <!-- Оприходования -->
+            <span class="text-sm text-gray-600">{{ t('ProductsChart_7') }}</span>
           </div>
           <div class="flex items-center space-x-2">
             <div class="w-3 h-3 bg-purple-500 rounded-full"></div>
-            <span class="text-sm text-gray-600">Списания</span>
+            <!-- Списания -->
+            <span class="text-sm text-gray-600">{{ t('ProductsChart_8') }}</span>
           </div>
           <div class="flex items-center space-x-2">
             <div class="w-3 h-3 bg-green-500 rounded-full"></div>
-            <span class="text-sm text-gray-600">Перемещения</span>
+            <!-- Перемещения -->
+            <span class="text-sm text-gray-600">{{ t('ProductsChart_9') }}</span>
           </div>
         </div>
         <div class="text-sm text-gray-500">{{ periodLabel }}</div>
@@ -100,13 +109,14 @@
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
 import { apiRequest } from '@/config/api'
+import { t } from '../locales/index.js'
 import { Loader2 } from 'lucide-vue-next'
 
 // Периоды для переключения
 const periods = [
-  { value: 'week', label: 'Неделя' },
-  { value: 'month', label: 'Месяц' },
-  { value: 'year', label: 'Год' }
+  { value: 'week', label: t('ProductsChart_1') },
+  { value: 'month', label: t('ProductsChart_2') },
+  { value: 'year', label: t('ProductsChart_3') }
 ]
 
 // Состояние
@@ -122,15 +132,15 @@ const statisticsData = ref({
 // Данные для графика
 const series = ref([
   {
-    name: 'Оприходования',
+    name: t('ProductsChart_7'),
     data: []
   },
   {
-    name: 'Списания',
+    name: t('ProductsChart_8'),
     data: []
   },
   {
-    name: 'Перемещения',
+    name: t('ProductsChart_9'),
     data: []
   }
 ])
@@ -154,7 +164,7 @@ const growthPercentage = computed(() => {
 
 const periodLabel = computed(() => {
   const period = periods.find(p => p.value === selectedPeriod.value)
-  return period ? period.label : 'Год'
+  return period ? period.label : t('ProductsChart_3')
 })
 
 const hasData = computed(() => {

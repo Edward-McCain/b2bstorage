@@ -28,7 +28,13 @@
                 <Loader2 class="animate-spin h-4 w-4 text-blue-600 mr-2" />
                 <span class="text-sm text-gray-500">Загрузка...</span>
               </div>
-              <input v-else v-model="form.date" type="datetime-local" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm bg-white" required>
+              <LocalizedDatePicker 
+              v-else 
+              v-model="form.date"
+              :enable-time-picker="true"
+              :auto-apply="true"
+              required
+            />
             </div>
           </div>
 

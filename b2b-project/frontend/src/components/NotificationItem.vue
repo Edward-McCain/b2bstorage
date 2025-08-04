@@ -29,7 +29,8 @@
             v-if="!notification.is_read"
             class="inline-flex items-center px-2 py-0.5 sm:px-2.5 sm:py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
           >
-            Новое
+            <!-- Новое -->
+            {{ t('NotificationItem_1') }}
           </span>
         </div>
         
@@ -49,7 +50,7 @@
         <button
           @click="markAsRead"
           class="p-2 sm:p-2 text-gray-400 hover:text-green-600 transition-colors rounded-md hover:bg-gray-50"
-          :title="notification.is_read ? 'Уже прочитано' : 'Отметить как прочитанное'"
+          :title="notification.is_read ? t('NotificationItem_7') : t('NotificationItem_8')"
         >
           <Check v-if="!notification.is_read" class="h-5 w-5" />
           <CheckCheck v-else class="h-5 w-5 text-green-600" />
@@ -58,7 +59,7 @@
         <button
           @click="showDeleteModal = true"
           class="p-2 sm:p-2 text-gray-400 hover:text-red-600 transition-colors rounded-md hover:bg-gray-50"
-          title="Удалить уведомление"
+          :title="t('NotificationItem_9')"
         >
           <Trash2 class="h-5 w-5" />
         </button>
@@ -76,24 +77,28 @@
       class="bg-white/90 backdrop-blur-sm rounded-lg p-4 sm:p-6 w-full max-w-md mx-auto"
       @click.stop
     >
+      <!-- Удалить уведомление? -->
       <h3 class="text-lg font-medium text-gray-900 mb-3 sm:mb-4">
-        Удалить уведомление?
+        {{ t('NotificationItem_10') }}
       </h3>
+      <!-- Это действие нельзя отменить. Уведомление будет удалено навсегда. -->
       <p class="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">
-        Это действие нельзя отменить. Уведомление будет удалено навсегда.
+        {{ t('NotificationItem_11') }}
       </p>
       <div class="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3">
         <button
           @click="showDeleteModal = false"
           class="w-full sm:w-auto px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors text-sm sm:text-base"
         >
-          Отмена
+          <!-- Отмена -->
+          {{ t('NotificationItem_12') }}
         </button>
         <button
           @click="deleteNotification"
           class="w-full sm:w-auto px-4 py-2 text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors text-sm sm:text-base"
         >
-          Удалить
+          <!-- Удалить -->
+          {{ t('NotificationItem_13') }}
         </button>
       </div>
     </div>
@@ -104,6 +109,7 @@
 import { ref } from 'vue'
 import { Check, CheckCheck, Trash2 } from 'lucide-vue-next'
 import { apiRequest } from '../config/api'
+import { t } from '../locales/index.js'
 
 const props = defineProps({
   notification: {
@@ -118,11 +124,11 @@ const showDeleteModal = ref(false)
 
 const getTypeLabel = (type) => {
   const labels = {
-    'info': 'Информация',
-    'warning': 'Предупреждение',
-    'recommendation': 'Рекомендация',
-    'low_stock': 'Низкие остатки',
-    'overdue': 'Просроченные документы'
+    'info': t('NotificationItem_2'),
+    'warning': t('NotificationItem_3'),
+    'recommendation': t('NotificationItem_4'),
+    'low_stock': t('NotificationItem_5'),
+    'overdue': t('NotificationItem_6')
   }
   return labels[type] || type
 }

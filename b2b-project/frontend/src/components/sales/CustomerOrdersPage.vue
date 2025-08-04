@@ -90,11 +90,17 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Дата с</label>
-              <input type="date" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+              <LocalizedDatePicker 
+                :enable-time-picker="false"
+                :auto-apply="true"
+              />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Дата по</label>
-              <input type="date" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+              <LocalizedDatePicker 
+                :enable-time-picker="false"
+                :auto-apply="true"
+              />
             </div>
           </div>
         </div>

@@ -10,7 +10,8 @@
         >
           <div class="flex items-center justify-center h-full">
             <span class="text-sm font-bold text-gray-900 text-center">
-              Добро пожаловать, <br> {{ userName || userEmail }}
+              <!-- Добро пожаловать, -->
+              {{ t('ProductsPage_1') }} <br> {{ userName || userEmail }}
             </span>
           </div>
         </router-link>
@@ -29,7 +30,8 @@
             </div>
           </div>
           <div class="pt-6">
-            <span class="text-sm font-medium text-gray-900">Оприходования</span>
+            <!-- Оприходования -->
+            <span class="text-sm font-medium text-gray-900">{{ t('ProductsPage_2') }}</span>
           </div>
         </router-link>
 
@@ -47,7 +49,8 @@
             </div>
           </div>
           <div class="pt-6">
-            <span class="text-sm font-medium text-gray-900">Списания</span>
+            <!-- Списания -->
+            <span class="text-sm font-medium text-gray-900">{{ t('ProductsPage_3') }}</span>
           </div>
         </router-link>
 
@@ -65,7 +68,8 @@
             </div>
           </div>
           <div class="pt-6">
-            <span class="text-sm font-medium text-gray-900">Инвентаризации</span>
+            <!-- Инвентаризации -->
+            <span class="text-sm font-medium text-gray-900">{{ t('ProductsPage_4') }}</span>
           </div>
         </router-link>
 
@@ -83,7 +87,8 @@
             </div>
           </div>
           <div class="pt-6">
-            <span class="text-sm font-medium text-gray-900">Перемещения</span>
+            <!-- Перемещения -->
+            <span class="text-sm font-medium text-gray-900">{{ t('ProductsPage_5') }}</span>
           </div>
         </router-link>
 
@@ -101,7 +106,8 @@
             </div>
           </div>
           <div class="pt-6">
-            <span class="text-sm font-medium text-gray-900">Остатки</span>
+            <!-- Остатки -->
+            <span class="text-sm font-medium text-gray-900">{{ t('ProductsPage_6') }}</span>
           </div>
         </router-link>
 
@@ -119,7 +125,8 @@
             </div>
           </div>
           <div class="pt-6">
-            <span class="text-sm font-medium text-gray-900">Склады</span>
+            <!-- Склады -->
+            <span class="text-sm font-medium text-gray-900">{{ t('ProductsPage_7') }}</span>
           </div>
         </router-link>
 
@@ -132,7 +139,8 @@
             <FileText class="w-6 h-6 text-blue-600" />
           </div>
           <div class="pt-6">
-            <span class="text-sm font-medium text-gray-900">Логи</span>
+            <!-- Логи -->
+            <span class="text-sm font-medium text-gray-900">{{ t('ProductsPage_8') }}</span>
           </div>
         </router-link>
       </div>
@@ -149,6 +157,7 @@
 import { PackagePlus, PackageMinus, ClipboardList, ArrowRightLeft, Package, Warehouse, FileText, Plus, Loader2 } from 'lucide-vue-next'
 import { ref, onMounted, computed } from 'vue'
 import { apiRequest } from '@/config/api'
+import { t } from '../../locales/index.js'
 import ProductsChart from '../ProductsChart.vue'
 
 // Устанавливаем заголовок страницы

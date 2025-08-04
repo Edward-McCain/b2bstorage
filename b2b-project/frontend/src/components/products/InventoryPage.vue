@@ -3,7 +3,7 @@
     <ProductsMenu />
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div class="flex items-center justify-between mb-6">
-        <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Инвентаризации</h1>
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-900">{{ t('InventoryPage_1') }}</h1> <!-- Инвентаризации -->
         <div class="flex items-center gap-2">
           <button
             @click="toggleFilters"
@@ -12,15 +12,15 @@
             <Filter v-if="!showFilters" class="w-4 h-4" />
             <FunnelX v-else class="w-4 h-4" />
           </button>
-          <router-link
-            to="/products/inventory/create"
-            class="flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-700 font-medium px-4 py-2 rounded text-sm hover:bg-blue-100 transition-colors"
-          >
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-            </svg>
-            Добавить
-          </router-link>
+                      <router-link
+              to="/products/inventory/create"
+              class="flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-700 font-medium px-4 py-2 rounded text-sm hover:bg-blue-100 transition-colors"
+            >
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+              {{ t('InventoryPage_2') }} <!-- Добавить -->
+            </router-link>
         </div>
       </div>
 
@@ -29,11 +29,11 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <!-- Поиск по названию -->
           <div>
-            <label class="block text-sm text-gray-700 mb-1">Поиск по названию</label>
+            <label class="block text-sm text-gray-700 mb-1">{{ t('InventoryPage_3') }}</label> <!-- Поиск по названию -->
             <input 
               v-model="filters.name" 
               type="text" 
-              placeholder="Введите название инвентаризации"
+              :placeholder="t('InventoryPage_4')"
               class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm"
               @keyup.enter="applyFilters"
             />
@@ -41,34 +41,34 @@
 
           <!-- Фильтр по дате от -->
           <div>
-            <label class="block text-sm text-gray-700 mb-1">Дата от</label>
-            <input 
-              v-model="filters.date_from" 
-              type="date" 
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm"
+            <label class="block text-sm text-gray-700 mb-1">{{ t('InventoryPage_5') }}</label> <!-- Дата от -->
+            <LocalizedDatePicker 
+              v-model="filters.date_from"
+              :enable-time-picker="false"
+              :auto-apply="true"
             />
           </div>
 
           <!-- Фильтр по дате до -->
           <div>
-            <label class="block text-sm text-gray-700 mb-1">Дата до</label>
-            <input 
-              v-model="filters.date_to" 
-              type="date" 
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm"
+            <label class="block text-sm text-gray-700 mb-1">{{ t('InventoryPage_6') }}</label> <!-- Дата до -->
+            <LocalizedDatePicker 
+              v-model="filters.date_to"
+              :enable-time-picker="false"
+              :auto-apply="true"
             />
           </div>
 
           <!-- Фильтр по складу -->
           <div>
-            <label class="block text-sm text-gray-700 mb-1">Склад</label>
+            <label class="block text-sm text-gray-700 mb-1">{{ t('InventoryPage_7') }}</label> <!-- Склад -->
             <Multiselect
               v-model="filters.warehouse"
               :options="warehouseOptions"
               label="label"
               value="value"
               :object="false"
-              placeholder="Все склады"
+              :placeholder="t('InventoryPage_8')" 
               :max-height="400"
               class="w-full text-sm multiselect-custom"
               :loading="loadingWarehouses"
@@ -78,14 +78,14 @@
 
           <!-- Фильтр по статусу -->
           <div>
-            <label class="block text-sm text-gray-700 mb-1">Статус</label>
+            <label class="block text-sm text-gray-700 mb-1">{{ t('InventoryPage_9') }}</label> <!-- Статус -->
             <Multiselect
               v-model="filters.status"
               :options="statusOptions"
               label="label"
               value="value"
               :object="false"
-              placeholder="Все статусы"
+              :placeholder="t('InventoryPage_10')" 
               :max-height="400"
               class="w-full text-sm multiselect-custom"
             />
@@ -98,13 +98,13 @@
               class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg text-sm transition"
               :disabled="loading"
             >
-              Применить
+              {{ t('InventoryPage_11') }} <!-- Применить -->
             </button>
             <button 
               @click="clearFilters" 
               class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium px-4 py-2 rounded-lg text-sm transition"
             >
-              Сбросить
+              {{ t('InventoryPage_12') }} <!-- Сбросить -->
             </button>
           </div>
         </div>
@@ -114,24 +114,24 @@
       <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-4">
         <div v-if="loading" class="flex items-center justify-center py-8">
           <Loader2 class="animate-spin h-6 w-6 text-blue-600 mr-2" />
-          <span class="text-sm text-gray-600">Загрузка инвентаризаций...</span>
+          <span class="text-sm text-gray-600">{{ t('InventoryPage_13') }}</span> <!-- Загрузка инвентаризаций... -->
         </div>
         <div v-else>
           <div class="mb-4 text-sm text-gray-600">
-            Найдено записей: {{ inventories.length }}
+            {{ t('InventoryPage_14') }} {{ inventories.length }} <!-- Найдено записей: -->
           </div>
           <div class="overflow-x-auto">
             <table class="w-full divide-y divide-gray-200 text-sm">
             <thead>
               <tr class="bg-gray-50">
-                <th class="px-3 py-2 text-left font-semibold text-gray-700">Название</th>
-                <th class="px-3 py-2 text-left font-semibold text-gray-700">Дата создания</th>
-                <th class="px-3 py-2 text-left font-semibold text-gray-700">Склад</th>
-                <th class="px-3 py-2 text-left font-semibold text-gray-700">Статус</th>
-                <th class="px-3 py-2 text-left font-semibold text-gray-700">Товаров</th>
-                <th class="px-3 py-2 text-left font-semibold text-gray-700">Расхождения</th>
-                <th class="px-3 py-2 text-left font-semibold text-gray-700">Пользователь</th>
-                <th class="px-3 py-2 text-left font-semibold text-gray-700">Действия</th>
+                <th class="px-3 py-2 text-left font-semibold text-gray-700">{{ t('InventoryPage_15') }}</th> <!-- Название -->
+                <th class="px-3 py-2 text-left font-semibold text-gray-700">{{ t('InventoryPage_16') }}</th> <!-- Дата создания -->
+                <th class="px-3 py-2 text-left font-semibold text-gray-700">{{ t('InventoryPage_17') }}</th> <!-- Склад -->
+                <th class="px-3 py-2 text-left font-semibold text-gray-700">{{ t('InventoryPage_18') }}</th> <!-- Статус -->
+                <th class="px-3 py-2 text-left font-semibold text-gray-700">{{ t('InventoryPage_19') }}</th> <!-- Товаров -->
+                <th class="px-3 py-2 text-left font-semibold text-gray-700">{{ t('InventoryPage_20') }}</th> <!-- Расхождения -->
+                <th class="px-3 py-2 text-left font-semibold text-gray-700">{{ t('InventoryPage_21') }}</th> <!-- Пользователь -->
+                <th class="px-3 py-2 text-left font-semibold text-gray-700">{{ t('InventoryPage_22') }}</th> <!-- Действия -->
               </tr>
             </thead>
             <tbody>
@@ -146,7 +146,7 @@
                       <span class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></span>
                     </span>
                   </span>
-                  <span v-else class="text-gray-400 cursor-pointer">Склад #{{ inventory.warehouse_id }}</span>
+                  <span v-else class="text-gray-400 cursor-pointer">{{ t('InventoryPage_23') }}{{ inventory.warehouse_id }}</span> <!-- Склад # -->
                 </td>
                 <td class="px-3 py-2">
                   <span :class="getStatusClass(inventory.status)">
@@ -172,7 +172,7 @@
             </tbody>
           </table>
           </div>
-          <div v-if="inventories.length === 0" class="text-center text-gray-500 py-8">Нет инвентаризаций</div>
+          <div v-if="inventories.length === 0" class="text-center text-gray-500 py-8">{{ t('InventoryPage_24') }}</div> <!-- Нет инвентаризаций -->
         </div>
       </div>
     </div>
@@ -181,13 +181,13 @@
   <!-- Модальное окно удаления -->
   <div v-if="showDeleteModal" class="fixed inset-0 z-50 flex items-center justify-center bg-white/90">
     <div class="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full relative">
-      <div class="text-lg font-semibold mb-2">Удалить инвентаризацию?</div>
-      <div class="text-gray-600 mb-4 text-sm">Вы действительно хотите удалить эту инвентаризацию? Это действие необратимо.</div>
+      <div class="text-lg font-semibold mb-2">{{ t('InventoryPage_25') }}</div> <!-- Удалить инвентаризацию? -->
+      <div class="text-gray-600 mb-4 text-sm">{{ t('InventoryPage_26') }}</div> <!-- Вы действительно хотите удалить эту инвентаризацию? Это действие необратимо. -->
       <div class="flex justify-end gap-2 mt-4">
-        <button @click="closeDeleteModal" class="px-4 py-2 rounded bg-gray-100 text-gray-700 hover:bg-gray-200 text-sm">Отмена</button>
+        <button @click="closeDeleteModal" class="px-4 py-2 rounded bg-gray-100 text-gray-700 hover:bg-gray-200 text-sm">{{ t('InventoryPage_27') }}</button> <!-- Отмена -->
         <button @click="deleteInventoryConfirmed" :disabled="deleting" class="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700 text-sm flex items-center min-w-[90px] justify-center">
           <Loader2 v-if="deleting" class="animate-spin h-4 w-4 mr-2" />
-          <span v-if="!deleting">Удалить</span>
+          <span v-if="!deleting">{{ t('InventoryPage_28') }}</span> <!-- Удалить -->
         </button>
       </div>
     </div>
@@ -203,6 +203,7 @@ import { Eye, Edit, Trash2, Loader2, Filter, FunnelX } from 'lucide-vue-next'
 import toastr from 'toastr'
 import Multiselect from '@vueform/multiselect'
 import '@vueform/multiselect/themes/default.css'
+import { t } from '@/locales'
 
 // Устанавливаем заголовок страницы
 document.title = 'B2B SKLAD - Инвентаризации'
@@ -238,10 +239,10 @@ const warehouseOptions = computed(() => {
 })
 
 const statusOptions = [
-  { label: 'Черновик', value: 'draft' },
-  { label: 'В процессе', value: 'in_progress' },
-  { label: 'Завершена', value: 'completed' },
-  { label: 'Отменена', value: 'cancelled' }
+  { label: t('InventoryPage_31'), value: 'draft' }, // Черновик
+  { label: t('InventoryPage_32'), value: 'in_progress' }, // В процессе
+  { label: t('InventoryPage_33'), value: 'completed' }, // Завершена
+  { label: t('InventoryPage_34'), value: 'cancelled' } // Отменена
 ]
 
 function openDeleteModal(id) {
@@ -261,10 +262,10 @@ function formatDate(date) {
 
 function getStatusText(status) {
   const statusMap = {
-    'draft': 'Черновик',
-    'in_progress': 'В процессе',
-    'completed': 'Завершена',
-    'cancelled': 'Отменена'
+    'draft': t('InventoryPage_31'), // Черновик
+    'in_progress': t('InventoryPage_32'), // В процессе
+    'completed': t('InventoryPage_33'), // Завершена
+    'cancelled': t('InventoryPage_34') // Отменена
   }
   return statusMap[status] || status
 }
@@ -361,13 +362,13 @@ async function deleteInventoryConfirmed() {
     const res = await apiRequest(`/inventories/${deleteTarget.value}`, { method: 'DELETE' })
     if (res.ok && res.data && res.data.success) {
       inventories.value = inventories.value.filter(i => i.id !== deleteTarget.value)
-      toastr.success('Инвентаризация удалена')
+      toastr.success(t('InventoryPage_29')) // Инвентаризация удалена
       closeDeleteModal()
     } else {
-      toastr.error(res.data?.message || 'Ошибка при удалении')
+      toastr.error(res.data?.message || t('InventoryPage_30')) // Ошибка при удалении
     }
   } catch (e) {
-    toastr.error('Ошибка при удалении')
+    toastr.error(t('InventoryPage_30')) // Ошибка при удалении
   } finally {
     deleting.value = false
   }

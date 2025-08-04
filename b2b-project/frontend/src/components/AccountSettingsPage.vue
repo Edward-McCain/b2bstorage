@@ -8,7 +8,7 @@
         <div class="hidden lg:block w-64 flex-shrink-0">
           <div class="sticky top-24">
             <nav class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-              <h3 class="text-sm font-semibold text-gray-900 mb-4">Навигация</h3>
+              <h3 class="text-sm font-semibold text-gray-900 mb-4">{{ t('AccountSettingsPage_1') }}</h3>
               <ul class="space-y-2">
                 <li>
                   <button 
@@ -17,7 +17,7 @@
                     :class="{ 'bg-blue-50 text-blue-700': activeSection === 'personal' }"
                   >
                     <User class="w-4 h-4" />
-                    Личные данные
+                    {{ t('AccountSettingsPage_2') }}
                   </button>
                 </li>
                 <li>
@@ -27,7 +27,7 @@
                     :class="{ 'bg-blue-50 text-blue-700': activeSection === 'company' }"
                   >
                     <Building class="w-4 h-4" />
-                    Данные компании
+                    {{ t('AccountSettingsPage_3') }}
                   </button>
                 </li>
                 <li>
@@ -37,7 +37,7 @@
                     :class="{ 'bg-blue-50 text-blue-700': activeSection === 'password' }"
                   >
                     <Lock class="w-4 h-4" />
-                    Смена пароля
+                    {{ t('AccountSettingsPage_4') }}
                   </button>
                 </li>
                 <li>
@@ -47,7 +47,7 @@
                     :class="{ 'bg-blue-50 text-blue-700': activeSection === 'custom-product-fields' }"
                   >
                     <List class="w-4 h-4" />
-                    Поля товаров
+                    {{ t('AccountSettingsPage_5') }}
                   </button>
                 </li>
               </ul>
@@ -61,7 +61,7 @@
           <section id="personal" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div class="flex items-center gap-3 mb-6">
               <User class="w-5 h-5 text-blue-600" />
-              <h2 class="text-xl font-semibold text-gray-900">Личные данные</h2>
+              <h2 class="text-xl font-semibold text-gray-900">{{ t('AccountSettingsPage_6') }}</h2>
               <button 
                 v-if="!loadingSettings"
                 @click="detectLocation"
@@ -69,7 +69,7 @@
                 class="ml-auto bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white font-medium px-4 py-2 rounded-lg transition-colors flex items-center gap-2 text-sm" style="display: none" 
               >
                 <Loader2 v-if="isDetectingLocation" class="animate-spin h-4 w-4" />
-                {{ isDetectingLocation ? 'Определение...' : (locationDetected ? 'Обновить' : 'Автоопределение') }}
+                {{ isDetectingLocation ? t('AccountSettingsPage_7') : (locationDetected ? t('AccountSettingsPage_8') : t('AccountSettingsPage_9')) }}
               </button>
             </div>
             
@@ -77,7 +77,7 @@
             <div v-if="loadingSettings" class="flex items-center justify-center py-12">
               <div class="text-center">
                 <Loader2 class="animate-spin h-8 w-8 text-blue-600 mx-auto mb-4" />
-                <p class="text-gray-600 text-sm">Загрузка личных данных...</p>
+                <p class="text-gray-600 text-sm">{{ t('AccountSettingsPage_10') }}</p>
               </div>
             </div>
             
@@ -85,7 +85,7 @@
             <form v-else @submit.prevent="savePersonalData" class="space-y-6">
               <!-- Блок аватара -->
               <div class="mb-8">
-                <label class="block text-sm font-medium text-gray-700 mb-4">Фото профиля</label>
+                <label class="block text-sm font-medium text-gray-700 mb-4">{{ t('AccountSettingsPage_11') }}</label>
                 <div class="flex items-center gap-6">
                   <!-- Аватар -->
                   <div class="relative group">
@@ -104,7 +104,7 @@
                     </div>
                     <!-- Оверлей при наведении -->
                     <div class="absolute inset-0 bg-black bg-opacity-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer text-center" @click="openAvatarUpload">
-                      <span class="text-white text-xs font-medium">Обновить аватар</span>
+                      <span class="text-white text-xs font-medium">{{ t('AccountSettingsPage_12') }}</span>
                     </div>
                   </div>
                   
@@ -115,9 +115,9 @@
                       @click="openAvatarUpload"
                       class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg transition-colors text-sm"
                     >
-                      Загрузить фото
+                      {{ t('AccountSettingsPage_13') }}
                     </button>
-                    <p class="text-xs text-gray-500 mt-1">Рекомендуемый размер: 400x400px</p>
+                    <p class="text-xs text-gray-500 mt-1">{{ t('AccountSettingsPage_14') }}</p>
                   </div>
                 </div>
               </div>
@@ -125,30 +125,30 @@
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Имя -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">Имя *</label>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('AccountSettingsPage_15') }}</label>
                   <input 
                     v-model="personalData.firstName" 
                     type="text" 
                     required
                     class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-                    placeholder="Введите ваше имя"
+                    :placeholder="t('AccountSettingsPage_16')"
                   />
                 </div>
 
                 <!-- Должность -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">Должность</label>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('AccountSettingsPage_17') }}</label>
                   <input 
                     v-model="personalData.position" 
                     type="text" 
                     class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-                    placeholder="Введите должность"
+                    :placeholder="t('AccountSettingsPage_18')"
                   />
                 </div>
 
                 <!-- Телефон -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">Телефон *</label>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('AccountSettingsPage_19') }}</label>
                   <div class="relative">
                     <div class="absolute inset-y-0 left-0 flex items-center pl-3">
                       <button 
@@ -181,7 +181,7 @@
                       <input 
                         v-model="countrySearch" 
                         type="text" 
-                        placeholder="Поиск страны..."
+                        :placeholder="t('AccountSettingsPage_20')"
                         class="w-full border border-gray-300 rounded px-3 py-2 text-sm mb-2"
                       />
                       <div class="space-y-1">
@@ -202,28 +202,28 @@
 
                 <!-- Email -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">Email *</label>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('AccountSettingsPage_21') }}</label>
                   <input 
                     v-model="personalData.email" 
                     type="email" 
                     required
                     class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-                    placeholder="Введите email"
+                    :placeholder="t('AccountSettingsPage_22')"
                   />
                 </div>
 
                 <!-- Страна -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">Страна</label>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('AccountSettingsPage_23') }}</label>
                   <Multiselect
                     v-model="personalData.country"
                     :options="countryOptions"
                     label="label"
                     value="value"
                     :object="true"
-                    placeholder="Выберите страну"
+                    :placeholder="t('AccountSettingsPage_24')"
                     searchable
-                    :search-placeholder="'Поиск страны'"
+                    :search-placeholder="t('AccountSettingsPage_25')"
                     :max-height="400"
                     class="w-full text-sm multiselect-custom"
                   />
@@ -231,27 +231,27 @@
 
                 <!-- Город -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">Город</label>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('AccountSettingsPage_26') }}</label>
                   <input 
                     v-model="personalData.city" 
                     type="text" 
                     class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-                    placeholder="Введите город"
+                    :placeholder="t('AccountSettingsPage_27')"
                   />
                 </div>
 
                 <!-- Часовой пояс -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">Часовой пояс</label>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('AccountSettingsPage_28') }}</label>
                   <Multiselect
                     v-model="personalData.timezone"
                     :options="timezoneOptions"
                     label="label"
                     value="value"
                     :object="true"
-                    placeholder="Выберите часовой пояс"
+                    :placeholder="t('AccountSettingsPage_29')"
                     searchable
-                    :search-placeholder="'Поиск часового пояса'"
+                    :search-placeholder="t('AccountSettingsPage_30')"
                     :max-height="400"
                     class="w-full text-sm multiselect-custom"
                   />
@@ -259,16 +259,16 @@
 
                 <!-- Валюта -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">Валюта</label>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('AccountSettingsPage_31') }}</label>
                   <Multiselect
                     v-model="personalData.currency"
                     :options="currencyOptions"
                     label="label"
                     value="value"
                     :object="false"
-                    placeholder="Выберите валюту"
+                    :placeholder="t('AccountSettingsPage_32')"
                     searchable
-                    :search-placeholder="'Поиск валюты'"
+                    :search-placeholder="t('AccountSettingsPage_33')"
                     :max-height="400"
                     class="w-full text-sm multiselect-custom"
                   />
@@ -282,7 +282,7 @@
                   class="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold px-6 py-2 rounded-lg transition-colors flex items-center gap-2 text-sm"
                 >
                   <Loader2 v-if="savingPersonal" class="animate-spin h-4 w-4" />
-                  {{ savingPersonal ? 'Сохранение...' : 'Сохранить' }}
+                  {{ savingPersonal ? t('AccountSettingsPage_34') : t('AccountSettingsPage_35') }}
                 </button>
               </div>
             </form>
@@ -292,14 +292,14 @@
           <section id="company" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div class="flex items-center gap-3 mb-6">
               <Building class="w-5 h-5 text-blue-600" />
-              <h2 class="text-xl font-semibold text-gray-900">Данные компании</h2>
+              <h2 class="text-xl font-semibold text-gray-900">{{ t('AccountSettingsPage_36') }}</h2>
             </div>
             
             <!-- Прелоадер для данных компании -->
             <div v-if="loadingSettings" class="flex items-center justify-center py-12">
               <div class="text-center">
                 <Loader2 class="animate-spin h-8 w-8 text-blue-600 mx-auto mb-4" />
-                <p class="text-gray-600 text-sm">Загрузка данных компании...</p>
+                <p class="text-gray-600 text-sm">{{ t('AccountSettingsPage_37') }}</p>
               </div>
             </div>
             
@@ -308,23 +308,23 @@
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Наименование компании -->
                 <div class="md:col-span-2">
-                  <label class="block text-sm font-medium text-gray-700 mb-2">Наименование компании</label>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('AccountSettingsPage_38') }}</label>
                   <input 
                     v-model="companyData.name" 
                     type="text" 
                     class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-                    placeholder="Введите наименование компании"
+                    :placeholder="t('AccountSettingsPage_39')"
                   />
                 </div>
 
                 <!-- ИНН или ПИНФЛ -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">ИНН или ПИНФЛ</label>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('AccountSettingsPage_40') }}</label>
                   <input 
                     v-model="companyData.inn" 
                     type="text" 
                     class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-                    placeholder="Введите ИНН или ПИНФЛ"
+                    :placeholder="t('AccountSettingsPage_41')"
                   />
                 </div>
               </div>
@@ -336,7 +336,7 @@
                   class="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold px-6 py-2 rounded-lg transition-colors flex items-center gap-2 text-sm"
                 >
                   <Loader2 v-if="savingCompany" class="animate-spin h-4 w-4" />
-                  {{ savingCompany ? 'Сохранение...' : 'Сохранить' }}
+                  {{ savingCompany ? t('AccountSettingsPage_34') : t('AccountSettingsPage_35') }}
                 </button>
               </div>
             </form>
@@ -346,14 +346,14 @@
           <section id="password" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div class="flex items-center gap-3 mb-6">
               <Lock class="w-5 h-5 text-blue-600" />
-              <h2 class="text-xl font-semibold text-gray-900">Смена пароля</h2>
+              <h2 class="text-xl font-semibold text-gray-900">{{ t('AccountSettingsPage_42') }}</h2>
             </div>
             
             <!-- Прелоадер для смены пароля -->
             <div v-if="loadingSettings" class="flex items-center justify-center py-12">
               <div class="text-center">
                 <Loader2 class="animate-spin h-8 w-8 text-blue-600 mx-auto mb-4" />
-                <p class="text-gray-600 text-sm">Загрузка настроек пароля...</p>
+                <p class="text-gray-600 text-sm">{{ t('AccountSettingsPage_43') }}</p>
               </div>
             </div>
             
@@ -362,14 +362,14 @@
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Старый пароль -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">Старый пароль *</label>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('AccountSettingsPage_44') }}</label>
                   <div class="relative">
                     <input 
                       v-model="passwordData.oldPassword" 
                       :type="showOldPassword ? 'text' : 'password'" 
                       required
                       class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-                      placeholder="Введите старый пароль"
+                      :placeholder="t('AccountSettingsPage_45')"
                     />
                     <button 
                       type="button"
@@ -384,14 +384,14 @@
 
                 <!-- Новый пароль -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">Новый пароль *</label>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('AccountSettingsPage_46') }}</label>
                   <div class="relative">
                     <input 
                       v-model="passwordData.newPassword" 
                       :type="showNewPassword ? 'text' : 'password'" 
                       required
                       class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-                      placeholder="Введите новый пароль"
+                      :placeholder="t('AccountSettingsPage_47')"
                     />
                     <button 
                       type="button"
@@ -406,14 +406,14 @@
 
                 <!-- Повторить новый пароль -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">Повторить новый пароль *</label>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('AccountSettingsPage_48') }}</label>
                   <div class="relative">
                     <input 
                       v-model="passwordData.confirmPassword" 
                       :type="showConfirmPassword ? 'text' : 'password'" 
                       required
                       class="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-                      placeholder="Повторите новый пароль"
+                      :placeholder="t('AccountSettingsPage_49')"
                     />
                     <button 
                       type="button"
@@ -434,7 +434,7 @@
                   class="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold px-6 py-2 rounded-lg transition-colors flex items-center gap-2 text-sm"
                 >
                   <Loader2 v-if="changingPassword" class="animate-spin h-4 w-4" />
-                  {{ changingPassword ? 'Смена пароля...' : 'Сменить пароль' }}
+                  {{ changingPassword ? t('AccountSettingsPage_50') : t('AccountSettingsPage_51') }}
                 </button>
               </div>
             </form>
@@ -444,12 +444,12 @@
           <section id="custom-product-fields" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div class="flex items-center gap-3 mb-6">
               <List class="w-5 h-5 text-blue-600" />
-              <h2 class="text-xl font-semibold text-gray-900">Кастомные поля товаров</h2>
+              <h2 class="text-xl font-semibold text-gray-900">{{ t('AccountSettingsPage_52') }}</h2>
             </div>
 
             <div class="mb-6">
-              <h3 class="text-lg font-semibold mb-2">Стандартные поля товаров</h3>
-              <div v-if="loadingVisibility || Object.keys(productFieldsVisibility).length === 0" class="flex items-center gap-2 text-blue-600"><Loader2 class="animate-spin w-4 h-4" /> Загрузка...</div>
+              <h3 class="text-lg font-semibold mb-2">{{ t('AccountSettingsPage_53') }}</h3>
+              <div v-if="loadingVisibility || Object.keys(productFieldsVisibility).length === 0" class="flex items-center gap-2 text-blue-600"><Loader2 class="animate-spin w-4 h-4" /> {{ t('AccountSettingsPage_54') }}</div>
               <div v-else>
                 <div v-if="errorVisibility" class="text-red-600 text-sm mb-2">{{ errorVisibility }}</div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -461,16 +461,16 @@
                         v-if="field.key === 'categories' && productFieldsVisibility.categories"
                         @click="openCategoriesModal"
                         class="text-blue-600 hover:text-blue-700 underline text-xs cursor-pointer"
-                        title="Выбор системных или пользовательских категорий"
+                        :title="t('AccountSettingsPage_106')"
                       >
-                        настроить
+                        {{ t('AccountSettingsPage_55') }}
                       </button>
                       <span 
                         v-else-if="field.key === 'categories' && !productFieldsVisibility.categories"
                         class="text-gray-400 text-xs cursor-not-allowed"
-                        title="Выбор системных или пользовательских категорий"
+                        :title="t('AccountSettingsPage_106')"
                       >
-                        настроить
+                        {{ t('AccountSettingsPage_55') }}
                       </span>
                     </div>
                     <button @click="toggleFieldVisibility(field.key)"
@@ -487,12 +487,12 @@
             <!-- CRUD кастомных полей ниже -->
             <div class="border-t border-gray-200 pt-6 mt-6">
               <div class="flex items-center justify-between mb-2">
-                <h3 class="text-lg font-semibold">Пользовательские поля</h3>
+                <h3 class="text-lg font-semibold">{{ t('AccountSettingsPage_56') }}</h3>
                 <button 
                   @click="openAddFieldModal"
                   class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors flex items-center gap-2 text-sm"
                 >
-                  Добавить
+                  {{ t('AccountSettingsPage_57') }}
                 </button>
               </div>
               <div v-if="loadingFields" class="flex items-center justify-center py-8"><Loader2 class="animate-spin w-6 h-6 text-blue-600" /></div>
@@ -501,9 +501,9 @@
                 <table v-if="productFields.length" class="min-w-full divide-y divide-gray-200">
                   <thead>
                     <tr>
-                      <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Наименование</th>
-                      <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Тип</th>
-                      <th class="px-4 py-2 text-right text-xs font-medium text-gray-500">Действия</th>
+                      <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">{{ t('AccountSettingsPage_58') }}</th>
+                      <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">{{ t('AccountSettingsPage_59') }}</th>
+                      <th class="px-4 py-2 text-right text-xs font-medium text-gray-500">{{ t('AccountSettingsPage_60') }}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -517,28 +517,28 @@
                                 'bg-purple-100 text-purple-800': field.field_type === 'date',
                                 'bg-orange-100 text-orange-800': field.field_type === 'list'
                               }">
-                          {{ field.field_type === 'text' ? 'Текст' : field.field_type === 'number' ? 'Число' : field.field_type === 'date' ? 'Дата' : 'Список' }}
+                          {{ field.field_type === 'text' ? t('AccountSettingsPage_61') : field.field_type === 'number' ? t('AccountSettingsPage_62') : field.field_type === 'date' ? t('AccountSettingsPage_63') : t('AccountSettingsPage_64') }}
                         </span>
                       </td>
                       <td class="px-4 py-2 text-right">
                         <div class="flex justify-end gap-3">
-                          <button @click="editField(field)" class="text-blue-600 hover:underline text-xs flex items-center gap-1 cursor-pointer" title="Редактировать"><Pencil class="w-4 h-4" /></button>
-                          <button @click="confirmDeleteField(field)" class="text-red-600 hover:underline text-xs flex items-center gap-1 cursor-pointer" title="Удалить"><Trash2 class="w-4 h-4" /></button>
+                          <button @click="editField(field)" class="text-blue-600 hover:underline text-xs flex items-center gap-1 cursor-pointer" :title="t('AccountSettingsPage_107')"><Pencil class="w-4 h-4" /></button>
+                          <button @click="confirmDeleteField(field)" class="text-red-600 hover:underline text-xs flex items-center gap-1 cursor-pointer" :title="t('AccountSettingsPage_108')"><Trash2 class="w-4 h-4" /></button>
                         </div>
                       </td>
                     </tr>
                   </tbody>
                 </table>
-                <div v-else class="text-gray-500 text-sm py-4">Нет кастомных полей</div>
+                <div v-else class="text-gray-500 text-sm py-4">{{ t('AccountSettingsPage_65') }}</div>
               </div>
               <!-- Модалка подтверждения удаления -->
               <div v-if="showDeleteModal" class="fixed inset-0 bg-white/90 bg-opacity-30 flex items-center justify-center z-50">
                 <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
-                  <h3 class="text-lg font-semibold mb-4">Удалить поле?</h3>
-                  <p class="mb-6 text-gray-700">Вы действительно хотите удалить поле <b>{{ fieldToDelete?.field_name }}</b>?</p>
+                  <h3 class="text-lg font-semibold mb-4">{{ t('AccountSettingsPage_66') }}</h3>
+                  <p class="mb-6 text-gray-700">{{ t('AccountSettingsPage_67') }} <b>{{ fieldToDelete?.field_name }}</b>?</p>
                   <div class="flex justify-end gap-2">
-                    <button @click="cancelDeleteField" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium px-4 py-2 rounded-lg text-sm">Нет</button>
-                    <button @click="doDeleteField" class="bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-lg text-sm">Да, удалить</button>
+                    <button @click="cancelDeleteField" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium px-4 py-2 rounded-lg text-sm">{{ t('AccountSettingsPage_68') }}</button>
+                    <button @click="doDeleteField" class="bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-lg text-sm">{{ t('AccountSettingsPage_69') }}</button>
                   </div>
                 </div>
               </div>
@@ -547,41 +547,41 @@
             <div v-if="showFieldModal" class="fixed inset-0 bg-white/90 bg-opacity-30 flex items-center justify-center z-50">
               <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
                 <div class="flex items-center justify-between mb-4">
-                  <h3 class="text-lg font-semibold">{{ editingField ? 'Редактировать поле' : 'Добавить поле' }}</h3>
+                  <h3 class="text-lg font-semibold">{{ editingField ? t('AccountSettingsPage_70') : t('AccountSettingsPage_71') }}</h3>
                   <button @click="closeFieldModal" class="text-gray-400 hover:text-gray-700"><X class="w-6 h-6" /></button>
                 </div>
                 <form @submit.prevent="saveField">
                   <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Наименование поля</label>
-                    <input v-model="fieldForm.field_name" type="text" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent" placeholder="Введите наименование" />
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('AccountSettingsPage_72') }}</label>
+                    <input v-model="fieldForm.field_name" type="text" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent" :placeholder="t('AccountSettingsPage_73')" />
                   </div>
                   <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Тип поля</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('AccountSettingsPage_74') }}</label>
                     <select v-model="fieldForm.field_type" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent">
-                      <option value="text">Текст</option>
-                      <option value="number">Число</option>
-                      <option value="date">Дата</option>
-                      <option value="list">Список</option>
+                      <option value="text">{{ t('AccountSettingsPage_61') }}</option>
+                      <option value="number">{{ t('AccountSettingsPage_62') }}</option>
+                      <option value="date">{{ t('AccountSettingsPage_63') }}</option>
+                      <option value="list">{{ t('AccountSettingsPage_64') }}</option>
                     </select>
                   </div>
                   
                   <!-- Блок для управления опциями списка -->
                   <div v-if="fieldForm.field_type === 'list'" class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Опции списка</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ t('AccountSettingsPage_75') }}</label>
                     <div class="space-y-2">
                       <div v-for="(option, index) in fieldForm.list_options" :key="index" class="flex items-center gap-2">
                         <input 
                           v-model="fieldForm.list_options[index]" 
                           type="text" 
                           class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent" 
-                          placeholder="Введите опцию"
+                          :placeholder="t('AccountSettingsPage_76')"
                           @input="updateListOption(index, $event.target.value)"
                         />
                         <button 
                           type="button" 
                           @click="removeListOption(index)" 
                           class="text-red-600 hover:text-red-800 p-1"
-                          title="Удалить опцию"
+                          :title="t('AccountSettingsPage_77')"
                         >
                           <X class="w-4 h-4" />
                         </button>
@@ -592,16 +592,16 @@
                         class="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1"
                       >
                         <Plus class="w-4 h-4" />
-                        Добавить опцию
+                        {{ t('AccountSettingsPage_78') }}
                       </button>
                     </div>
                   </div>
                   <div v-if="errorSaveField" class="text-red-600 text-sm mb-2">{{ errorSaveField }}</div>
                   <div class="flex justify-end gap-2">
-                    <button type="button" @click="closeFieldModal" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium px-4 py-2 rounded-lg text-sm">Отмена</button>
+                    <button type="button" @click="closeFieldModal" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium px-4 py-2 rounded-lg text-sm">{{ t('AccountSettingsPage_79') }}</button>
                     <button type="submit" :disabled="savingField" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg flex items-center gap-2 text-sm">
                       <Loader2 v-if="savingField" class="animate-spin w-4 h-4" />
-                      Сохранить
+                      {{ t('AccountSettingsPage_35') }}
                     </button>
                   </div>
                 </form>
@@ -625,7 +625,7 @@
     <div v-if="showCategoriesModal" class="fixed inset-0 bg-white/90 bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white/90 rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto shadow-lg">
         <div class="flex justify-between items-center mb-4">
-          <h3 class="text-lg font-semibold">Настройки категорий</h3>
+          <h3 class="text-lg font-semibold">{{ t('AccountSettingsPage_80') }}</h3>
           <button @click="showCategoriesModal = false" class="text-gray-500 hover:text-gray-700">
             <X class="w-5 h-5" />
           </button>
@@ -634,17 +634,16 @@
         <!-- Сообщение о B2B Market -->
         <div class="mb-6 p-4 bg-blue-50 rounded-lg">
           <p class="text-sm text-blue-800">
-            Если вам необходим экспорт ваших товаров на B2B Market - выберите Системные категории, 
-            в ином случае вы можете добавить свои категории и подкатегории.
+            {{ t('AccountSettingsPage_81') }}
           </p>
         </div>
         
         <!-- Переключатель типа категорий -->
         <div class="mb-6">
-          <h4 class="font-medium mb-3">Тип категорий</h4>
+          <h4 class="font-medium mb-3">{{ t('AccountSettingsPage_82') }}</h4>
           <div v-if="loadingUserCategories" class="flex items-center justify-center py-4">
             <Loader2 class="animate-spin w-5 h-5 text-blue-600" />
-            <span class="ml-2 text-sm text-gray-600">Загрузка...</span>
+            <span class="ml-2 text-sm text-gray-600">{{ t('AccountSettingsPage_54') }}</span>
           </div>
           <div v-else class="space-y-2">
             <label class="flex items-center cursor-pointer">
@@ -656,8 +655,8 @@
                 class="mr-3"
               />
               <span class="text-sm">
-                Системные категории
-                <span v-if="!categoriesType" class="text-blue-600 font-medium">(активно)</span>
+                {{ t('AccountSettingsPage_83') }}
+                <span v-if="!categoriesType" class="text-blue-600 font-medium">({{ t('AccountSettingsPage_84') }})</span>
               </span>
             </label>
             <label class="flex items-center cursor-pointer">
@@ -669,8 +668,8 @@
                 class="mr-3"
               />
               <span class="text-sm">
-                Пользовательские категории
-                <span v-if="categoriesType" class="text-blue-600 font-medium">(активно)</span>
+                {{ t('AccountSettingsPage_85') }}
+                <span v-if="categoriesType" class="text-blue-600 font-medium">({{ t('AccountSettingsPage_84') }})</span>
               </span>
             </label>
           </div>
@@ -687,12 +686,12 @@
           
           <!-- Создание новой категории -->
           <div class="border rounded-lg p-4">
-            <h4 class="font-medium mb-3">Добавить новую категорию</h4>
+            <h4 class="font-medium mb-3">{{ t('AccountSettingsPage_86') }}</h4>
             <div class="flex gap-2">
               <input 
                 v-model="newCategoryName"
                 type="text" 
-                placeholder="Название категории"
+                :placeholder="t('AccountSettingsPage_87')"
                 class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 @keyup.enter="createCategory"
               />
@@ -703,7 +702,7 @@
                 @keyup.enter="createCategory"
               >
                 <Loader2 v-if="creatingCategory" class="animate-spin w-4 h-4" />
-                <span v-else>Добавить</span>
+                <span v-else>{{ t('AccountSettingsPage_88') }}</span>
               </button>
             </div>
           </div>
@@ -712,13 +711,13 @@
           <div v-if="loadingUserCategories" class="flex items-center justify-center py-8">
             <div class="text-center">
               <Loader2 class="animate-spin w-8 h-8 text-blue-600 mx-auto mb-4" />
-              <p class="text-gray-600 text-sm">Загрузка пользовательских категорий...</p>
+              <p class="text-gray-600 text-sm">{{ t('AccountSettingsPage_89') }}</p>
             </div>
           </div>
           
           <!-- Список категорий в виде аккордеона -->
           <div v-else-if="userCategories.length > 0" class="space-y-4">
-            <h4 class="font-medium">Ваши категории</h4>
+            <h4 class="font-medium">{{ t('AccountSettingsPage_90') }}</h4>
             <div v-for="category in userCategories" :key="category.id" class="bg-gray-100 rounded-lg overflow-hidden">
               <!-- Заголовок категории -->
               <div class="flex items-center justify-between p-4 bg-gray-50">
@@ -733,7 +732,7 @@
                     />
                   </button>
                   <span class="font-medium">{{ category.name }}</span>
-                  <span class="text-sm text-gray-500">({{ category.products_count }} товаров)</span>
+                  <span class="text-sm text-gray-500">({{ category.products_count }} {{ t('AccountSettingsPage_91') }})</span>
                 </div>
                 <div class="flex gap-2">
                   <button 
@@ -742,7 +741,7 @@
                   >
                     <Plus class="w-4 h-4" />
                     <span class="absolute top-1/2 right-full transform -translate-y-1/2 mr-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-50">
-                      Добавить подкатегорию
+                      {{ t('AccountSettingsPage_92') }}
                     </span>
                   </button>
                   <button 
@@ -767,14 +766,14 @@
                 <!-- Подкатегории для этой категории -->
                 <div class="space-y-3">
                   <div class="flex items-center justify-between">
-                    <span class="text-sm font-medium">Подкатегории:</span>
+                    <span class="text-sm font-medium">{{ t('AccountSettingsPage_93') }}</span>
                   </div>
                   
                   <div v-if="category.subcategories && category.subcategories.length > 0" class="space-y-2">
                     <div v-for="subcategory in category.subcategories" :key="subcategory.id" class="flex items-center justify-between py-2 px-3 bg-gray-50 rounded">
                       <div class="flex items-center gap-2">
                         <span class="text-sm">{{ subcategory.name }}</span>
-                        <span class="text-xs text-gray-500">({{ subcategory.products_count }} товаров)</span>
+                        <span class="text-xs text-gray-500">({{ subcategory.products_count }} {{ t('AccountSettingsPage_91') }})</span>
                       </div>
                       <div class="flex gap-1">
                         <button 
@@ -796,7 +795,7 @@
                   </div>
                   
                   <div v-else class="text-center py-4 text-gray-500 text-sm">
-                    Нет подкатегорий
+                    {{ t('AccountSettingsPage_94') }}
                   </div>
                 </div>
               </div>
@@ -805,7 +804,7 @@
           
           <!-- Сообщение если нет категорий -->
           <div v-else class="text-center py-8 text-gray-500">
-            <p>У вас пока нет пользовательских категорий</p>
+            <p>{{ t('AccountSettingsPage_95') }}</p>
           </div>
         </div>
       </div>
@@ -815,7 +814,7 @@
     <div v-if="selectedCategoryForSubcategory" class="fixed inset-0 bg-white/90 bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-lg">
         <div class="flex justify-between items-center mb-4">
-          <h3 class="text-lg font-semibold">Добавить подкатегорию</h3>
+          <h3 class="text-lg font-semibold">{{ t('AccountSettingsPage_96') }}</h3>
           <button @click="selectedCategoryForSubcategory = null" class="text-gray-500 hover:text-gray-700 cursor-pointer">
             <X class="w-5 h-5" />
           </button>
@@ -823,12 +822,12 @@
         
         <div class="mb-4">
           <p class="text-sm text-gray-600 mb-2">
-            Категория: <span class="font-medium">{{ selectedCategoryForSubcategory.name }}</span>
+            {{ t('AccountSettingsPage_97') }} <span class="font-medium">{{ selectedCategoryForSubcategory.name }}</span>
           </p>
           <input 
             v-model="newSubcategoryName"
             type="text" 
-            placeholder="Название подкатегории"
+            :placeholder="t('AccountSettingsPage_98')"
             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             @keyup.enter="createSubcategory"
           />
@@ -839,7 +838,7 @@
             @click="selectedCategoryForSubcategory = null"
             class="px-4 py-2 text-gray-600 border border-gray-300 text-sm rounded-md hover:bg-gray-50 cursor-pointer"
           >
-            Отмена
+            {{ t('AccountSettingsPage_79') }}
           </button>
           <button 
             @click="createSubcategory"
@@ -847,7 +846,7 @@
             class="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed cursor-pointer flex items-center gap-2"
           >
             <Loader2 v-if="creatingSubcategory" class="animate-spin w-4 h-4" />
-            <span v-else>Добавить</span>
+            <span v-else>{{ t('AccountSettingsPage_88') }}</span>
           </button>
         </div>
       </div>
@@ -857,7 +856,7 @@
     <div v-if="editingCategory" class="fixed inset-0 bg-white/90 bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
         <div class="flex justify-between items-center mb-4">
-          <h3 class="text-lg font-semibold">Редактировать категорию</h3>
+          <h3 class="text-lg font-semibold">{{ t('AccountSettingsPage_99') }}</h3>
           <button @click="editingCategory = null" class="text-gray-500 hover:text-gray-700">
             <X class="w-5 h-5" />
           </button>
@@ -867,7 +866,7 @@
           <input 
             v-model="newCategoryName"
             type="text" 
-            placeholder="Название категории"
+            :placeholder="t('AccountSettingsPage_87')"
             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             @keyup.enter="saveCategoryEdit"
           />
@@ -878,14 +877,14 @@
             @click="editingCategory = null"
             class="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
           >
-            Отмена
+            {{ t('AccountSettingsPage_79') }}
           </button>
           <button 
             @click="saveCategoryEdit"
             :disabled="!newCategoryName.trim()"
             class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
-            Сохранить
+            {{ t('AccountSettingsPage_35') }}
           </button>
         </div>
       </div>
@@ -895,7 +894,7 @@
     <div v-if="editingSubcategory" class="fixed inset-0 bg-white/90 bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-lg">
         <div class="flex justify-between items-center mb-4">
-          <h3 class="text-lg font-semibold">Редактировать подкатегорию</h3>
+          <h3 class="text-lg font-semibold">{{ t('AccountSettingsPage_100') }}</h3>
           <button @click="editingSubcategory = null" class="text-gray-500 hover:text-gray-700">
             <X class="w-5 h-5" />
           </button>
@@ -905,7 +904,7 @@
           <input 
             v-model="newSubcategoryName"
             type="text" 
-            placeholder="Название подкатегории"
+            :placeholder="t('AccountSettingsPage_98')"
             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             @keyup.enter="saveSubcategoryEdit"
           />
@@ -916,14 +915,14 @@
             @click="editingSubcategory = null"
             class="px-4 py-2 text-gray-600 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
           >
-            Отмена
+            {{ t('AccountSettingsPage_79') }}
           </button>
           <button 
             @click="saveSubcategoryEdit"
             :disabled="!newSubcategoryName.trim()"
             class="px-4 py-2 bg-blue-600 text-sm text-white rounded-md hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
-            Сохранить
+            {{ t('AccountSettingsPage_35') }}
           </button>
         </div>
       </div>
@@ -932,17 +931,17 @@
     <!-- Модальное окно удаления категории -->
     <div v-if="showDeleteCategoryModal" class="fixed inset-0 bg-white/90 bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
-        <h3 class="text-lg font-semibold mb-4">Удалить категорию?</h3>
-        <p class="mb-6 text-gray-700">Вы действительно хотите удалить категорию <b>{{ categoryToDelete?.name }}</b>?</p>
+        <h3 class="text-lg font-semibold mb-4">{{ t('AccountSettingsPage_101') }}</h3>
+        <p class="mb-6 text-gray-700">{{ t('AccountSettingsPage_102') }} <b>{{ categoryToDelete?.name }}</b>?</p>
         <div class="flex justify-end gap-2">
-          <button @click="cancelDeleteCategory" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium px-4 py-2 rounded-lg text-sm">Нет</button>
+          <button @click="cancelDeleteCategory" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium px-4 py-2 rounded-lg text-sm">{{ t('AccountSettingsPage_68') }}</button>
           <button 
             @click="confirmDeleteCategory" 
             :disabled="deletingCategory"
             class="bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-lg text-sm flex items-center gap-2"
           >
             <Loader2 v-if="deletingCategory" class="animate-spin w-4 h-4" />
-            <span v-else>Да, удалить</span>
+            <span v-else>{{ t('AccountSettingsPage_103') }}</span>
           </button>
         </div>
       </div>
@@ -951,17 +950,17 @@
     <!-- Модальное окно удаления подкатегории -->
     <div v-if="showDeleteSubcategoryModal" class="fixed inset-0 bg-white/90 bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
-        <h3 class="text-lg font-semibold mb-4">Удалить подкатегорию?</h3>
-        <p class="mb-6 text-gray-700">Вы действительно хотите удалить подкатегорию <b>{{ subcategoryToDelete?.name }}</b>?</p>
+        <h3 class="text-lg font-semibold mb-4">{{ t('AccountSettingsPage_104') }}</h3>
+        <p class="mb-6 text-gray-700">{{ t('AccountSettingsPage_105') }} <b>{{ subcategoryToDelete?.name }}</b>?</p>
         <div class="flex justify-end gap-2">
-          <button @click="cancelDeleteSubcategory" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium px-4 py-2 rounded-lg text-sm">Нет</button>
+          <button @click="cancelDeleteSubcategory" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium px-4 py-2 rounded-lg text-sm">{{ t('AccountSettingsPage_68') }}</button>
           <button 
             @click="confirmDeleteSubcategory" 
             :disabled="deletingSubcategory"
             class="bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-lg text-sm flex items-center gap-2"
           >
             <Loader2 v-if="deletingSubcategory" class="animate-spin w-4 h-4" />
-            <span v-else>Да, удалить</span>
+            <span v-else>{{ t('AccountSettingsPage_103') }}</span>
           </button>
         </div>
       </div>
@@ -971,6 +970,7 @@
 
 <script setup>
 import { ref, reactive, onMounted, onUnmounted, computed, watch } from 'vue'
+import { t } from '../locales/index.js'
 import { 
   User, 
   Building, 
@@ -1212,16 +1212,16 @@ async function saveField() {
   }
 }
 async function deleteField(id) {
-  if (!confirm('Удалить поле?')) return
+  if (!confirm(t('AccountSettingsPage_66'))) return
   try {
     const response = await apiRequest(`/product-fields/${id}`, { method: 'DELETE' })
     if (response.ok && response.data.success) {
       await loadProductFields()
     } else {
-      alert(response.data.message || 'Ошибка удаления')
+      alert(response.data.message || t('AccountSettingsPage_109'))
     }
   } catch (e) {
-    alert('Ошибка удаления')
+    alert(t('AccountSettingsPage_109'))
   } finally {
     showDeleteModal.value = false
     fieldToDelete.value = null
@@ -1230,28 +1230,28 @@ async function deleteField(id) {
 
 // Список стандартных необязательных полей products_sklad
 const standardProductFields = [
-  { key: 'description', label: 'Описание' },
-  { key: 'country', label: 'Страна' },
-  { key: 'supplier', label: 'Поставщик' },
-  { key: 'article', label: 'Артикул' },
-  { key: 'code', label: 'Код' },
-  { key: 'external_code', label: 'Внешний код' },
-  { key: 'weight', label: 'Вес' },
-  { key: 'volume', label: 'Объем' },
-  { key: 'vat', label: 'Ставка НДС' },
-  { key: 'min_stock', label: 'Минимальный остаток' },
-  { key: 'stock_type', label: 'Тип запаса' },
-  { key: 'packing', label: 'Упаковка' },
-  { key: 'accounting_type', label: 'Тип учета' },
-  { key: 'traceable', label: 'Маркируемый' },
-  { key: 'marking', label: 'Маркировка' },
-  { key: 'product_type', label: 'Тип товара' },
-  { key: 'barcode_type', label: 'Тип штрихкода' },
-  { key: 'barcode', label: 'Штрихкод' },
-  { key: 'cash_register_tax', label: 'Налог ККМ' },
-  { key: 'cash_register_type', label: 'Тип ККМ' },
-  { key: 'price', label: 'Цена' },
-  { key: 'categories', label: 'Категории' },
+  { key: 'description', label: t('AccountSettingsPage_114') },
+  { key: 'country', label: t('AccountSettingsPage_115') },
+  { key: 'supplier', label: t('AccountSettingsPage_116') },
+  { key: 'article', label: t('AccountSettingsPage_117') },
+  { key: 'code', label: t('AccountSettingsPage_118') },
+  { key: 'external_code', label: t('AccountSettingsPage_119') },
+  { key: 'weight', label: t('AccountSettingsPage_120') },
+  { key: 'volume', label: t('AccountSettingsPage_121') },
+  { key: 'vat', label: t('AccountSettingsPage_122') },
+  { key: 'min_stock', label: t('AccountSettingsPage_123') },
+  { key: 'stock_type', label: t('AccountSettingsPage_124') },
+  { key: 'packing', label: t('AccountSettingsPage_125') },
+  { key: 'accounting_type', label: t('AccountSettingsPage_126') },
+  { key: 'traceable', label: t('AccountSettingsPage_127') },
+  { key: 'marking', label: t('AccountSettingsPage_128') },
+  { key: 'product_type', label: t('AccountSettingsPage_129') },
+  { key: 'barcode_type', label: t('AccountSettingsPage_130') },
+  { key: 'barcode', label: t('AccountSettingsPage_131') },
+  { key: 'cash_register_tax', label: t('AccountSettingsPage_132') },
+  { key: 'cash_register_type', label: t('AccountSettingsPage_133') },
+  { key: 'price', label: t('AccountSettingsPage_134') },
+  { key: 'categories', label: t('AccountSettingsPage_135') },
 ]
 
 const productFieldsVisibility = reactive({})
@@ -1665,7 +1665,7 @@ const savePersonalData = async () => {
   // Валидация телефона
   const phoneDigits = extractDigits(personalData.phone)
   if (phoneDigits && !validatePhone(personalData.phone, selectedCountry.value.phone_code)) {
-    alert('Пожалуйста, введите корректный номер телефона')
+    alert(t('AccountSettingsPage_110'))
     return
   }
   
@@ -1747,7 +1747,7 @@ const saveCompanyData = async () => {
 
 const changePassword = async () => {
   if (passwordData.newPassword !== passwordData.confirmPassword) {
-    alert('Пароли не совпадают')
+    alert(t('AccountSettingsPage_111'))
     return
   }
   
@@ -1858,10 +1858,10 @@ async function doDeleteField() {
     if (response.ok && response.data.success) {
       await loadProductFields()
     } else {
-      alert(response.data.message || 'Ошибка удаления')
+      alert(response.data.message || t('AccountSettingsPage_109'))
     }
   } catch (e) {
-    alert('Ошибка удаления')
+    alert(t('AccountSettingsPage_109'))
   } finally {
     showDeleteModal.value = false
     fieldToDelete.value = null
@@ -1989,7 +1989,7 @@ const saveCategoryEdit = async () => {
 // Удаление категории
 const deleteCategory = (category) => {
   if (category.products_count > 0) {
-    alert('Нельзя удалить категорию, в которой есть товары')
+    alert(t('AccountSettingsPage_112'))
     return
   }
   
@@ -2103,7 +2103,7 @@ const saveSubcategoryEdit = async () => {
 // Удаление подкатегории
 const deleteSubcategory = (subcategory) => {
   if (subcategory.products_count > 0) {
-    alert('Нельзя удалить подкатегорию, в которой есть товары')
+    alert(t('AccountSettingsPage_113'))
     return
   }
   

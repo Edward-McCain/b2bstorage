@@ -67,7 +67,9 @@ class ProductSklad extends Model
         // Сначала ищем в системных категориях
         $systemCategory = \App\Models\Category::where('category_id', $this->category)->first();
         if ($systemCategory) {
-            return $systemCategory->name_ru;
+            $user = $this->user;
+            $userLanguage = $user ? ($user->language ?? 'ru') : 'ru';
+            return \App\Helpers\CategoryHelper::getCategoryName($systemCategory, $userLanguage);
         }
         
         // Если не найдено в системных, ищем в пользовательских категориях
@@ -97,7 +99,9 @@ class ProductSklad extends Model
         // Сначала ищем в системных подкатегориях
         $systemSubcategory = \App\Models\Subcategory::where('subcategory_id', $this->subcategory)->first();
         if ($systemSubcategory) {
-            return $systemSubcategory->name_ru;
+            $user = $this->user;
+            $userLanguage = $user ? ($user->language ?? 'ru') : 'ru';
+            return \App\Helpers\CategoryHelper::getSubcategoryName($systemSubcategory, $userLanguage);
         }
         
         // Если не найдено в системных, ищем в пользовательских подкатегориях

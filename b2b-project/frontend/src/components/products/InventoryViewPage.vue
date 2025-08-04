@@ -15,7 +15,7 @@
         <div v-if="loading" class="flex items-center justify-center py-20">
           <div class="text-center">
             <Loader2 class="animate-spin h-8 w-8 text-blue-600 mx-auto mb-4" />
-            <p class="text-gray-600 text-sm">Загрузка инвентаризации...</p>
+            <p class="text-gray-600 text-sm">{{ t('InventoryViewPage_1') }}</p> <!-- Загрузка инвентаризации... -->
           </div>
         </div>
 
@@ -25,7 +25,7 @@
             <div class="flex items-center justify-between">
               <div>
                 <h1 class="text-xl font-bold text-gray-900 mb-1">{{ inventory.name }}</h1>
-                <div class="text-gray-500 text-sm">от {{ formatDate(inventory.created_at) }}</div>
+                <div class="text-gray-500 text-sm">{{ t('InventoryViewPage_2') }} {{ formatDate(inventory.created_at) }}</div> <!-- от -->
               </div>
               <div class="flex items-center gap-2">
                 <button 
@@ -34,7 +34,7 @@
                 >
                   <FileSpreadsheet class="w-4 h-4" />
                   <span class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
-                    Экспорт в Excel
+                    {{ t('InventoryViewPage_3') }} <!-- Экспорт в Excel -->
                   </span>
                 </button>
                 <button 
@@ -43,7 +43,7 @@
                 >
                   <Download class="w-4 h-4" />
                   <span class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
-                    Скачать PDF
+                    {{ t('InventoryViewPage_4') }} <!-- Скачать PDF -->
                   </span>
                 </button>
                 <button 
@@ -52,7 +52,7 @@
                 >
                   <Printer class="w-4 h-4" />
                   <span class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
-                    Печать
+                    {{ t('InventoryViewPage_5') }} <!-- Печать -->
                   </span>
                 </button>
               </div>
@@ -61,27 +61,27 @@
           
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <div>
-              <div class="text-gray-500 text-xs mb-1">Название</div>   
+              <div class="text-gray-500 text-xs mb-1">{{ t('InventoryViewPage_6') }}</div> <!-- Название -->
               <div class="text-gray-900 text-sm">{{ inventory.name }}</div>
             </div>
             <div>
-              <div class="text-gray-500 text-xs mb-1">Склад</div>
+              <div class="text-gray-500 text-xs mb-1">{{ t('InventoryViewPage_7') }}</div> <!-- Склад -->
               <div class="text-gray-900 text-sm">{{ inventory.warehouse_name }}</div>
             </div>
             <div>
-              <div class="text-gray-500 text-xs mb-1">Статус</div>
+              <div class="text-gray-500 text-xs mb-1">{{ t('InventoryViewPage_8') }}</div> <!-- Статус -->
               <div class="text-gray-900 text-sm">{{ getStatusText(inventory.status) }}</div>
             </div>
             <div>
-              <div class="text-gray-500 text-xs mb-1">Создано</div>
+              <div class="text-gray-500 text-xs mb-1">{{ t('InventoryViewPage_9') }}</div> <!-- Создано -->
               <div class="text-gray-900 text-sm">{{ inventory.created_by_name || inventory.created_by || '-' }}</div>
             </div>
             <div>
-              <div class="text-gray-500 text-xs mb-1">Комментарий</div>
+              <div class="text-gray-500 text-xs mb-1">{{ t('InventoryViewPage_10') }}</div> <!-- Комментарий -->
               <div class="text-gray-900 text-sm">{{ inventory.comment || '-' }}</div>
             </div>
             <div>
-              <div class="text-gray-500 text-xs mb-1">Валюта</div>
+              <div class="text-gray-500 text-xs mb-1">{{ t('InventoryViewPage_11') }}</div> <!-- Валюта -->
               <div class="text-gray-900 text-sm">{{ userCurrency }}</div>
             </div>
           </div>
@@ -89,40 +89,40 @@
           <!-- Статистика -->
           <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <div class="bg-gray-50 rounded-lg p-3">
-              <div class="text-gray-500 text-xs mb-1">Всего товаров</div>
+              <div class="text-gray-500 text-xs mb-1">{{ t('InventoryViewPage_12') }}</div> <!-- Всего товаров -->
               <div class="text-lg font-semibold text-gray-900">{{ inventory.items_count || 0 }}</div>
             </div>
             <div class="bg-gray-50 rounded-lg p-3">
-              <div class="text-gray-500 text-xs mb-1">Норма</div>
+              <div class="text-gray-500 text-xs mb-1">{{ t('InventoryViewPage_13') }}</div> <!-- Норма -->
               <div class="text-lg font-semibold text-green-600">{{ normalCount }}</div>
             </div>
             <div class="bg-gray-50 rounded-lg p-3">
-              <div class="text-gray-500 text-xs mb-1">Недостача</div>
+              <div class="text-gray-500 text-xs mb-1">{{ t('InventoryViewPage_14') }}</div> <!-- Недостача -->
               <div class="text-lg font-semibold text-red-600">{{ shortageCount }}</div>
             </div>
             <div class="bg-gray-50 rounded-lg p-3">
-              <div class="text-gray-500 text-xs mb-1">Избыток</div>
+              <div class="text-gray-500 text-xs mb-1">{{ t('InventoryViewPage_15') }}</div> <!-- Избыток -->
               <div class="text-lg font-semibold text-yellow-600">{{ excessCount }}</div>
             </div>
           </div>
           
           <!-- Товары -->
           <div class="mb-6">
-            <div class="font-semibold text-gray-800 mb-2">Товары</div>
+            <div class="font-semibold text-gray-800 mb-2">{{ t('InventoryViewPage_16') }}</div> <!-- Товары -->
             <div v-if="items.length === 0" class="text-center py-8 text-gray-500">
-              Нет товаров в инвентаризации
+              {{ t('InventoryViewPage_17') }} <!-- Нет товаров в инвентаризации -->
             </div>
             <div v-else>
               <div class="overflow-x-auto">
                 <table class="w-full divide-y divide-gray-200 text-sm">
                   <thead class="bg-gray-50">
                     <tr>
-                      <th class="px-3 py-2 text-left font-semibold text-gray-700">Наименование</th>
-                      <th class="px-3 py-2 text-center font-semibold text-gray-700">Расчетный остаток</th>
-                      <th class="px-3 py-2 text-center font-semibold text-gray-700">Фактический остаток</th>
-                      <th class="px-3 py-2 text-center font-semibold text-gray-700">Разница</th>
-                      <th class="px-3 py-2 text-center font-semibold text-gray-700">Статус</th>
-                      <th class="px-3 py-2 text-center font-semibold text-gray-700">Детали</th>
+                      <th class="px-3 py-2 text-left font-semibold text-gray-700">{{ t('InventoryViewPage_18') }}</th> <!-- Наименование -->
+                      <th class="px-3 py-2 text-center font-semibold text-gray-700">{{ t('InventoryViewPage_19') }}</th> <!-- Расчетный остаток -->
+                      <th class="px-3 py-2 text-center font-semibold text-gray-700">{{ t('InventoryViewPage_20') }}</th> <!-- Фактический остаток -->
+                      <th class="px-3 py-2 text-center font-semibold text-gray-700">{{ t('InventoryViewPage_21') }}</th> <!-- Разница -->
+                      <th class="px-3 py-2 text-center font-semibold text-gray-700">{{ t('InventoryViewPage_22') }}</th> <!-- Статус -->
+                      <th class="px-3 py-2 text-center font-semibold text-gray-700">{{ t('InventoryViewPage_23') }}</th> <!-- Детали -->
                     </tr>
                   </thead>
                   <tbody>
@@ -151,11 +151,11 @@
                             <button 
                               @click="viewFullPhoto(item.photo)"
                               class="p-0 rounded transition-colors hover:opacity-80 cursor-pointer border border-gray-200 hover:border-blue-400"
-                              title="Просмотреть фото"
+                              :title="t('InventoryViewPage_24')" 
                             >
                               <img 
                                 :src="item.photo" 
-                                alt="Фото товара" 
+                                :alt="t('InventoryViewPage_25')"
                                 class="w-6 h-6 rounded object-cover"
                               />
                             </button>
@@ -167,7 +167,7 @@
                       <tr v-if="item.notes && item.notes.trim() !== ''" :key="item.id + '-comment'">
                         <td colspan="6" class="bg-gray-50 px-3 py-2 text-sm text-black border-t border-b border-gray-100">
                           <div class="flex items-start gap-2">
-                            <span style="font-size: 12px;color: #747474;">Комментарий: {{ item.notes }}</span>
+                            <span style="font-size: 12px;color: #747474;">{{ t('InventoryViewPage_26') }} {{ item.notes }}</span> <!-- Комментарий: -->
                           </div>
                         </td>
                       </tr>
@@ -180,7 +180,7 @@
           
           <!-- Файлы -->
           <div v-if="files.length > 0" class="mb-4">
-            <div class="font-semibold text-gray-800 mb-2">Файлы</div>
+            <div class="font-semibold text-gray-800 mb-2">{{ t('InventoryViewPage_27') }}</div> <!-- Файлы -->
             <ul class="list-disc pl-5">
               <li v-for="file in files" :key="file.id" class="mb-1">
                 <a :href="getFileUrl(file.file_url)" target="_blank" class="text-blue-600 hover:underline text-sm">{{ file.original_filename || file.filename }}</a>
@@ -196,7 +196,7 @@
     <div v-if="showCommentDialogVisible" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
         <div class="flex justify-between items-center mb-4">
-          <h3 class="text-lg font-semibold">Комментарий</h3>
+          <h3 class="text-lg font-semibold">{{ t('InventoryViewPage_28') }}</h3> <!-- Комментарий -->
           <button 
             @click="closeCommentDialog"
             class="text-gray-400 hover:text-gray-600 transition-colors"
@@ -214,7 +214,7 @@
             @click="closeCommentDialog"
             class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
           >
-            Закрыть
+            {{ t('InventoryViewPage_29') }} <!-- Закрыть -->
           </button>
         </div>
       </div>
@@ -232,6 +232,7 @@ import toastr from 'toastr'
 import { generatePDF, printElement, generatePDFSimple, generatePDFWithCanvas, generateSimplePDF, generateReceiptPDFWithCanvas, printReceipt, generateWriteOffPDFWithCanvas, generateInventoryPDFWithCanvas } from '@/utils/printUtils'
 import { getUserCurrency, updateUserCurrency } from '@/utils/currencyUtils'
 import * as XLSX from 'xlsx'
+import { t } from '@/locales'
 
 // Устанавливаем заголовок страницы
 document.title = 'B2B SKLAD - Просмотр инвентаризации'
@@ -297,10 +298,10 @@ function formatFileSize(bytes) {
 
 function getStatusText(status) {
   const statusMap = {
-    'draft': 'Черновик',
-    'in_progress': 'В процессе',
-    'completed': 'Завершена',
-    'cancelled': 'Отменена'
+    'draft': t('InventoryViewPage_38'), // Черновик
+    'in_progress': t('InventoryViewPage_39'), // В процессе
+    'completed': t('InventoryViewPage_40'), // Завершена
+    'cancelled': t('InventoryViewPage_41') // Отменена
   }
   return statusMap[status] || status
 }
@@ -324,9 +325,9 @@ function getDifferenceClass(item) {
 
 function getExcessShortageText(item) {
   const status = item.excess_shortage
-  if (status === 'excess') return 'Избыток'
-  if (status === 'shortage') return 'Недостача'
-  return 'Норма'
+  if (status === 'excess') return t('InventoryViewPage_42') // Избыток
+  if (status === 'shortage') return t('InventoryViewPage_43') // Недостача
+  return t('InventoryViewPage_44') // Норма
 }
 
 function getExcessShortageClass(item) {
@@ -396,12 +397,12 @@ async function loadInventory() {
         files.value = response.data.data.files
       }
     } else {
-      toastr.error('Ошибка загрузки инвентаризации')
+      toastr.error(t('InventoryViewPage_30')) // Ошибка загрузки инвентаризации
       router.push('/products/inventory')
     }
   } catch (error) {
     console.error('Ошибка загрузки инвентаризации:', error)
-    toastr.error('Ошибка загрузки инвентаризации')
+    toastr.error(t('InventoryViewPage_30')) // Ошибка загрузки инвентаризации
     router.push('/products/inventory')
   } finally {
     loading.value = false
@@ -419,13 +420,13 @@ async function downloadPDF() {
     if (inventory.value) {
       const filename = `inventory-${inventory.value.name || inventoryId}.pdf`
       generateInventoryPDFWithCanvas(inventory.value, filename, userCurrency.value)
-      toastr.success('PDF успешно скачан')
+      toastr.success(t('InventoryViewPage_31')) // PDF успешно скачан
     } else {
       console.error('Не удалось найти данные инвентаризации')
     }
   } catch (error) {
     console.error('Ошибка скачивания PDF:', error)
-    toastr.error('Ошибка при скачивании PDF')
+    toastr.error(t('InventoryViewPage_32')) // Ошибка при скачивании PDF
   }
 }
 
@@ -436,11 +437,11 @@ function printDocument() {
     if (contentElement) {
       printElement(contentElement)
     } else {
-      toastr.error('Не удалось найти контент для печати')
+      toastr.error(t('InventoryViewPage_33')) // Не удалось найти контент для печати
     }
   } catch (error) {
     console.error('Ошибка печати:', error)
-    toastr.error('Ошибка печати')
+    toastr.error(t('InventoryViewPage_34')) // Ошибка печати
   }
 }
 
@@ -448,7 +449,7 @@ function printDocument() {
 async function exportToExcel() {
   try {
     if (!inventory.value || !items.value.length) {
-      toastr.error('Нет данных для экспорта')
+      toastr.error(t('InventoryViewPage_35')) // Нет данных для экспорта
       return
     }
 
@@ -457,18 +458,18 @@ async function exportToExcel() {
     
     // 1. Лист с общей информацией об инвентаризации
     const headerData = [
-      { 'Параметр': 'Название', 'Значение': inventory.value.name || '-' },
-      { 'Параметр': 'Статус', 'Значение': getStatusText(inventory.value.status) },
-      { 'Параметр': 'Комментарий', 'Значение': inventory.value.comment || '-' },
-      { 'Параметр': 'Склад', 'Значение': inventory.value.warehouse_name || '-' },
-      { 'Параметр': 'Создано', 'Значение': inventory.value.created_by_name || inventory.value.created_by || '-' },
-      { 'Параметр': 'Валюта', 'Значение': userCurrency.value },
-      { 'Параметр': 'Дата создания', 'Значение': formatDate(inventory.value.created_at) },
-      { 'Параметр': '', 'Значение': '' }, // Пустая строка для разделения
-      { 'Параметр': 'Всего товаров', 'Значение': inventory.value.items_count || 0 },
-      { 'Параметр': 'Норма', 'Значение': normalCount.value },
-      { 'Параметр': 'Недостача', 'Значение': shortageCount.value },
-      { 'Параметр': 'Избыток', 'Значение': excessCount.value }
+      { [t('InventoryViewPage_45')]: t('InventoryViewPage_6'), [t('InventoryViewPage_46')]: inventory.value.name || '-' }, // Параметр: Название, Значение
+      { [t('InventoryViewPage_45')]: t('InventoryViewPage_8'), [t('InventoryViewPage_46')]: getStatusText(inventory.value.status) }, // Параметр: Статус, Значение
+      { [t('InventoryViewPage_45')]: t('InventoryViewPage_10'), [t('InventoryViewPage_46')]: inventory.value.comment || '-' }, // Параметр: Комментарий, Значение
+      { [t('InventoryViewPage_45')]: t('InventoryViewPage_7'), [t('InventoryViewPage_46')]: inventory.value.warehouse_name || '-' }, // Параметр: Склад, Значение
+      { [t('InventoryViewPage_45')]: t('InventoryViewPage_9'), [t('InventoryViewPage_46')]: inventory.value.created_by_name || inventory.value.created_by || '-' }, // Параметр: Создано, Значение
+      { [t('InventoryViewPage_45')]: t('InventoryViewPage_11'), [t('InventoryViewPage_46')]: userCurrency.value }, // Параметр: Валюта, Значение
+      { [t('InventoryViewPage_45')]: t('InventoryViewPage_47'), [t('InventoryViewPage_46')]: formatDate(inventory.value.created_at) }, // Параметр: Дата создания, Значение
+      { [t('InventoryViewPage_45')]: '', [t('InventoryViewPage_46')]: '' }, // Пустая строка для разделения
+      { [t('InventoryViewPage_45')]: t('InventoryViewPage_12'), [t('InventoryViewPage_46')]: inventory.value.items_count || 0 }, // Параметр: Всего товаров, Значение
+      { [t('InventoryViewPage_45')]: t('InventoryViewPage_13'), [t('InventoryViewPage_46')]: normalCount.value }, // Параметр: Норма, Значение
+      { [t('InventoryViewPage_45')]: t('InventoryViewPage_14'), [t('InventoryViewPage_46')]: shortageCount.value }, // Параметр: Недостача, Значение
+      { [t('InventoryViewPage_45')]: t('InventoryViewPage_15'), [t('InventoryViewPage_46')]: excessCount.value } // Параметр: Избыток, Значение
     ]
     
     const headerWorksheet = XLSX.utils.json_to_sheet(headerData)
@@ -476,19 +477,19 @@ async function exportToExcel() {
       { wch: 20 }, // Параметр
       { wch: 40 }  // Значение
     ]
-    XLSX.utils.book_append_sheet(workbook, headerWorksheet, 'Информация')
+    XLSX.utils.book_append_sheet(workbook, headerWorksheet, t('InventoryViewPage_48')) // Информация
     
     // 2. Лист со списком товаров
     const itemsData = items.value.map(item => ({
-      'Наименование': item.product_name || '-',
-      'Артикул': item.product_sku || '-',
-      'Расчетный остаток': formatNumber(item.calculated_quantity),
-      'Фактический остаток': formatNumber(item.actual_quantity),
-      'Разница': formatNumber(item.difference_quantity),
-      'Статус': getExcessShortageText(item),
-      'Единица измерения': item.product_unit || '-',
-      'Стоимость': item.product_price ? `${item.product_price} ${userCurrency.value}` : '-',
-      'Комментарий': item.notes || '-'
+      [t('InventoryViewPage_18')]: item.product_name || '-', // Наименование
+      [t('InventoryViewPage_29')]: item.product_sku || '-', // Артикул (используем существующую переменную)
+      [t('InventoryViewPage_19')]: formatNumber(item.calculated_quantity), // Расчетный остаток
+      [t('InventoryViewPage_20')]: formatNumber(item.actual_quantity), // Фактический остаток
+      [t('InventoryViewPage_21')]: formatNumber(item.difference_quantity), // Разница
+      [t('InventoryViewPage_22')]: getExcessShortageText(item), // Статус
+      [t('InventoryViewPage_49')]: item.product_unit || '-', // Единица измерения
+      [t('InventoryViewPage_50')]: item.product_price ? `${item.product_price} ${userCurrency.value}` : '-', // Стоимость
+      [t('InventoryViewPage_10')]: item.notes || '-' // Комментарий
     }))
 
     const itemsWorksheet = XLSX.utils.json_to_sheet(itemsData)
@@ -508,22 +509,22 @@ async function exportToExcel() {
     itemsWorksheet['!cols'] = columnWidths
     
     // Добавляем лист с товарами
-    XLSX.utils.book_append_sheet(workbook, itemsWorksheet, 'Товары')
+    XLSX.utils.book_append_sheet(workbook, itemsWorksheet, t('InventoryViewPage_16')) // Товары
     
     // Генерируем имя файла с текущей датой и названием инвентаризации
     const now = new Date()
     const dateStr = now.toISOString().split('T')[0]
     const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '-')
     const inventoryName = inventory.value.name ? inventory.value.name.replace(/[^a-zA-Zа-яА-Я0-9\s-]/g, '') : 'inventory'
-    const fileName = `инвентаризация_${inventoryName}_${dateStr}_${timeStr}.xlsx`
+    const fileName = `${t('InventoryViewPage_51')}_${inventoryName}_${dateStr}_${timeStr}.xlsx` // инвентаризация
     
     // Скачиваем файл
     XLSX.writeFile(workbook, fileName)
     
-    toastr.success('Excel файл успешно экспортирован')
+    toastr.success(t('InventoryViewPage_36')) // Excel файл успешно экспортирован
   } catch (error) {
     console.error('Ошибка экспорта в Excel:', error)
-    toastr.error('Ошибка при экспорте в Excel')
+    toastr.error(t('InventoryViewPage_37')) // Ошибка при экспорте в Excel
   }
 }
-</script># Thu Jul 31 18:08:37 +07 2025
+</script>

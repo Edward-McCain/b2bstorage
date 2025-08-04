@@ -217,6 +217,7 @@ export async function getCategoriesWithCache() {
   const response = await apiRequest('/categories');
   if (response.ok) {
     console.log('Системные категории получены с сервера:', response.data.data);
+    console.log('Sample category from API:', response.data.data[0]);
     
     // Преобразуем данные для совместимости
     const processedData = response.data.data.map(cat => ({

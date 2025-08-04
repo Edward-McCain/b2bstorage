@@ -18,9 +18,11 @@ class Category extends Model
         'name_en',
         'name_ru',
         'name_uz',
+        'name_china',
         'group_name_en',
         'group_name_ru',
-        'group_name_uz'
+        'group_name_uz',
+        'group_name_china'
     ];
 
     /**

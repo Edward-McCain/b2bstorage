@@ -45,6 +45,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/user/personal', [AuthController::class, 'updatePersonalData']);
     Route::put('/user/company', [AuthController::class, 'updateCompanyData']);
     Route::put('/user/password', [AuthController::class, 'changePassword']);
+    Route::post('/user/update-language', [AuthController::class, 'updateLanguage']);
     
     // User categories type routes
     Route::get('/user/categories-type', [\App\Http\Controllers\UserCategoriesTypeController::class, 'show']);

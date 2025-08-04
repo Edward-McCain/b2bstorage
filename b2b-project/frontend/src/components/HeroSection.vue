@@ -1,6 +1,7 @@
 <script setup>
 // HeroSection для главной страницы
 import { ref, onMounted } from 'vue'
+import { t } from '../locales/index.js'
 
 const isAuthenticated = ref(false)
 
@@ -19,10 +20,14 @@ onMounted(() => {
     </div>
     <div class="mx-auto max-w-2xl py-32">
       <div class="text-center">
-        <h1 class="text-5xl font-extrabold tracking-tight text-gray-900 sm:text-7xl">B2B SKLAD — складской учёт нового поколения</h1>
-        <p class="mt-8 text-lg font-medium text-gray-600 sm:text-xl">Профессиональная система складского учёта для бизнеса. <br> Часть экосистемы B2B Global: Marketplace, Doc, SKLAD.</p>
+        <!-- B2B SKLAD — складской учёт нового поколения -->
+        <h1 class="text-5xl font-extrabold tracking-tight text-gray-900 sm:text-7xl">{{ t('HeroSection_1') }}</h1>
+        <!-- Профессиональная система складского учёта для бизнеса. -->
+        <!-- Часть экосистемы B2B Global: Marketplace, Doc, SKLAD. -->
+        <p class="mt-8 text-lg font-medium text-gray-600 sm:text-xl">{{ t('HeroSection_2') }} <br> {{ t('HeroSection_3') }}</p>
         <div class="mt-10 flex items-center justify-center gap-x-6">
-          <a v-if="!isAuthenticated" href="/auth" class="rounded-md bg-primary px-6 py-3 text-base font-semibold shadow hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition">Начать бесплатно</a>
+          <!-- Начать бесплатно -->
+          <a v-if="!isAuthenticated" href="/auth" class="rounded-md bg-primary px-6 py-3 text-base font-semibold shadow hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition">{{ t('HeroSection_4') }}</a>
           <!-- <a href="#features" class="text-base font-semibold text-primary hover:underline">Узнать больше <span aria-hidden="true">→</span></a> -->
         </div>
       </div>

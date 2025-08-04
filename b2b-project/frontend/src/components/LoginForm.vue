@@ -1,13 +1,15 @@
 <template>
   <div class="flex flex-col justify-center px-6 py-32 lg:px-8 bg-gray-50">
     <div class="sm:mx-auto sm:w-full sm:max-w-sm">
-      <h2 class="mt-10 text-center text-2xl/9 font-bold tracking-tight text-gray-900">Войти в аккаунт</h2>
+      <!-- Войти в аккаунт -->
+      <h2 class="mt-10 text-center text-2xl/9 font-bold tracking-tight text-gray-900">{{ t('LoginForm_1') }}</h2>
     </div>
 
     <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
       <form class="space-y-6" @submit.prevent="handleLogin">
         <div>
-          <label for="email" class="block text-sm/6 font-medium text-gray-900">Email</label>
+          <!-- Email -->
+          <label for="email" class="block text-sm/6 font-medium text-gray-900">{{ t('LoginForm_2') }}</label>
           <div class="mt-2">
             <input 
               type="email" 
@@ -18,7 +20,7 @@
               required 
               class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-primary sm:text-sm/6"
               :class="{ 'outline-red-500': errors.email }"
-              placeholder="Введите ваш email"
+              :placeholder="t('LoginForm_3')"
             />
           </div>
           <p v-if="errors.email" class="mt-1 text-sm text-red-600">{{ errors.email[0] }}</p>
@@ -26,9 +28,11 @@
 
         <div>
           <div class="flex items-center justify-between">
-            <label for="password" class="block text-sm/6 font-medium text-gray-900">Пароль</label>
+            <!-- Пароль -->
+            <label for="password" class="block text-sm/6 font-medium text-gray-900">{{ t('LoginForm_4') }}</label>
             <div class="text-sm">
-              <a href="#" class="font-semibold text-primary hover:text-primary/80">Забыли пароль?</a>
+              <!-- Забыли пароль? -->
+              <a href="#" class="font-semibold text-primary hover:text-primary/80">{{ t('LoginForm_5') }}</a>
             </div>
           </div>
           <div class="mt-2">
@@ -41,7 +45,7 @@
               required 
               class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-primary sm:text-sm/6"
               :class="{ 'outline-red-500': errors.password }"
-              placeholder="Введите ваш пароль"
+              :placeholder="t('LoginForm_6')"
             />
           </div>
           <p v-if="errors.password" class="mt-1 text-sm text-red-600">{{ errors.password[0] }}</p>
@@ -59,14 +63,17 @@
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
             </span>
-            {{ loading ? 'Вход...' : 'Войти' }}
+            <!-- Вход... / Войти -->
+            {{ loading ? t('LoginForm_7') : t('LoginForm_8') }}
           </button>
         </div>
       </form>
 
       <p class="mt-10 text-center text-sm/6 text-gray-500">
-        Нет аккаунта?
-        <button @click="$emit('switch-to-register')" class="font-semibold text-primary cursor-pointer text-blue-700 hover:text-primary/80">Зарегистрироваться</button>
+        <!-- Нет аккаунта? -->
+        {{ t('LoginForm_9') }}
+        <!-- Зарегистрироваться -->
+        <button @click="$emit('switch-to-register')" class="font-semibold text-primary cursor-pointer text-blue-700 hover:text-primary/80">{{ t('LoginForm_10') }}</button>
       </p>
 
       <div v-if="error" class="mt-6 rounded-md bg-red-50 p-4">
@@ -87,6 +94,7 @@
 
 <script>
 import { apiRequest } from '@/config/api'
+import { t } from '../locales/index.js'
 
 export default {
   name: 'LoginForm',
@@ -104,6 +112,7 @@ export default {
     }
   },
   methods: {
+    t,
     async handleLogin() {
       this.loading = true
       this.error = ''
@@ -128,11 +137,11 @@ export default {
           if (response.data.errors) {
             this.errors = response.data.errors
           } else {
-            this.error = response.data.message || 'Ошибка входа'
+            this.error = response.data.message || this.t('LoginForm_11')
           }
         }
       } catch (err) {
-        this.error = 'Ошибка соединения с сервером'
+        this.error = this.t('LoginForm_12')
         console.error('Login error:', err)
       } finally {
         this.loading = false
