@@ -11,7 +11,6 @@ use App\Models\InventoryItem;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
-
 use Illuminate\Support\Facades\Auth;
 use App\Models\ProductBalance;
 use App\Models\ProductOperation;
@@ -19,6 +18,200 @@ use Illuminate\Support\Facades\Validator;
 
 class ProductController extends Controller
 {
+    /**
+     * Языковые переменные для сообщений
+     */
+    private function getLanguageMessages($userLanguage = 'ru')
+    {
+        $messages = [
+            'ru' => [
+                'user_not_authorized' => 'Пользователь не авторизован',
+                'product_not_found' => 'Товар не найден',
+                'product_not_found_or_access_denied' => 'Товар не найден или доступ запрещен',
+                'image_not_found_or_access_denied' => 'Изображение не найдено или доступ запрещен',
+                'category_not_exists' => 'Указанная категория не существует в ваших пользовательских категориях',
+                'subcategory_not_exists' => 'Указанная подкатегория не существует в ваших пользовательских подкатегориях',
+                'product_successfully_updated' => 'Товар успешно обновлен',
+                'product_successfully_deleted' => 'Товар и все связанные данные успешно удалены',
+                'error_deleting_product' => 'Ошибка при удалении товара',
+                'product_balances_updated' => 'Остатки товара обновлены',
+                'error_updating_product_balances' => 'Ошибка обновления остатков товара',
+                'inventory_created_for_operation' => 'Создана инвентаризация для',
+                'creating' => 'создания',
+                'changing' => 'изменения',
+                'initial_balance' => 'начального остатка',
+                'receipt' => 'Оприходование',
+                'automatic_inventory_for_product' => 'Автоматическая инвентаризация для товара',
+                'automatic_inventory_for_products' => 'Автоматическая инвентаризация для товаров',
+                'bulk_inventory_from' => 'Массовая инвентаризация от',
+                'product_id' => 'Товар ID',
+                'unknown_product' => 'Неизвестный товар',
+                'unknown_user' => 'Неизвестный пользователь',
+                'category_not_exists_in_user_categories' => 'не существует в пользовательских категориях, пропускаем',
+                'subcategory_not_exists_in_user_subcategories' => 'не существует в пользовательских подкатегориях, пропускаем',
+                'related_records_deleted_before_product_deletion' => 'Удаляем связанные записи перед удалением товара',
+                'deleting_product_images' => 'Удаляем изображения товара',
+                'deleting_product' => 'Удаляем сам товар',
+                'automatic_inventory_created_for_product' => 'Создана автоматическая инвентаризация для товара',
+                'unknown_warehouse' => 'Неизвестный склад',
+                'unknown' => 'неизвестно',
+                'creating_initial_balance' => 'Создание начального остатка',
+                'changing_initial_balance' => 'Изменение начального остатка',
+                'and_others' => 'и другие',
+                'creating_bulk_inventory' => 'Создание массовой инвентаризации',
+                'create_bulk_products_inventory_start' => 'CreateBulkProductsInventory: Начало обработки',
+                'create_bulk_products_inventory_missing_product_id' => 'CreateBulkProductsInventory: Отсутствует product_id',
+                'create_bulk_products_inventory_creating_item' => 'CreateBulkProductsInventory: Создание InventoryItem',
+                'import_with_receipt_start' => 'ImportWithReceipt: Начало обработки',
+                'import_with_receipt_creating_inventory' => 'ImportWithReceipt: Создание инвентаризации',
+                'warehouse_id_and_products_required' => 'warehouse_id и products обязательны',
+                'category_not_exists_in_user_categories_skipping' => "Категория '%s' не существует в пользовательских категориях, пропускаем",
+                'category_not_exists_in_system_categories_skipping' => "Категория '%s' не существует в системных категориях, пропускаем",
+                'subcategory_not_exists_in_user_subcategories_skipping' => "Подкатегория '%s' не существует в пользовательских подкатегориях, пропускаем",
+                'subcategory_not_exists_in_system_subcategories_skipping' => "Подкатегория '%s' не существует в системных подкатегориях, пропускаем"
+            ],
+            'en' => [
+                'user_not_authorized' => 'User not authorized',
+                'product_not_found' => 'Product not found',
+                'product_not_found_or_access_denied' => 'Product not found or access denied',
+                'image_not_found_or_access_denied' => 'Image not found or access denied',
+                'category_not_exists' => 'The specified category does not exist in your user categories',
+                'subcategory_not_exists' => 'The specified subcategory does not exist in your user subcategories',
+                'product_successfully_updated' => 'Product successfully updated',
+                'product_successfully_deleted' => 'Product and all related data successfully deleted',
+                'error_deleting_product' => 'Error deleting product',
+                'product_balances_updated' => 'Product balances updated',
+                'error_updating_product_balances' => 'Error updating product balances',
+                'inventory_created_for_operation' => 'Inventory created for',
+                'creating' => 'creating',
+                'changing' => 'changing',
+                'initial_balance' => 'initial balance',
+                'receipt' => 'Receipt',
+                'automatic_inventory_for_product' => 'Automatic inventory for product',
+                'automatic_inventory_for_products' => 'Automatic inventory for products',
+                'bulk_inventory_from' => 'Bulk inventory from',
+                'product_id' => 'Product ID',
+                'unknown_product' => 'Unknown product',
+                'unknown_user' => 'Unknown user',
+                'category_not_exists_in_user_categories' => 'does not exist in user categories, skipping',
+                'subcategory_not_exists_in_user_subcategories' => 'does not exist in user subcategories, skipping',
+                'related_records_deleted_before_product_deletion' => 'Deleting related records before product deletion',
+                'deleting_product_images' => 'Deleting product images',
+                'deleting_product' => 'Deleting the product',
+                'automatic_inventory_created_for_product' => 'Automatic inventory created for product',
+                'unknown_warehouse' => 'Unknown warehouse',
+                'unknown' => 'unknown',
+                'creating_initial_balance' => 'Creating initial balance',
+                'changing_initial_balance' => 'Changing initial balance',
+                'and_others' => 'and others',
+                'creating_bulk_inventory' => 'Creating bulk inventory',
+                'create_bulk_products_inventory_start' => 'CreateBulkProductsInventory: Starting processing',
+                'create_bulk_products_inventory_missing_product_id' => 'CreateBulkProductsInventory: Missing product_id',
+                'create_bulk_products_inventory_creating_item' => 'CreateBulkProductsInventory: Creating InventoryItem',
+                'import_with_receipt_start' => 'ImportWithReceipt: Starting processing',
+                'import_with_receipt_creating_inventory' => 'ImportWithReceipt: Creating inventory',
+                'warehouse_id_and_products_required' => 'warehouse_id and products are required',
+                'category_not_exists_in_user_categories_skipping' => "Category '%s' does not exist in user categories, skipping",
+                'category_not_exists_in_system_categories_skipping' => "Category '%s' does not exist in system categories, skipping",
+                'subcategory_not_exists_in_user_subcategories_skipping' => "Subcategory '%s' does not exist in user subcategories, skipping",
+                'subcategory_not_exists_in_system_subcategories_skipping' => "Subcategory '%s' does not exist in system subcategories, skipping"
+            ],
+            'uz' => [
+                'user_not_authorized' => 'Foydalanuvchi avtorizatsiya qilinmagan',
+                'product_not_found' => 'Mahsulot topilmadi',
+                'product_not_found_or_access_denied' => 'Mahsulot topilmadi yoki ruxsat rad etildi',
+                'image_not_found_or_access_denied' => 'Rasm topilmadi yoki ruxsat rad etildi',
+                'category_not_exists' => 'Ko\'rsatilgan kategoriya foydalanuvchi kategoriyalarida mavjud emas',
+                'subcategory_not_exists' => 'Ko\'rsatilgan subkategoriya foydalanuvchi subkategoriyalarida mavjud emas',
+                'product_successfully_updated' => 'Mahsulot muvaffaqiyatli yangilandi',
+                'product_successfully_deleted' => 'Mahsulot va barcha bog\'liq ma\'lumotlar muvaffaqiyatli o\'chirildi',
+                'error_deleting_product' => 'Mahsulotni o\'chirishda xatolik',
+                'product_balances_updated' => 'Mahsulot qoldiqlari yangilandi',
+                'error_updating_product_balances' => 'Mahsulot qoldiqlarini yangilashda xatolik',
+                'inventory_created_for_operation' => 'Operatsiya uchun inventarizatsiya yaratildi',
+                'creating' => 'yaratish',
+                'changing' => 'o\'zgartirish',
+                'initial_balance' => 'boshlang\'ich qoldiq',
+                'receipt' => 'Kirim',
+                'automatic_inventory_for_product' => 'Mahsulot uchun avtomatik inventarizatsiya',
+                'automatic_inventory_for_products' => 'Mahsulotlar uchun avtomatik inventarizatsiya',
+                'bulk_inventory_from' => 'Ommaviy inventarizatsiya',
+                'product_id' => 'Mahsulot ID',
+                'unknown_product' => 'Noma\'lum mahsulot',
+                'unknown_user' => 'Noma\'lum foydalanuvchi',
+                'category_not_exists_in_user_categories' => 'foydalanuvchi kategoriyalarida mavjud emas, o\'tkazib yuboriladi',
+                'subcategory_not_exists_in_user_subcategories' => 'foydalanuvchi subkategoriyalarida mavjud emas, o\'tkazib yuboriladi',
+                'related_records_deleted_before_product_deletion' => 'Mahsulotni o\'chirishdan oldin bog\'liq yozuvlarni o\'chirish',
+                'deleting_product_images' => 'Mahsulot rasmlarini o\'chirish',
+                'deleting_product' => 'Mahsulotni o\'chirish',
+                'automatic_inventory_created_for_product' => 'Mahsulot uchun avtomatik inventarizatsiya yaratildi',
+                'unknown_warehouse' => 'Noma\'lum ombor',
+                'unknown' => 'noma\'lum',
+                'creating_initial_balance' => 'Boshlang\'ich qoldiqni yaratish',
+                'changing_initial_balance' => 'Boshlang\'ich qoldiqni o\'zgartirish',
+                'and_others' => 'va boshqalar',
+                'creating_bulk_inventory' => 'Ommaviy inventarizatsiyani yaratish',
+                'create_bulk_products_inventory_start' => 'CreateBulkProductsInventory: Jarayonni boshlash',
+                'create_bulk_products_inventory_missing_product_id' => 'CreateBulkProductsInventory: product_id yo\'q',
+                'create_bulk_products_inventory_creating_item' => 'CreateBulkProductsInventory: InventoryItem yaratish',
+                'import_with_receipt_start' => 'ImportWithReceipt: Jarayonni boshlash',
+                'import_with_receipt_creating_inventory' => 'ImportWithReceipt: Inventarizatsiyani yaratish',
+                'warehouse_id_and_products_required' => 'warehouse_id va products majburiy',
+                'category_not_exists_in_user_categories_skipping' => "Kategoriya '%s' foydalanuvchi kategoriyalarida mavjud emas, o'tkazib yuboriladi",
+                'category_not_exists_in_system_categories_skipping' => "Kategoriya '%s' tizim kategoriyalarida mavjud emas, o'tkazib yuboriladi",
+                'subcategory_not_exists_in_user_subcategories_skipping' => "Subkategoriya '%s' foydalanuvchi subkategoriyalarida mavjud emas, o'tkazib yuboriladi",
+                'subcategory_not_exists_in_system_subcategories_skipping' => "Subkategoriya '%s' tizim subkategoriyalarida mavjud emas, o'tkazib yuboriladi"
+            ],
+            'china' => [
+                'user_not_authorized' => '用户未授权',
+                'product_not_found' => '商品未找到',
+                'product_not_found_or_access_denied' => '商品未找到或访问被拒绝',
+                'image_not_found_or_access_denied' => '图片未找到或访问被拒绝',
+                'category_not_exists' => '指定的类别在您的用户类别中不存在',
+                'subcategory_not_exists' => '指定的子类别在您的用户子类别中不存在',
+                'product_successfully_updated' => '商品更新成功',
+                'product_successfully_deleted' => '商品和所有相关数据已成功删除',
+                'error_deleting_product' => '删除商品时出错',
+                'product_balances_updated' => '商品余额已更新',
+                'error_updating_product_balances' => '更新商品余额时出错',
+                'inventory_created_for_operation' => '为操作创建了库存',
+                'creating' => '创建',
+                'changing' => '更改',
+                'initial_balance' => '初始余额',
+                'receipt' => '收货',
+                'automatic_inventory_for_product' => '商品的自动库存',
+                'automatic_inventory_for_products' => '商品的自动库存',
+                'bulk_inventory_from' => '批量库存',
+                'product_id' => '商品ID',
+                'unknown_product' => '未知商品',
+                'unknown_user' => '未知用户',
+                'category_not_exists_in_user_categories' => '在用户类别中不存在，跳过',
+                'subcategory_not_exists_in_user_subcategories' => '在用户子类别中不存在，跳过',
+                'related_records_deleted_before_product_deletion' => '删除商品前删除相关记录',
+                'deleting_product_images' => '删除商品图片',
+                'deleting_product' => '删除商品',
+                'automatic_inventory_created_for_product' => '为商品创建了自动库存',
+                'unknown_warehouse' => '未知仓库',
+                'unknown' => '未知',
+                'creating_initial_balance' => '创建初始余额',
+                'changing_initial_balance' => '更改初始余额',
+                'and_others' => '和其他',
+                'creating_bulk_inventory' => '创建批量库存',
+                'create_bulk_products_inventory_start' => 'CreateBulkProductsInventory: 开始处理',
+                'create_bulk_products_inventory_missing_product_id' => 'CreateBulkProductsInventory: 缺少product_id',
+                'create_bulk_products_inventory_creating_item' => 'CreateBulkProductsInventory: 创建InventoryItem',
+                'import_with_receipt_start' => 'ImportWithReceipt: 开始处理',
+                'import_with_receipt_creating_inventory' => 'ImportWithReceipt: 创建库存',
+                'warehouse_id_and_products_required' => 'warehouse_id和products是必需的',
+                'category_not_exists_in_user_categories_skipping' => "类别'%s'在用户类别中不存在，跳过",
+                'category_not_exists_in_system_categories_skipping' => "类别'%s'在系统类别中不存在，跳过",
+                'subcategory_not_exists_in_user_subcategories_skipping' => "子类别'%s'在用户子类别中不存在，跳过",
+                'subcategory_not_exists_in_system_subcategories_skipping' => "子类别'%s'在系统子类别中不存在，跳过"
+            ]
+        ];
+
+        return $messages[$userLanguage] ?? $messages['ru'];
+    }
     /**
      * Создать черновик товара
      * @param Request $request
@@ -34,7 +227,8 @@ class ProductController extends Controller
         
         // Проверяем, есть ли пользователь
         if (!$user) {
-            return response()->json(['error' => 'Пользователь не авторизован'], 401);
+            $messages = $this->getLanguageMessages($user->language ?? 'ru');
+            return response()->json(['error' => $messages['user_not_authorized']], 401);
         }
         
         $data = [
@@ -64,7 +258,8 @@ class ProductController extends Controller
         
         $user = Auth::user();
         if (!$user) {
-            return response()->json(['error' => 'Пользователь не авторизован'], 401);
+            $messages = $this->getLanguageMessages($user->language ?? 'ru');
+            return response()->json(['error' => $messages['user_not_authorized']], 401);
         }
         
         $product = ProductSklad::where('id', $id)
@@ -72,7 +267,8 @@ class ProductController extends Controller
             ->first();
             
         if (!$product) {
-            return response()->json(['error' => 'Товар не найден или доступ запрещен'], 404);
+            $messages = $this->getLanguageMessages($user->language ?? 'ru');
+            return response()->json(['error' => $messages['product_not_found_or_access_denied']], 404);
         }
         $file = $request->file('image');
         $filename = uniqid('product_', true) . '.webp';
@@ -203,9 +399,10 @@ class ProductController extends Controller
                     ->exists();
                     
                 if (!$categoryExists) {
+                    $messages = $this->getLanguageMessages($user->language ?? 'ru');
                     return response()->json([
                         'success' => false,
-                        'message' => 'Указанная категория не существует в ваших пользовательских категориях'
+                        'message' => $messages['category_not_exists']
                     ], 422);
                 }
             } else {
@@ -215,9 +412,10 @@ class ProductController extends Controller
                     ->exists();
                     
                 if (!$categoryExists) {
+                    $messages = $this->getLanguageMessages($user->language ?? 'ru');
                     return response()->json([
                         'success' => false,
-                        'message' => 'Указанная категория не существует в системных категориях'
+                        'message' => $messages['category_not_exists']
                     ], 422);
                 }
             }
@@ -233,9 +431,10 @@ class ProductController extends Controller
                     ->exists();
                     
                 if (!$subcategoryExists) {
+                    $messages = $this->getLanguageMessages($user->language ?? 'ru');
                     return response()->json([
                         'success' => false,
-                        'message' => 'Указанная подкатегория не существует в ваших пользовательских подкатегориях'
+                        'message' => $messages['subcategory_not_exists']
                     ], 422);
                 }
             } else {
@@ -245,9 +444,10 @@ class ProductController extends Controller
                     ->exists();
                     
                 if (!$subcategoryExists) {
+                    $messages = $this->getLanguageMessages($user->language ?? 'ru');
                     return response()->json([
                         'success' => false,
-                        'message' => 'Указанная подкатегория не существует в системных подкатегориях'
+                        'message' => $messages['subcategory_not_exists']
                     ], 422);
                 }
             }
@@ -305,7 +505,8 @@ class ProductController extends Controller
                 ]
             );
 
-            Log::info('Остатки товара обновлены', [
+            $messages = $this->getLanguageMessages($user->language ?? 'ru');
+            Log::info($messages['product_balances_updated'], [
                 'product_id' => $product->id,
                 'warehouse_id' => $warehouseId,
                 'start_count' => $request->start_count
@@ -326,7 +527,8 @@ class ProductController extends Controller
                     $user->id
                 );
                 
-                Log::info('Создана инвентаризация для ' . ($operationType === 'create' ? 'создания' : 'изменения') . ' начального остатка', [
+            $operationText = $operationType === 'create' ? $messages['creating'] : $messages['changing'];
+            Log::info($messages['inventory_created_for_operation'] . ' ' . $operationText . ' ' . $messages['initial_balance'], [
                     'product_id' => $product->id,
                     'old_start_count' => $oldStartCount,
                     'new_start_count' => $newStartCount,
@@ -335,7 +537,7 @@ class ProductController extends Controller
             }
 
         } catch (\Exception $e) {
-            Log::error('Ошибка обновления остатков товара', [
+            Log::error($messages['error_updating_product_balances'], [
                 'product_id' => $product->id,
                 'error' => $e->getMessage()
             ]);
@@ -343,7 +545,7 @@ class ProductController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Товар успешно обновлен',
+            'message' => $messages['product_successfully_updated'],
             'product' => $product
         ]);
     }
@@ -357,7 +559,8 @@ class ProductController extends Controller
     {
         $user = Auth::user();
         if (!$user) {
-            return response()->json(['error' => 'Пользователь не авторизован'], 401);
+            $messages = $this->getLanguageMessages($user->language ?? 'ru');
+            return response()->json(['error' => $messages['user_not_authorized']], 401);
         }
         
         $image = ProductImage::with('product')
@@ -367,7 +570,8 @@ class ProductController extends Controller
             ->find($id);
             
         if (!$image) {
-            return response()->json(['error' => 'Изображение не найдено или доступ запрещен'], 404);
+            $messages = $this->getLanguageMessages($user->language ?? 'ru');
+            return response()->json(['error' => $messages['image_not_found_or_access_denied']], 404);
         }
         
         // Удалить файл
@@ -404,7 +608,8 @@ class ProductController extends Controller
         $user = Auth::user();
         
         if (!$user) {
-            return response()->json(['error' => 'Пользователь не авторизован'], 401);
+            $messages = $this->getLanguageMessages($user->language ?? 'ru');
+            return response()->json(['error' => $messages['user_not_authorized']], 401);
         }
 
         $perPage = $request->get('per_page', 15);
@@ -568,7 +773,8 @@ class ProductController extends Controller
         $user = Auth::user();
         
         if (!$user) {
-            return response()->json(['error' => 'Пользователь не авторизован'], 401);
+            $messages = $this->getLanguageMessages($user->language ?? 'ru');
+            return response()->json(['error' => $messages['user_not_authorized']], 401);
         }
 
         $product = ProductSklad::where('id', $id)
@@ -579,7 +785,8 @@ class ProductController extends Controller
             ->first();
 
         if (!$product) {
-            return response()->json(['error' => 'Товар не найден'], 404);
+            $messages = $this->getLanguageMessages($user->language ?? 'ru');
+            return response()->json(['error' => $messages['product_not_found']], 404);
         }
 
         // Получаем суммарное количество товара со всех складов из product_balances
@@ -632,17 +839,19 @@ class ProductController extends Controller
      */
     public function destroy($id)
     {
-        $user = Auth::user();
+                $user = Auth::user();
         if (!$user) {
-            return response()->json(['error' => 'Пользователь не авторизован'], 401);
+            $messages = $this->getLanguageMessages($user->language ?? 'ru');
+            return response()->json(['error' => $messages['user_not_authorized']], 401);
         }
-
+        
         $product = ProductSklad::where('id', $id)
             ->where('user_id', $user->id)
             ->first();
-
+            
         if (!$product) {
-            return response()->json(['error' => 'Товар не найден'], 404);
+            $messages = $this->getLanguageMessages($user->language ?? 'ru');
+            return response()->json(['error' => $messages['product_not_found']], 404);
         }
 
         DB::beginTransaction();
@@ -688,7 +897,8 @@ class ProductController extends Controller
             
             // Если есть связанные записи, удаляем их вручную
             if (!empty($relatedRecords)) {
-                Log::info('Удаляем связанные записи перед удалением товара', [
+                $messages = $this->getLanguageMessages($user->language ?? 'ru');
+            Log::info($messages['related_records_deleted_before_product_deletion'], [
                     'product_id' => $id,
                     'related_records' => $relatedRecords
                 ]);
@@ -717,18 +927,18 @@ class ProductController extends Controller
             DB::commit();
             return response()->json([
                 'success' => true,
-                'message' => 'Товар и все связанные данные успешно удалены'
+                'message' => $messages['product_successfully_deleted']
             ]);
             
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Ошибка при удалении товара', [
+            Log::error($messages['error_deleting_product'], [
                 'product_id' => $id,
                 'error' => $e->getMessage()
             ]);
             return response()->json([
                 'success' => false,
-                'error' => 'Ошибка при удалении товара',
+                'error' => $messages['error_deleting_product'],
                 'details' => $e->getMessage()
             ], 500);
         }
@@ -739,6 +949,8 @@ class ProductController extends Controller
      */
     private function updateProductBalances($receipt)
     {
+        $user = Auth::user();
+        $messages = $this->getLanguageMessages($user->language ?? 'ru');
         $positions = $receipt->positions;
         
         foreach ($positions as $position) {
@@ -768,7 +980,7 @@ class ProductController extends Controller
                     'quantity' => (int)$position->quantity,
                     'reference_type' => 'receipt',
                     'reference_id' => $receipt->id,
-                    'notes' => "Оприходование №{$receipt->number}"
+                    'notes' => "{$messages['receipt']} №{$receipt->number}"
                 ]);
             }
         }
@@ -780,10 +992,11 @@ class ProductController extends Controller
     public function importWithReceipt(Request $request)
     {
         $user = $request->user();
+        $messages = $this->getLanguageMessages($user->language ?? 'ru');
         $warehouseId = $request->input('warehouse_id');
         $products = $request->input('products');
 
-        Log::info('ImportWithReceipt: Начало обработки', [
+        Log::info($messages['import_with_receipt_start'], [
             'user_id' => $user ? $user->id : null,
             'warehouse_id' => $warehouseId,
             'products_count' => is_array($products) ? count($products) : 0
@@ -795,7 +1008,7 @@ class ProductController extends Controller
         }
 
         if (!$warehouseId || !is_array($products) || count($products) === 0) {
-            return response()->json(['success' => false, 'error' => 'warehouse_id и products обязательны'], 422);
+            return response()->json(['success' => false, 'error' => $messages['warehouse_id_and_products_required']], 422);
         }
 
         // Проверяем настройки пользователя для категорий
@@ -863,7 +1076,7 @@ class ProductController extends Controller
                                 
                             if (!$categoryExists) {
                                 // Логируем предупреждение, но не прерываем импорт
-                                Log::warning("Категория '{$category}' не существует в пользовательских категориях, пропускаем", [
+                                Log::warning(sprintf($messages['category_not_exists_in_user_categories_skipping'], $category), [
                                     'user_id' => $user->id,
                                     'category' => $category
                                 ]);
@@ -876,7 +1089,7 @@ class ProductController extends Controller
                                 
                             if (!$categoryExists) {
                                 // Логируем предупреждение, но не прерываем импорт
-                                Log::warning("Категория '{$category}' не существует в системных категориях, пропускаем", [
+                                Log::warning(sprintf($messages['category_not_exists_in_system_categories_skipping'], $category), [
                                     'category' => $category
                                 ]);
                                 $category = null; // Сбрасываем категорию
@@ -894,7 +1107,7 @@ class ProductController extends Controller
                                 
                             if (!$subcategoryExists) {
                                 // Логируем предупреждение, но не прерываем импорт
-                                Log::warning("Подкатегория '{$subcategory}' не существует в пользовательских подкатегориях, пропускаем", [
+                                Log::warning(sprintf($messages['subcategory_not_exists_in_user_subcategories_skipping'], $subcategory), [
                                     'user_id' => $user->id,
                                     'subcategory' => $subcategory
                                 ]);
@@ -907,7 +1120,7 @@ class ProductController extends Controller
                                 
                             if (!$subcategoryExists) {
                                 // Логируем предупреждение, но не прерываем импорт
-                                Log::warning("Подкатегория '{$subcategory}' не существует в системных подкатегориях, пропускаем", [
+                                Log::warning(sprintf($messages['subcategory_not_exists_in_system_subcategories_skipping'], $subcategory), [
                                     'subcategory' => $subcategory
                                 ]);
                                 $subcategory = null; // Сбрасываем подкатегорию
@@ -945,7 +1158,7 @@ class ProductController extends Controller
 
             // 3. Создаем инвентаризацию для всех созданных товаров
             if (!empty($createdProducts)) {
-                Log::info('ImportWithReceipt: Создание инвентаризации', [
+                Log::info($messages['import_with_receipt_creating_inventory'], [
                     'created_products_count' => count($createdProducts),
                     'first_product_structure' => array_keys($createdProducts[0] ?? [])
                 ]);
@@ -981,14 +1194,15 @@ class ProductController extends Controller
         
         // Получаем название товара
         $product = ProductSklad::find($productId);
-        $productName = $product ? $product->name : "Товар ID: {$productId}";
+        $messages = $this->getLanguageMessages($user->language ?? 'ru');
+        $productName = $product ? $product->name : "{$messages['product_id']}: {$productId}";
         
         // Используем переданный user_id или текущего пользователя
         $createdBy = $userId ?? Auth::id();
         
         $inventory = Inventory::create([
             'name' => $inventoryName,
-            'description' => "Автоматическая инвентаризация для товара: {$productName}",
+            'description' => "{$messages['automatic_inventory_for_product']}: {$productName}",
             'warehouse_id' => $warehouseId,
             'status' => 'completed',
             'created_by' => $createdBy,
@@ -996,8 +1210,8 @@ class ProductController extends Controller
         ]);
         
         $notes = $operationType === 'create'
-            ? "Создание начального остатка {$quantity}"
-            : "Изменение начального остатка с {$oldQuantity} на {$quantity}";
+            ? "{$messages['creating_initial_balance']} {$quantity}"
+            : "{$messages['changing_initial_balance']} с {$oldQuantity} на {$quantity}";
 
         $calculatedQuantity = $operationType === 'update' ? $oldQuantity : 0;
 
@@ -1009,7 +1223,7 @@ class ProductController extends Controller
             'notes' => $notes
         ]);
         
-        Log::info('Создана автоматическая инвентаризация для товара', [
+        Log::info($messages['automatic_inventory_created_for_product'], [
             'inventory_id' => $inventory->id,
             'product_id' => $productId,
             'product_name' => $productName,
@@ -1032,9 +1246,11 @@ class ProductController extends Controller
      */
     private function createBulkProductsInventory($products, $warehouseId, $userId = null)
     {
+        $user = Auth::user();
+        $messages = $this->getLanguageMessages($user->language ?? 'ru');
         $createdBy = $userId ?? Auth::id();
         
-        Log::info('CreateBulkProductsInventory: Начало обработки', [
+        Log::info($messages['create_bulk_products_inventory_start'], [
             'created_by' => $createdBy,
             'warehouse_id' => $warehouseId,
             'products_count' => count($products),
@@ -1042,38 +1258,39 @@ class ProductController extends Controller
         ]);
         
         // Получаем названия товаров для описания
+        $messages = $this->getLanguageMessages($user->language ?? 'ru');
         $productNames = [];
         foreach ($products as $product) {
             // Проверяем структуру данных
             if (isset($product['model']) && isset($product['input'])) {
                 // Новая структура из importWithReceipt
-                $productNames[] = $product['input']['name'] ?? "Товар ID: {$product['model']->id}";
+                $productNames[] = $product['input']['name'] ?? "{$messages['product_id']}: {$product['model']->id}";
             } else {
                 // Старая структура
-                $productNames[] = $product['name'] ?? "Товар ID: " . ($product['id'] ?? 'неизвестно');
+                $productNames[] = $product['name'] ?? "{$messages['product_id']}: " . ($product['id'] ?? $messages['unknown']);
             }
         }
         
         // Ограничиваем список до 5 товаров для описания
         $productNamesList = implode(', ', array_slice($productNames, 0, 5));
         if (count($productNames) > 5) {
-            $productNamesList .= ' и другие';
+            $productNamesList .= ' ' . $messages['and_others'];
         }
         
-        Log::info('Создание массовой инвентаризации', [
+        Log::info($messages['creating_bulk_inventory'], [
             'created_by' => $createdBy,
             'product_names' => $productNamesList
         ]);
         
         $date = now()->format('d.m.Y');
-        $inventoryName = "Массовая инвентаризация от {$date}";
+        $inventoryName = "{$messages['bulk_inventory_from']} {$date}";
         
         $inventory = Inventory::create([
             'name' => $inventoryName,
             'user_id' => $createdBy,
             'warehouse_id' => $warehouseId,
             'status' => 'completed',
-            'description' => "Автоматическая инвентаризация для товаров: {$productNamesList}",
+            'description' => "{$messages['automatic_inventory_for_products']}: {$productNamesList}",
             'created_by' => $createdBy
         ]);
         
@@ -1091,13 +1308,13 @@ class ProductController extends Controller
             
             // Проверяем, что productId существует
             if (!$productId) {
-                Log::error('CreateBulkProductsInventory: Отсутствует product_id', [
+                Log::error($messages['create_bulk_products_inventory_missing_product_id'], [
                     'product' => $product
                 ]);
                 continue;
             }
             
-            Log::info('CreateBulkProductsInventory: Создание InventoryItem', [
+            Log::info($messages['create_bulk_products_inventory_creating_item'], [
                 'inventory_id' => $inventory->id,
                 'product_id' => $productId,
                 'quantity' => $quantity
@@ -1108,7 +1325,7 @@ class ProductController extends Controller
                 'product_id' => $productId,
                 'calculated_quantity' => 0,
                 'actual_quantity' => $quantity,
-                'notes' => "Создание начального остатка {$quantity}"
+                'notes' => "{$messages['creating_initial_balance']} {$quantity}"
             ]);
         }
         
@@ -1147,8 +1364,11 @@ class ProductController extends Controller
     {
         $user = Auth::user();
         if (!$user) {
-            return response()->json(['error' => 'Пользователь не авторизован'], 401);
+            $messages = $this->getLanguageMessages($user->language ?? 'ru');
+            return response()->json(['error' => $messages['user_not_authorized']], 401);
         }
+        
+        $messages = $this->getLanguageMessages($user->language ?? 'ru');
 
         $query = ProductOperation::with(['product', 'warehouse', 'createdByUser'])
             ->whereHas('product', function ($q) use ($user) {
@@ -1181,21 +1401,21 @@ class ProductController extends Controller
         $operations = $query->get();
 
         // Формируем ответ с дополнительными данными
-        $formattedOperations = $operations->map(function ($operation) {
+        $formattedOperations = $operations->map(function ($operation) use ($messages) {
             return [
                 'id' => $operation->id,
                 'product_id' => $operation->product_id,
-                'product_name' => $operation->product->name ?? 'Неизвестный товар',
+                'product_name' => $operation->product->name ?? $messages['unknown_product'],
                 'product_code' => $operation->product->code ?? '',
                 'warehouse_id' => $operation->warehouse_id,
-                'warehouse_name' => $operation->warehouse->name ?? 'Неизвестный склад',
+                'warehouse_name' => $operation->warehouse->name ?? $messages['unknown_warehouse'],
                 'operation_type' => $operation->operation_type,
                 'quantity' => $operation->quantity,
                 'reference_type' => $operation->reference_type,
                 'reference_id' => $operation->reference_id,
                 'notes' => $operation->notes,
                 'created_by' => $operation->created_by,
-                'created_by_name' => $operation->createdByUser->first_name ?? 'Неизвестный пользователь',
+                'created_by_name' => $operation->createdByUser->first_name ?? $messages['unknown_user'],
                 'created_at' => $operation->created_at,
                 'updated_at' => $operation->updated_at
             ];

@@ -17,6 +17,76 @@ use Illuminate\Support\Facades\Log;
 class InventoryController extends Controller
 {
     /**
+     * Языковые переменные для сообщений
+     */
+    private function getLanguageMessages($userLanguage = 'ru')
+    {
+        $messages = [
+            'ru' => [
+                'error_getting_inventories' => 'Ошибка при получении списка инвентаризаций',
+                'validation_error' => 'Ошибка валидации',
+                'inventory_created_successfully' => 'Инвентаризация создана успешно',
+                'error_creating_inventory' => 'Ошибка при создании инвентаризации',
+                'inventory_not_found' => 'Инвентаризация не найдена',
+                'error_getting_inventory' => 'Ошибка при получении инвентаризации',
+                'inventory_updated_successfully' => 'Инвентаризация обновлена успешно',
+                'error_updating_inventory' => 'Ошибка при обновлении инвентаризации',
+                'inventory_deleted_successfully' => 'Инвентаризация удалена успешно',
+                'error_deleting_inventory' => 'Ошибка при удалении инвентаризации',
+                'unknown_product' => 'Неизвестный товар',
+                'error_calculating_balances' => 'Ошибка при расчете остатков',
+                'error_exporting' => 'Ошибка при экспорте'
+            ],
+            'en' => [
+                'error_getting_inventories' => 'Error getting inventory list',
+                'validation_error' => 'Validation error',
+                'inventory_created_successfully' => 'Inventory created successfully',
+                'error_creating_inventory' => 'Error creating inventory',
+                'inventory_not_found' => 'Inventory not found',
+                'error_getting_inventory' => 'Error getting inventory',
+                'inventory_updated_successfully' => 'Inventory updated successfully',
+                'error_updating_inventory' => 'Error updating inventory',
+                'inventory_deleted_successfully' => 'Inventory deleted successfully',
+                'error_deleting_inventory' => 'Error deleting inventory',
+                'unknown_product' => 'Unknown product',
+                'error_calculating_balances' => 'Error calculating balances',
+                'error_exporting' => 'Error exporting'
+            ],
+            'uz' => [
+                'error_getting_inventories' => 'Inventarizatsiya ro\'yxatini olishda xatolik',
+                'validation_error' => 'Validatsiya xatosi',
+                'inventory_created_successfully' => 'Inventarizatsiya muvaffaqiyatli yaratildi',
+                'error_creating_inventory' => 'Inventarizatsiyani yaratishda xatolik',
+                'inventory_not_found' => 'Inventarizatsiya topilmadi',
+                'error_getting_inventory' => 'Inventarizatsiyani olishda xatolik',
+                'inventory_updated_successfully' => 'Inventarizatsiya muvaffaqiyatli yangilandi',
+                'error_updating_inventory' => 'Inventarizatsiyani yangilashda xatolik',
+                'inventory_deleted_successfully' => 'Inventarizatsiya muvaffaqiyatli o\'chirildi',
+                'error_deleting_inventory' => 'Inventarizatsiyani o\'chirishda xatolik',
+                'unknown_product' => 'Noma\'lum mahsulot',
+                'error_calculating_balances' => 'Qoldiqlarni hisoblashda xatolik',
+                'error_exporting' => 'Eksport qilishda xatolik'
+            ],
+            'china' => [
+                'error_getting_inventories' => '获取库存列表时出错',
+                'validation_error' => '验证错误',
+                'inventory_created_successfully' => '库存创建成功',
+                'error_creating_inventory' => '创建库存时出错',
+                'inventory_not_found' => '库存未找到',
+                'error_getting_inventory' => '获取库存时出错',
+                'inventory_updated_successfully' => '库存更新成功',
+                'error_updating_inventory' => '更新库存时出错',
+                'inventory_deleted_successfully' => '库存删除成功',
+                'error_deleting_inventory' => '删除库存时出错',
+                'unknown_product' => '未知商品',
+                'error_calculating_balances' => '计算余额时出错',
+                'error_exporting' => '导出时出错'
+            ]
+        ];
+
+        return $messages[$userLanguage] ?? $messages['ru'];
+    }
+    /**
      * Получить список инвентаризаций
      */
     public function index(Request $request): JsonResponse
@@ -94,9 +164,11 @@ class InventoryController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            $user = Auth::user();
+            $messages = $this->getLanguageMessages($user->language ?? 'ru');
             return response()->json([
                 'success' => false,
-                'message' => 'Ошибка при получении списка инвентаризаций: ' . $e->getMessage()
+                'message' => $messages['error_getting_inventories'] . ': ' . $e->getMessage()
             ], 500);
         }
     }
@@ -127,9 +199,11 @@ class InventoryController extends Controller
             ]);
 
             if ($validator->fails()) {
+                $user = Auth::user();
+                $messages = $this->getLanguageMessages($user->language ?? 'ru');
                 return response()->json([
                     'success' => false,
-                    'message' => 'Ошибка валидации',
+                    'message' => $messages['validation_error'],
                     'errors' => $validator->errors()
                 ], 422);
             }
@@ -208,17 +282,21 @@ class InventoryController extends Controller
             // Удаляем полную модель пользователя, оставляем только имя
             unset($inventory->createdBy);
 
+            $user = Auth::user();
+            $messages = $this->getLanguageMessages($user->language ?? 'ru');
             return response()->json([
                 'success' => true,
-                'message' => 'Инвентаризация создана успешно',
+                'message' => $messages['inventory_created_successfully'],
                 'data' => $inventory
             ], 201);
 
         } catch (\Exception $e) {
             DB::rollBack();
+            $user = Auth::user();
+            $messages = $this->getLanguageMessages($user->language ?? 'ru');
             return response()->json([
                 'success' => false,
-                'message' => 'Ошибка при создании инвентаризации: ' . $e->getMessage()
+                'message' => $messages['error_creating_inventory'] . ': ' . $e->getMessage()
             ], 500);
         }
     }
@@ -237,9 +315,11 @@ class InventoryController extends Controller
             ])->where('created_by', Auth::id())->find($id);
 
             if (!$inventory) {
+                $user = Auth::user();
+                $messages = $this->getLanguageMessages($user->language ?? 'ru');
                 return response()->json([
                     'success' => false,
-                    'message' => 'Инвентаризация не найдена'
+                    'message' => $messages['inventory_not_found']
                 ], 404);
             }
 
@@ -289,9 +369,11 @@ class InventoryController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            $user = Auth::user();
+            $messages = $this->getLanguageMessages($user->language ?? 'ru');
             return response()->json([
                 'success' => false,
-                'message' => 'Ошибка при получении инвентаризации: ' . $e->getMessage()
+                'message' => $messages['error_getting_inventory'] . ': ' . $e->getMessage()
             ], 500);
         }
     }
@@ -331,9 +413,11 @@ class InventoryController extends Controller
             ]);
 
             if ($validator->fails()) {
+                $user = Auth::user();
+                $messages = $this->getLanguageMessages($user->language ?? 'ru');
                 return response()->json([
                     'success' => false,
-                    'message' => 'Ошибка валидации',
+                    'message' => $messages['validation_error'],
                     'errors' => $validator->errors()
                 ], 422);
             }
@@ -459,17 +543,21 @@ class InventoryController extends Controller
             // Удаляем полную модель пользователя, оставляем только имя
             unset($inventory->createdBy);
 
+            $user = Auth::user();
+            $messages = $this->getLanguageMessages($user->language ?? 'ru');
             return response()->json([
                 'success' => true,
-                'message' => 'Инвентаризация обновлена успешно',
+                'message' => $messages['inventory_updated_successfully'],
                 'data' => $inventory
             ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
+            $user = Auth::user();
+            $messages = $this->getLanguageMessages($user->language ?? 'ru');
             return response()->json([
                 'success' => false,
-                'message' => 'Ошибка при обновлении инвентаризации: ' . $e->getMessage()
+                'message' => $messages['error_updating_inventory'] . ': ' . $e->getMessage()
             ], 500);
         }
     }
@@ -498,16 +586,20 @@ class InventoryController extends Controller
 
             DB::commit();
 
+            $user = Auth::user();
+            $messages = $this->getLanguageMessages($user->language ?? 'ru');
             return response()->json([
                 'success' => true,
-                'message' => 'Инвентаризация удалена успешно'
+                'message' => $messages['inventory_deleted_successfully']
             ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
+            $user = Auth::user();
+            $messages = $this->getLanguageMessages($user->language ?? 'ru');
             return response()->json([
                 'success' => false,
-                'message' => 'Ошибка при удалении инвентаризации: ' . $e->getMessage()
+                'message' => $messages['error_deleting_inventory'] . ': ' . $e->getMessage()
             ], 500);
         }
     }
@@ -523,6 +615,8 @@ class InventoryController extends Controller
     public function calculateBalances(Request $request): JsonResponse
     {
         try {
+            $user = Auth::user();
+            $messages = $this->getLanguageMessages($user->language ?? 'ru');
             $request->validate([
                 'warehouse_id' => 'required|exists:warehouses,id',
                 'product_ids' => 'nullable|array',
@@ -585,7 +679,7 @@ class InventoryController extends Controller
 
                 $balances[] = [
                     'product_id' => $productId,
-                    'product_name' => $product->name ?? 'Неизвестный товар',
+                    'product_name' => $product->name ?? $messages['unknown_product'],
                     'product_article' => $product->article ?? '',
                     'calculated_balance' => $calculatedBalance,
                     'receipts' => $receipts,
@@ -604,7 +698,7 @@ class InventoryController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Ошибка при расчете остатков: ' . $e->getMessage()
+                'message' => $messages['error_calculating_balances'] . ': ' . $e->getMessage()
             ], 500);
         }
     }
@@ -612,6 +706,8 @@ class InventoryController extends Controller
     public function export($id): JsonResponse
     {
         try {
+            $user = Auth::user();
+            $messages = $this->getLanguageMessages($user->language ?? 'ru');
             $inventory = Inventory::with([
                 'warehouse', 
                 'createdBy', 
@@ -642,7 +738,7 @@ class InventoryController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Ошибка при экспорте: ' . $e->getMessage()
+                'message' => $messages['error_exporting'] . ': ' . $e->getMessage()
             ], 500);
         }
     }
