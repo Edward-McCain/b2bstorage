@@ -140,6 +140,10 @@ import { Loader2, Package } from 'lucide-vue-next'
 
 export default {
   name: 'AdminWarehouseViewModal',
+  components: {
+    Loader2,
+    Package
+  },
   props: {
     warehouseId: {
       type: Number,

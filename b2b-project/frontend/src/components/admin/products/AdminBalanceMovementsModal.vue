@@ -149,10 +149,15 @@
 <script>
 import { ref, reactive, onMounted } from 'vue'
 import api from '@/config/api'
+import LocalizedDatePicker from '../../LocalizedDatePicker.vue'
 import { Loader2 } from 'lucide-vue-next'
 
 export default {
   name: 'AdminBalanceMovementsModal',
+  components: {
+    LocalizedDatePicker,
+    Loader2
+  },
   props: {
     productId: {
       type: Number,
