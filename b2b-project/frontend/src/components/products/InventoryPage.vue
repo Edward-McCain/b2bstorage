@@ -197,6 +197,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import ProductsMenu from './ProductsMenu.vue'
+import LocalizedDatePicker from '../LocalizedDatePicker.vue'
 import { apiRequest } from '@/config/api'
 import { useRouter } from 'vue-router'
 import { Eye, Edit, Trash2, Loader2, Filter, FunnelX } from 'lucide-vue-next'

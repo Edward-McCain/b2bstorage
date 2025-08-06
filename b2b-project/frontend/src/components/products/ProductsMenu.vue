@@ -1,6 +1,6 @@
 <template>
   <div class="bg-white border-b border-gray-200">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style="padding-top: 10px;">
       <nav class="flex space-x-8 overflow-x-auto">
         <router-link 
           to="/products" 

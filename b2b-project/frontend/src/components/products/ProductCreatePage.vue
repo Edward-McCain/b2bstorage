@@ -271,7 +271,7 @@
       </div>
     </div>
     <!-- Модалка закрытия -->
-    <div v-if="showCloseModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+    <div v-if="showCloseModal" class="fixed inset-0 z-50 flex items-center justify-center bg-white/70">
       <div class="bg-white rounded-lg shadow-2xl p-8 max-w-sm w-full text-sm">
         <div class="text-base font-semibold mb-4">{{ t('ProductCreatePage_70') }}</div> <!-- Выйти без сохранения? -->
         <div class="mb-6 text-gray-600">{{ t('ProductCreatePage_71') }}</div> <!-- Изменения не будут сохранены. Вы уверены, что хотите выйти? -->
@@ -302,6 +302,7 @@ import { getUserCategoryType, getSubcategoriesApiEndpoint } from '@/utils/catego
 import { useWarehouseCheck } from '@/composables/useWarehouseCheck'
 import ImageDropzone from './ImageDropzone.vue'
 import NoWarehousesModal from '../NoWarehousesModal.vue'
+import LocalizedDatePicker from '../LocalizedDatePicker.vue'
 import countriesData from '@/data/countries.json'
 import toastr from 'toastr'
 import { Loader2 } from 'lucide-vue-next'

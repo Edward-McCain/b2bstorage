@@ -6,7 +6,7 @@
         <!-- Создать товар -->
         <router-link 
           to="/products" 
-          class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-all duration-200 cursor-pointer group relative" style="background: linear-gradient(45deg, #d0dfff, #ddfcef);"
+          class=" bg-white rounded-lg shadow-sm border border-white/20 p-4 hover:shadow-md transition-all duration-200 cursor-pointer group relative" style="background: linear-gradient(45deg, #d0dfff, #ddfcef);"
         >
           <div class="flex items-center justify-center h-full">
             <span class="text-sm font-bold text-gray-900 text-center">
@@ -19,7 +19,7 @@
         <!-- Оприходования -->
         <router-link 
           to="/products/receipts" 
-          class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-all duration-200 cursor-pointer group relative"
+          class="pro_nav_card bg-white rounded-lg shadow-sm border border-white/20 p-4 hover:shadow-md transition-all duration-200 cursor-pointer group relative"
         >
           <div class="flex items-center justify-between mb-4">
             <PackagePlus class="w-6 h-6 text-blue-600" />
@@ -38,7 +38,7 @@
         <!-- Списания -->
         <router-link 
           to="/products/write-offs" 
-          class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-all duration-200 cursor-pointer group relative"
+          class="pro_nav_card bg-white rounded-lg shadow-sm border border-white/20 p-4 hover:shadow-md transition-all duration-200 cursor-pointer group relative"
         >
           <div class="flex items-center justify-between mb-4">
             <PackageMinus class="w-6 h-6 text-blue-600" />
@@ -57,7 +57,7 @@
         <!-- Инвентаризации -->
         <router-link 
           to="/products/inventory" 
-          class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-all duration-200 cursor-pointer group relative"
+          class="pro_nav_card bg-white rounded-lg shadow-sm border border-white/20 p-4 hover:shadow-md transition-all duration-200 cursor-pointer group relative"
         >
           <div class="flex items-center justify-between mb-4">
             <ClipboardList class="w-6 h-6 text-blue-600" />
@@ -76,7 +76,7 @@
         <!-- Перемещения -->
         <router-link 
           to="/products/transfers" 
-          class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-all duration-200 cursor-pointer group relative"
+          class="pro_nav_card bg-white rounded-lg shadow-sm border border-white/20 p-4 hover:shadow-md transition-all duration-200 cursor-pointer group relative"
         >
           <div class="flex items-center justify-between mb-4">
             <ArrowRightLeft class="w-6 h-6 text-blue-600" />
@@ -95,7 +95,7 @@
         <!-- Остатки -->
         <router-link 
           to="/products/balances" 
-          class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-all duration-200 cursor-pointer group relative"
+          class="pro_nav_card bg-white rounded-lg shadow-sm border border-white/20 p-4 hover:shadow-md transition-all duration-200 cursor-pointer group relative"
         >
           <div class="flex items-center justify-between mb-4">
             <Package class="w-6 h-6 text-blue-600" />
@@ -114,7 +114,7 @@
         <!-- Склады -->
         <router-link 
           to="/warehouses" 
-          class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-all duration-200 cursor-pointer group relative"
+          class="pro_nav_card bg-white rounded-lg shadow-sm border border-white/20 p-4 hover:shadow-md transition-all duration-200 cursor-pointer group relative"
         >
           <div class="flex items-center justify-between mb-4">
             <Warehouse class="w-6 h-6 text-blue-600" />
@@ -133,7 +133,7 @@
         <!-- Логи -->
         <router-link 
           to="/products/logs" 
-          class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-all duration-200 cursor-pointer group relative"
+          class="pro_nav_card bg-white rounded-lg shadow-sm border border-white/20 p-4 hover:shadow-md transition-all duration-200 cursor-pointer group relative"
         >
           <div class="flex items-center justify-between mb-4">
             <FileText class="w-6 h-6 text-blue-600" />
@@ -221,5 +221,15 @@ const loadCardCounts = async () => {
 
 .group:hover .text-blue-600 {
   color: #2563eb;
+}
+
+/* Эффект изменения границы при наведении */
+.pro_nav_card:hover {
+  border-color: #3b82f6; /* border-blue-500 */
+}
+
+/* Эффект изменения тени при наведении */
+.pro_nav_card:hover {
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05) !important; /* shadow-sm */
 }
 </style> 

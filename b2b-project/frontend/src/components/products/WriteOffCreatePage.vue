@@ -283,6 +283,7 @@
 <script setup>
 import ProductsMenu from './ProductsMenu.vue'
 import NoWarehousesModal from '../NoWarehousesModal.vue'
+import LocalizedDatePicker from '../LocalizedDatePicker.vue'
 import { useRouter } from 'vue-router'
 import { ref, computed, onMounted, watch } from 'vue'
 import { apiRequest } from '@/config/api'

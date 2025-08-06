@@ -106,5 +106,43 @@ button, input, select, optgroup, textarea, ::file-selector-button {
   box-shadow: none !important;
 }
 *:not(.shadow-2xl):not(.fixed *) {box-shadow: none !important;}
-.bg-white.border:not(input):not(textarea) {border: none !important;}
+.bg-white.border:not(input):not(textarea):not(.pro_nav_card) {border: none !important;}
+
+
+*::-webkit-scrollbar {width: 5px;height: 5px;background: rgba(0, 0, 0, 0);}
+*::-webkit-scrollbar-track {background: rgba(0,0,0,0);opacity:.7;}
+*::-webkit-scrollbar-thumb {border-radius: 3px;background: #7696ff !important; cursor: pointer;}
+
+
+
+button:not(.transition-colors), input, select, optgroup, textarea, ::file-selector-button, .dp__input {border-radius: 16px !important;min-height: 42px;}
+.fixed button svg:not(.user_menu svg) {margin: auto !important;}
+.fixed button {min-width: 42px;}
+button {cursor: pointer;}
+input:focus, textarea:focus {border-color: #7696ff !important;}
+.multiselect, .multiselect-wrapper, .multiselect-wrapper input, .multiselect-dropdown, .dp__menu {border-radius: 16px !important;}
+.rounded, .rounded-lg, .dropdown-menu-custom {border-radius: 16px;}
+
+.multiselect-dropdown {transform: translateY(105%) !important;}
+.multiselect-custom .multiselect-option {
+    margin-top: 5px;
+    margin-left: 4px;
+    margin-bottom: 5px;
+    border-radius: 16px;
+}
+multiselect, .multiselect.multiselect-custom {
+  padding-bottom: 2px;
+}
+
+table img {border-radius: 5px !important;}
+
+.flay_out_menu button {
+  background: #fff;
+  padding: 10px 20px;
+  border-radius: 12px;
+  transition: all .3s;
+}
+.flay_out_menu button:hover {
+  background: #f1f5ff;
+}
 </style>

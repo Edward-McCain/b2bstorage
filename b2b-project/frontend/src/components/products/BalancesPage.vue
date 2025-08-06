@@ -861,6 +861,7 @@ import api, { apiRequest, getCategoriesByUserSettings } from '@/config/api'
 import { transformCategoriesToOptions, transformSubcategoriesToOptions } from '@/utils/categoryDisplayUtils'
 import ProductsMenu from './ProductsMenu.vue'
 import MovementsModal from './MovementsModal.vue'
+import LocalizedDatePicker from '../LocalizedDatePicker.vue'
 import Multiselect from '@vueform/multiselect'
 import '@vueform/multiselect/themes/default.css'
 import { Filter, FunnelX, Loader2, ArrowRightLeft, Edit, Trash2, Plus } from 'lucide-vue-next'
@@ -884,6 +885,7 @@ export default {
   components: {
     ProductsMenu,
     MovementsModal,
+    LocalizedDatePicker,
     Multiselect,
     Filter,
     FunnelX,

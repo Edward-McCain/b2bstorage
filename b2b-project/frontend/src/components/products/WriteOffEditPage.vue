@@ -330,6 +330,7 @@
 
 <script setup>
 import ProductsMenu from './ProductsMenu.vue'
+import LocalizedDatePicker from '../LocalizedDatePicker.vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ref, computed, onMounted } from 'vue'
 import { apiRequest } from '@/config/api'

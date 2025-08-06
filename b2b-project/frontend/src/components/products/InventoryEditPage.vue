@@ -386,6 +386,7 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import ProductsMenu from './ProductsMenu.vue'
 import CommentModal from '../CommentModal.vue'
+import LocalizedDatePicker from '../LocalizedDatePicker.vue'
 import { apiRequest } from '@/config/api'
 import { useRouter, useRoute } from 'vue-router'
 import { Camera, MessageSquare, Loader2 } from 'lucide-vue-next'

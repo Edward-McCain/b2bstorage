@@ -323,6 +323,7 @@ import { createReactiveCategoryOptions, createReactiveSubcategoryOptions } from 
 import { areCategoriesEnabled, isFieldRequired } from '@/utils/productFieldsUtils'
 import { getUserCategoryType, getSubcategoriesApiEndpoint } from '@/utils/categoryTypeUtils'
 import ImageDropzone from './ImageDropzone.vue'
+import LocalizedDatePicker from '../LocalizedDatePicker.vue'
 import countriesData from '@/data/countries.json'
 import toastr from 'toastr'
 import { Loader2 } from 'lucide-vue-next'

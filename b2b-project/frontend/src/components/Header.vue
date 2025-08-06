@@ -647,7 +647,7 @@ window.addEventListener('notifications-updated', () => {
       <!-- Навигация (десктоп) - только для авторизованных пользователей -->
       <div v-if="isAuthenticated" class="hidden lg:flex lg:gap-x-12">
         <!-- Flyout Menu для Товары -->
-        <div class="relative">
+        <div class="relative flay_out_menu">
           <button
             @click="toggleProductsMenu"
             type="button"
@@ -1015,24 +1015,25 @@ window.addEventListener('notifications-updated', () => {
         </router-link>
         
         <!-- Если пользователь авторизован -->
-        <div v-if="isAuthenticated" class="relative">
+        <div v-if="isAuthenticated" class="relative cursor-pointer">
           <!-- Flyout Menu -->
-          <div class="relative flex items-center gap-3">
+          <div class="relative flex items-center gap-3 cursor-pointer">
             <!-- Селектор языка для авторизованных пользователей -->
-            <div class="relative">
+            <div class="relative cursor-pointer">
               <button
                 @click.stop="languageMenuOpen = !languageMenuOpen"
-                class="flex items-center gap-2 text-sm text-gray-700 rounded-md border border-gray-300 px-2 py-1 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                class="flex items-center gap-2 text-sm text-gray-700 rounded-md border border-gray-300 px-2 py-1 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer"
                 id="language-menu-button"
               >
                 <span>{{ languageOptions.find(lang => lang.value === currentLanguage)?.flag }}</span>
                 <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                </svg>
+                </svg> 
+                <span class="text-sm text-gray-700">{{ languageOptions.find(lang => lang.value === currentLanguage)?.label }}</span>
               </button>
               <div
                 v-if="languageMenuOpen"
-                class="absolute z-[9999] left-0 bg-white border border-gray-200 rounded-md shadow-lg mt-1 w-32"
+                class="dropdown-menu-custom absolute z-[9999] left-0 bg-white border border-gray-200 rounded-md shadow-lg mt-1 w-32"
               >
                 <ul class="py-1">
                   <li
@@ -1049,11 +1050,11 @@ window.addEventListener('notifications-updated', () => {
             </div>
 
             <!-- Контейнер пользователя с dropdown -->
-            <div class="relative">
+            <div class="relative user_menu">
               <button
                 @click="toggleUserMenu"
                 type="button"
-                class="flex items-center gap-3 text-sm rounded-full"
+                class="flex items-center gap-3 text-sm rounded-full cursor-pointer"
                 id="user-menu-button"
                 aria-expanded="false"
                 aria-haspopup="true"
@@ -1066,7 +1067,7 @@ window.addEventListener('notifications-updated', () => {
                   </div>
                 </div>
                 <!-- Аватар -->
-                <div v-if="avatarUrl" class="h-8 w-8 rounded-full overflow-hidden">
+                <div v-if="avatarUrl" class="h-8 w-8 rounded-full overflow-hidden header_avatar">
                   <img 
                     :src="avatarUrl" 
                     :alt="user?.user_name || 'Аватар'"
@@ -1505,5 +1506,30 @@ window.addEventListener('notifications-updated', () => {
 </template>
 
 <style scoped>
-/* Дополнительные стили для шапки */
+.header_avatar:before {
+    animation: gradient2 3s ease-in-out infinite !important;
+    background: linear-gradient(0deg, #4b46ef, #1ee9d2, #20c997, #e450ba) !important;
+    background-size: 400% 400% !important;
+    border-radius: 50% !important;
+    content: " ";
+    display: block;
+    height: 38px;
+    margin: -3px 0 0 -3px;
+    padding: 2px;
+    position: absolute;
+    transform: rotate(0turn);
+    transition: all .3s;
+    width: 38px;
+    z-index: -1;
+}
+
+@keyframes gradient2 {
+  0% {
+    transform: rotate(0turn);
+  }
+
+  100% {
+      transform: rotate(1turn);
+  }
+}
 </style> 

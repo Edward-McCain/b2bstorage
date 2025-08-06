@@ -149,6 +149,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import ProductsMenu from './ProductsMenu.vue'
+import LocalizedDatePicker from '../LocalizedDatePicker.vue'
 import { apiRequest } from '@/config/api'
 import { Loader2, Filter, FunnelX } from 'lucide-vue-next'
 import Multiselect from '@vueform/multiselect'

@@ -24,6 +24,8 @@
 <script setup>
 import { computed } from 'vue'
 import { currentLocale } from '../locales/index.js'
+import VueDatePicker from '@vuepic/vue-datepicker'
+import '@vuepic/vue-datepicker/dist/main.css'
 
 // Props
 const props = defineProps({
@@ -132,7 +134,7 @@ const previewFormat = computed(() => {
 .dp__input {
   width: 100% !important;
   border: 1px solid #d1d5db !important;
-  border-radius: 0.5rem !important;
+  /* border-radius: 0.5rem !important; */
   padding: 0.5rem 0.75rem !important;
   font-size: 0.875rem !important;
   background-color: white !important;
@@ -157,7 +159,7 @@ const previewFormat = computed(() => {
 .dp__menu {
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
   border: 1px solid #e5e7eb !important;
-  border-radius: 0.5rem !important;
+  /* border-radius: 0.5rem !important; */
 }
 
 .dp__menu_wrap {
@@ -192,5 +194,8 @@ const previewFormat = computed(() => {
 
 .dp__action_cancel:hover {
   background-color: #e5e7eb !important;
+}
+.dp__range_end, .dp__range_start, .dp__active_date {
+  background: #1447e6;
 }
 </style> 

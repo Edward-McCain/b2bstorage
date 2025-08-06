@@ -234,6 +234,7 @@ import api from '@/config/api'
 import ProductsMenu from './ProductsMenu.vue'
 import TransferViewModal from './TransferViewModal.vue'
 import TransferCompleteModal from './TransferCompleteModal.vue'
+import LocalizedDatePicker from '../LocalizedDatePicker.vue'
 import Multiselect from '@vueform/multiselect'
 import '@vueform/multiselect/themes/default.css'
 import { Loader2, Filter, FunnelX } from 'lucide-vue-next'
@@ -245,6 +246,7 @@ export default {
     ProductsMenu,
     TransferViewModal,
     TransferCompleteModal,
+    LocalizedDatePicker,
     Multiselect,
     Loader2,
     Filter,

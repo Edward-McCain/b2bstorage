@@ -245,6 +245,7 @@
 
 <script setup>
 import PurchasesMenu from './PurchasesMenu.vue'
+import LocalizedDatePicker from '../LocalizedDatePicker.vue'
 
 // Устанавливаем заголовок страницы
 document.title = 'Приемки - B2B SKLAD'
