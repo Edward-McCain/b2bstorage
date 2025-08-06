@@ -109,9 +109,9 @@ button, input, select, optgroup, textarea, ::file-selector-button {
 .bg-white.border:not(input):not(textarea):not(.pro_nav_card) {border: none !important;}
 
 
-*::-webkit-scrollbar {width: 5px;height: 5px;background: rgba(0, 0, 0, 0);}
-*::-webkit-scrollbar-track {background: rgba(0,0,0,0);opacity:.7;}
-*::-webkit-scrollbar-thumb {border-radius: 3px;background: #7696ff !important; cursor: pointer;}
+body::-webkit-scrollbar {width: 5px;height: 5px;background: rgba(0, 0, 0, 0);}
+body::-webkit-scrollbar-track {background: rgba(0,0,0,0);opacity:.7;}
+body::-webkit-scrollbar-thumb {border-radius: 3px;background: #7696ff !important; cursor: pointer;}
 
 
 
