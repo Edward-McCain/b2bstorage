@@ -1,0 +1,22 @@
+User-agent: *
+Allow: /
+
+# Разрешаем индексацию главной страницы и страницы авторизации
+Allow: /auth
+
+# Запрещаем индексацию всех остальных страниц, требующих авторизации
+Disallow: /products/
+Disallow: /purchases/
+Disallow: /sales/
+Disallow: /analytics/
+Disallow: /counterparties/
+Disallow: /account-settings/
+Disallow: /warehouses/
+Disallow: /admin/
+Disallow: /docs_api
+
+# Запрещаем индексацию API документации
+Disallow: /api/
+
+# Указываем расположение sitemap
+Sitemap: https://b2bsklad.uz/sitemap.xml 
