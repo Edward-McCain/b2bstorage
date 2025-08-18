@@ -617,4 +617,38 @@ class AuthController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Получить список всех пользователей
+     */
+    public function getUsers(Request $request)
+    {
+        $user = $request->user();
+        
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not authenticated'
+            ], 401);
+        }
+
+        try {
+            $users = User::select('id', 'first_name', 'user_id')
+                ->where('deleted', false)
+                ->where('is_active', true)
+                ->orderBy('first_name')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Users list retrieved successfully',
+                'users' => $users
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error retrieving users: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

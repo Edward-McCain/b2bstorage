@@ -1,0 +1,110 @@
+[
+    {
+        "category_id": "avtomobili-i-aksessuary",
+        "name": "Автомобили и аксессуары",
+        "name_ru": "Автомобили и аксессуары",
+        "name_en": "Cars and Accessories",
+        "name_uz": "Avtomobillar va aksessuarlar",
+        "name_china": "汽车和配件",
+        "subcategories": [
+            {
+                "subcategory_id": "avtobezopasnost-i-zashchita",
+                "name": "Автобезопасность и защита",
+                "name_ru": "Автобезопасность и защита",
+                "name_en": "Automotive Safety and Security",
+                "name_uz": "Avtomobil xavfsizligi va xavfsizligi",
+                "name_china": "汽车安全和保护"
+            },
+            {
+                "subcategory_id": "avtomobilnye-aksessuary",
+                "name": "Автомобильные аксессуары",
+                "name_ru": "Автомобильные аксессуары",
+                "name_en": "Car accessories",
+                "name_uz": "Avtomobil aksessuarlari",
+                "name_china": "汽车配件"
+            },
+            {
+                "subcategory_id": "avtomobilnye-detali",
+                "name": "Автомобильные детали",
+                "name_ru": "Автомобильные детали",
+                "name_en": "Automotive parts",
+                "name_uz": "Avtomobil qismlari",
+                "name_china": "汽车零件"
+            },
+            {
+                "subcategory_id": "avtomobilnye-instrumenty-i-oborudovanie",
+                "name": "Автомобильные инструменты и оборудование",
+                "name_ru": "Автомобильные инструменты и оборудование",
+                "name_en": "Automotive tools and equipment",
+                "name_uz": "Avtomobil asboblari va jihozlari",
+                "name_china": "汽车工具和设备"
+            },
+            {
+                "subcategory_id": "avtoelektronika",
+                "name": "Автоэлектроника",
+                "name_ru": "Автоэлектроника",
+                "name_en": "Automotive electronics",
+                "name_uz": "Avtomobil elektronikasi",
+                "name_china": "汽车电子"
+            },
+            {
+                "subcategory_id": "transportnye-sredstva",
+                "name": "Транспортные средства",
+                "name_ru": "Транспортные средства",
+                "name_en": "Vehicles",
+                "name_uz": "Avtomobillar",
+                "name_china": "交通工具"
+            }
+        ]
+    },
+    {
+        "category_id": "apparatnoe-obespechenie",
+        "name": "Аппаратное обеспечение",
+        "name_ru": "Аппаратное обеспечение",
+        "name_en": "Hardware",
+        "name_uz": "Uskuna",
+        "name_china": "硬件设备",
+        "subcategories": [
+            {
+                "subcategory_id": "apparatnye-sredstva",
+                "name": "Аппаратные средства",
+                "name_ru": "Аппаратные средства",
+                "name_en": "Hardware",
+                "name_uz": "Uskuna",
+                "name_china": "硬件"
+            },
+            {
+                "subcategory_id": "instrumenty-i-aksessuary",
+                "name": "Инструменты и аксессуары",
+                "name_ru": "Инструменты и аксессуары",
+                "name_en": "Tools and accessories",
+                "name_uz": "Asboblar va aksessuarlar",
+                "name_china": "工具和配件"
+            },
+            {
+                "subcategory_id": "obshchee-oborudovanie",
+                "name": "Общее оборудование",
+                "name_ru": "Общее оборудование",
+                "name_en": "General equipment",
+                "name_uz": "Umumiy jihozlar",
+                "name_china": "通用设备"
+            },
+            {
+                "subcategory_id": "osveshchenie-i-elektrika",
+                "name": "Освещение и электрика",
+                "name_ru": "Освещение и электрика",
+                "name_en": "Lighting and electrical",
+                "name_uz": "Yoritish va elektr",
+                "name_china": "照明和电气"
+            },
+            {
+                "subcategory_id": "santekhnika-i-santekhnika",
+                "name": "Сантехника и сантехника",
+                "name_ru": "Сантехника и сантехника",
+                "name_en": "Plumbing and sanitary ware",
+                "name_uz": "Santexnika va sanitariya-texnik vositalar",
+                "name_china": "管道和卫生设备"
+            }
+        ]
+    }
+] 

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест удаления товара</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 15px; margin: 5px; border: none; border-radius: 3px; cursor: pointer; }
+        .btn-primary { background-color: #007bff; color: white; }
+        .btn-danger { background-color: #dc3545; color: white; }
+        .btn-success { background-color: #28a745; color: white; }
+    </style>
+</head>
+<body>
+    <h1>Тест удаления товара</h1>
+    
+    <div class="test-section info">
+        <h3>Инструкции:</h3>
+        <ol>
+            <li>Откройте <a href="http://localhost:5173" target="_blank">фронтенд</a></li>
+            <li>Войдите в систему</li>
+            <li>Перейдите на страницу "Остатки"</li>
+            <li>Попробуйте удалить товар</li>
+            <li>Проверьте, что модалка закрывается и товар исчезает из списка</li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h3>Проверка API:</h3>
+        <button class="btn-primary" onclick="testAPI()">Тест API удаления</button>
+        <div id="api-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Проверка фронтенда:</h3>
+        <button class="btn-success" onclick="openFrontend()">Открыть фронтенд</button>
+        <p>После открытия фронтенда проверьте:</p>
+        <ul>
+            <li>✅ Модалка удаления открывается при клике на кнопку удаления</li>
+            <li>✅ При подтверждении удаления товар исчезает из списка</li>
+            <li>✅ Модалка закрывается после успешного удаления</li>
+            <li>✅ Показывается уведомление об успешном удалении</li>
+        </ul>
+    </div>
+
+    <script>
+        async function testAPI() {
+            const resultDiv = document.getElementById('api-result');
+            resultDiv.innerHTML = '<p>Тестирование API...</p>';
+            
+            try {
+                // Получаем список товаров
+                const response = await fetch('http://127.0.0.1:8000/api/balances', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer 104|wsMyBT4ZTLUkbZJHMspCRUPyXgRdHtsOHQOgRtdY01939b73'
+                    },
+                    body: JSON.stringify({})
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.data && data.data.length > 0) {
+                        const product = data.data[0];
+                        resultDiv.innerHTML = `
+                            <div class="success">
+                                <p>✅ API работает корректно</p>
+                                <p>Найден товар: ${product.name} (ID: ${product.id})</p>
+                                <p>Можете протестировать удаление на фронтенде</p>
+                            </div>
+                        `;
+                    } else {
+                        resultDiv.innerHTML = `
+                            <div class="error">
+                                <p>❌ Нет товаров для тестирования</p>
+                                <p>Сначала импортируйте товары через форму импорта</p>
+                            </div>
+                        `;
+                    }
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <p>❌ Ошибка API: ${response.status}</p>
+                            <p>Убедитесь, что бэкенд запущен</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <p>❌ Ошибка подключения: ${error.message}</p>
+                        <p>Проверьте, что сервер запущен на http://127.0.0.1:8000</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function openFrontend() {
+            window.open('http://localhost:5173', '_blank');
+        }
+    </script>
+</body>
+</html> 

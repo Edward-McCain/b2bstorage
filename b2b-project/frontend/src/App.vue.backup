@@ -1,0 +1,417 @@
+<script setup>
+import { computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
+import Header from './components/Header.vue'
+import Footer from './components/Footer.vue'
+import { currencyService } from './services/currency.js'
+
+const route = useRoute()
+
+// Проверяем, является ли текущий маршрут административным
+const isAdminRoute = computed(() => {
+  return route.path.startsWith('/admin')
+})
+
+// WebRTC интеграция
+const initializeWebRTC = async () => {
+  // Проверяем авторизацию
+  const token = localStorage.getItem('auth_token')
+  const userData = localStorage.getItem('user')
+  
+  if (!userData) {
+    console.log(' RTCINT ⚠️ Пользователь не авторизован, WebRTC не загружается')
+    return
+  }
+  
+  // Проверяем, не загружен ли уже скрипт
+  if (document.querySelector('script[src*="webrtc-embed.js"]') || window.WebRTCCalls) {
+    console.log(' RTCINT ✅ WebRTC уже загружен')
+    return
+  }
+  
+  // Парсим данные пользователя заранее для использования в fallback
+  let user, userId, userName, avatar
+  try {
+    user = JSON.parse(userData)
+    userId = user.user_id || user.id
+    userName = user.first_name || user.name || 'Пользователь'
+    avatar = user.avatar_url || user.avatar || null
+  } catch (parseError) {
+    console.error('❌ Ошибка парсинга данных пользователя:', parseError)
+    return
+  }
+  
+  // Из-за SSL и CORS проблем сразу создаем локальную заглушку
+  console.log(' RTCINT 📡 Загрузка WebRTC интеграции...')
+  console.log(' RTCINT 📡 WebRTC данные пользователя:', { userId, userName, avatar, token: token.substring(0, 10) + '...' })
+  console.log(' RTCINT 🔄 Создаем локальную заглушку WebRTC (обход SSL/CORS проблем)...')
+  
+  try {
+    createWebRTCFallback(userId, userName, avatar, token)
+    console.log(' RTCINT ✅ Fallback функция вызвана успешно')
+    
+    // Проверяем готовность через небольшие интервалы
+    setTimeout(() => checkWebRTCReady(), 100)
+    setTimeout(() => checkWebRTCReady(), 500)
+    setTimeout(() => checkWebRTCReady(), 1000)
+    
+  } catch (error) {
+    console.error('❌ Ошибка инициализации WebRTC fallback:', error)
+  }
+}
+
+// Создаем полноценный WebRTC клиент с iframe
+const createWebRTCFallback = (userId, userName, avatar, token) => {
+  const userData = { userId, userName, avatar, token }
+  
+  console.log('RTCINT 🚀 createWebRTCFallback вызвана с параметрами:', {
+    userId: userData.userId,
+    userName: userData.userName,
+    avatar: userData.avatar,
+    tokenPresent: !!userData.token
+  })
+
+  let iframe = null
+  let container = null
+  let isOpen = false
+  let eventListeners = {}
+
+  // Создаем контейнер для iframe
+  const createContainer = () => {
+    container = document.getElementById('webrtc-calls-container')
+    if (!container) {
+      container = document.createElement('div')
+      container.id = 'webrtc-calls-container'
+      container.style.cssText = `
+        width: 100%;
+        height: 600px;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        overflow: hidden;
+        margin: 20px auto;
+        max-width: 1200px;
+        display: none;
+      `
+      document.body.appendChild(container)
+    }
+  }
+
+  // Создаем iframe с нашим приложением
+  const createIframe = () => {
+    if (iframe) {
+      iframe.remove()
+    }
+
+    iframe = document.createElement('iframe')
+    iframe.style.cssText = `
+      border: none;
+      width: 100%;
+      height: 100%;
+      display: block;
+    `
+    
+    // КРИТИЧЕСКИ ВАЖНО: Разрешения для медиа-устройств в iframe
+    iframe.setAttribute('allow', 'camera; microphone; autoplay; encrypted-media; fullscreen')
+    iframe.setAttribute('allowfullscreen', 'true')
+
+    // Формируем URL с параметрами пользователя
+    const baseUrl = 'https://45.92.173.142/webrtc-calls/users'
+    const params = new URLSearchParams({
+      embed: 'true',
+      name: userData.userName,
+      user_id: userData.userId,
+      avatar: userData.avatar || '',
+      token: userData.token || ''
+    })
+
+    iframe.src = `${baseUrl}?${params.toString()}`
+    
+    console.log('RTCINT 🌐 Создаем iframe с URL:', iframe.src)
+    
+    // Обработчик сообщений от iframe
+    window.addEventListener('message', (event) => {
+      if (event.origin !== 'https://45.92.173.142') return
+      
+      const { type, data } = event.data
+      console.log('RTCINT 📨 Получено сообщение от iframe:', type, data)
+      
+      // Вызываем соответствующие события
+      if (eventListeners[type]) {
+        eventListeners[type].forEach(callback => {
+          try {
+            callback(data)
+          } catch (error) {
+            console.error('RTCINT ❌ Ошибка в обработчике события:', error)
+          }
+        })
+      }
+    })
+
+    container.appendChild(iframe)
+    console.log('RTCINT ✅ Iframe создан и добавлен в контейнер')
+  }
+
+  // Инициализация
+  createContainer()
+  createIframe()
+
+  // API объект
+  const webrtcAPI = {
+    isInitialized: true,
+    isOpen: false,
+
+    getStatus() {
+      return {
+        isInitialized: true,
+        isVisible: container ? container.style.display !== 'none' : false,
+        config: userData
+      }
+    },
+
+    open() {
+      console.log('RTCINT 🔓 Открываем WebRTC интерфейс')
+      if (container) {
+        container.style.display = 'block'
+        isOpen = true
+        this.isOpen = true
+        
+        if (iframe && iframe.contentWindow) {
+          iframe.contentWindow.postMessage({
+            type: 'interface-opened',
+            data: {}
+          }, 'https://45.92.173.142')
+        }
+        
+        console.log('RTCINT ✅ Интерфейс открыт')
+      }
+    },
+
+    close() {
+      console.log('RTCINT 🔒 Закрываем WebRTC интерфейс')
+      if (container) {
+        container.style.display = 'none'
+        isOpen = false
+        this.isOpen = false
+        console.log('RTCINT ✅ Интерфейс закрыт')
+      }
+    },
+
+    call(targetUserId) {
+      console.log('RTCINT 📞 Инициируем звонок пользователю:', targetUserId)
+      
+      if (!isOpen) {
+        this.open()
+      }
+      
+      if (iframe && iframe.contentWindow) {
+        iframe.contentWindow.postMessage({
+          type: 'initiate-call',
+          data: { targetUserId }
+        }, 'https://45.92.173.142')
+        
+        console.log('RTCINT ✅ Команда звонка отправлена в iframe')
+      }
+    },
+
+    toggle() {
+      if (isOpen) {
+        this.close()
+      } else {
+        this.open()
+      }
+    },
+
+    on(event, callback) {
+      if (!eventListeners[event]) {
+        eventListeners[event] = []
+      }
+      eventListeners[event].push(callback)
+      console.log('RTCINT 📡 Добавлен обработчик события:', event)
+    },
+
+    off(event, callback) {
+      if (eventListeners[event]) {
+        const index = eventListeners[event].indexOf(callback)
+        if (index > -1) {
+          eventListeners[event].splice(index, 1)
+          console.log('RTCINT 📡 Удален обработчик события:', event)
+        }
+      }
+    }
+  }
+
+  // Делаем API доступным глобально
+  window.WebRTCCalls = webrtcAPI
+  window.webrtcCalls = webrtcAPI
+  
+  console.log('RTCINT ✅ WebRTC Fallback создан с iframe подключением!')
+  console.log('RTCINT ✅ Доступные методы:', Object.keys(webrtcAPI))
+  
+  // Проверяем готовность
+  setTimeout(() => checkWebRTCReady(), 100)
+  
+  return webrtcAPI
+}
+
+// Функция проверки готовности WebRTC
+const checkWebRTCReady = () => {
+  console.log(' RTCINT 🔍 Проверяем готовность WebRTC...')
+  
+  if (window.WebRTCCalls) {
+    window.webrtcCalls = window.WebRTCCalls
+    console.log(' RTCINT ✅ WebRTCCalls объект доступен:', window.WebRTCCalls)
+    console.log(' RTCINT ✅ WebRTCCalls методы:', Object.keys(window.WebRTCCalls))
+    
+    // Проверяем статус
+    if (window.WebRTCCalls.getStatus) {
+      const status = window.WebRTCCalls.getStatus()
+      console.log(' RTCINT ✅ WebRTC статус:', status)
+    }
+    
+    // Проверяем, есть ли необходимые методы
+    const requiredMethods = ['open', 'close', 'call', 'getStatus']
+    const availableMethods = requiredMethods.filter(method => typeof window.WebRTCCalls[method] === 'function')
+    console.log(' RTCINT ✅ Доступные методы WebRTC:', availableMethods)
+    
+    if (availableMethods.length === requiredMethods.length) {
+      console.log(' RTCINT 🎉 WebRTC полностью готов к использованию!')
+    } else {
+      console.warn('⚠️ Некоторые методы WebRTC недоступны:', requiredMethods.filter(m => !availableMethods.includes(m)))
+    }
+  } else {
+    console.log(' RTCINT ⏳ WebRTCCalls объект еще не готов...')
+  }
+}
+
+// Инициализация при монтировании
+onMounted(() => {
+  // Задержка для полной инициализации приложения (уменьшаем для быстрого старта)
+  setTimeout(initializeWebRTC, 1000)
+})
+</script>
+
+<template>
+  <div>
+    <!-- WebRTC контейнер -->
+    
+    <!-- Показываем Header и Footer только для не-административных страниц -->
+    <Header v-if="!isAdminRoute" />
+    <router-view />
+    <div id="webrtc-calls-container"></div>
+    <Footer v-if="!isAdminRoute" />
+  </div>
+</template>
+
+<style scoped>
+/* Дополнительные стили для главной страницы */
+</style>
+
+<style>
+/* Глобальные стили для multiselect */
+.multiselect-custom {
+  --ms-option-bg-selected: #3b82f6;
+  --ms-option-color-selected: #ffffff;
+  --ms-option-bg-selected-pointed: #2563eb;
+  --ms-option-color-selected-pointed: #ffffff;
+  --ms-option-bg-pointed: #f3f4f6;
+  --ms-option-color-pointed: #374151;
+  --ms-tag-bg: #3b82f6;
+  --ms-tag-color: #ffffff;
+  --ms-tag-remove-bg: #2563eb;
+  --ms-tag-remove-color: #ffffff;
+}
+
+.multiselect-custom .multiselect-wrapper {
+  font-size: 0.875rem;
+}
+
+.multiselect-custom .multiselect-option {
+  font-size: 0.875rem;
+}
+
+.multiselect,
+.multiselect.multiselect-custom {
+  display: block !important;
+  width: 100%;
+  min-width: 200px;
+}
+
+.notification-toast {
+  z-index: 2147483647 !important;
+  top: 70px !important;
+}
+
+#toast-container > div {
+  background: #fff !important;
+  color: #222 !important;
+  font-family: inherit !important;
+  font-size: 0.95rem !important;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 4px 16px 0 rgba(0,0,0,0.08) !important;
+  border: 1px solid #e5e7eb !important;
+  padding: 0.75rem 1.25rem !important;
+}
+#toast-container > div.toast-success {
+  border-left: 4px solid #22c55e !important;
+}
+#toast-container > div.toast-error {
+  border-left: 4px solid #ef4444 !important;
+}
+#toast-container > div.toast-info {
+  border-left: 4px solid #3b82f6 !important;
+}
+#toast-container > div.toast-warning {
+  border-left: 4px solid #f59e42 !important;
+}
+
+button.bg-gray-100 {
+  border: none !important;
+}
+
+button, input, select, optgroup, textarea, ::file-selector-button {
+  box-shadow: none !important;
+}
+*:not(.shadow-2xl):not(.fixed *) {box-shadow: none !important;}
+.bg-white.border:not(input):not(textarea):not(.pro_nav_card) {border: none !important;}
+
+
+body::-webkit-scrollbar {width: 5px;height: 5px;background: rgba(0, 0, 0, 0);}
+body::-webkit-scrollbar-track {background: rgba(0,0,0,0);opacity:.7;}
+body::-webkit-scrollbar-thumb {border-radius: 3px;background: #7696ff !important; cursor: pointer;}
+
+
+
+button:not(.transition-colors), input, select, optgroup, textarea, ::file-selector-button, .dp__input {border-radius: 16px !important;min-height: 42px;}
+.fixed button svg:not(.user_menu svg) {margin: auto !important;}
+.fixed button {min-width: 42px;}
+button {cursor: pointer;}
+input:focus, textarea:focus {border-color: #7696ff !important;}
+.multiselect, .multiselect-wrapper, .multiselect-wrapper input, .multiselect-dropdown, .dp__menu {border-radius: 16px !important;}
+.rounded, .rounded-lg, .dropdown-menu-custom {border-radius: 16px;}
+
+.multiselect-dropdown {transform: translateY(105%) !important;}
+.multiselect-custom .multiselect-option {
+    margin-top: 5px;
+    margin-left: 4px;
+    margin-bottom: 5px;
+    border-radius: 16px;
+}
+multiselect, .multiselect.multiselect-custom {
+  padding-bottom: 2px;
+}
+
+table img {border-radius: 5px !important;}
+
+.flay_out_menu button {
+  background: #fff;
+  padding: 10px 20px;
+  border-radius: 12px;
+  transition: all .3s;
+}
+.flay_out_menu button:hover {
+  background: #f1f5ff;
+}
+
+
+.max-w-7xl {max-width: 1400px !important;}
+</style>

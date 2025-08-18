@@ -1,0 +1,67 @@
+
+
+git checkout production / main 
+
+git merge main 
+заливает из main в production
+
+
+
+git checkout main
+git pull
+
+git checkout production
+git pull
+
+git checkout main
+git merge production
+
+
+
+
+!!!! для заливки с main в production
+git checkout production
+git pull origin production
+git merge main
+git push origin production
+
+
+
+
+
+
+Подключение и инициализация
+
+<!-- Способ 1: Через data-атрибуты -->
+<script 
+  src="https://45.92.173.142:8443/integration-script.js"
+  data-user-id="user123"
+  data-user-token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  data-user-name="Иван Петров"
+  data-user-avatar="https://example.com/avatar.jpg">
+</script>
+
+<!-- Способ 2: Через глобальные переменные -->
+<script>
+window.B2B_CALLS_CONFIG = {
+  userId: "user123",
+  userToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  userData: {
+    first_name: "Иван Петров",
+    avatar: "https://example.com/avatar.jpg"
+  }
+};
+</script>
+<script src="https://45.92.173.142:8443/integration-script.js"></script>
+
+
+API функции: 
+// Инициация звонка
+B2BCalls.makeCall("user456", "audio");
+
+// Получение списка онлайн пользователей
+B2BCalls.getOnlineUsers();
+
+// Управление iframe
+B2BCalls.showIframe();
+B2BCalls.hideIframe();

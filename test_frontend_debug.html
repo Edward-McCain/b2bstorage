@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Frontend</title>
+</head>
+<body>
+    <h1>Debug Frontend Prices</h1>
+    <div id="result"></div>
+
+    <script>
+        const token = '106|DrG5Pnh0VJsOTkWt6FnNmWM4bIxNAQfDl7CZ4p08c5aedf5d';
+        
+        fetch('http://127.0.0.1:8000/api/balances', {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Raw API response:', data);
+            
+            let html = '<h2>API Response:</h2>';
+            html += '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            
+            if (data.data) {
+                html += '<h2>Products:</h2>';
+                data.data.forEach(product => {
+                    html += `<div style="border: 1px solid #ccc; margin: 10px; padding: 10px;">`;
+                    html += `<strong>${product.name}</strong><br>`;
+                    html += `Price: ${product.price} (type: ${typeof product.price})<br>`;
+                    html += `Quantity: ${product.total_quantity}<br>`;
+                    html += `Price * Quantity: ${product.price * product.total_quantity}<br>`;
+                    html += `</div>`;
+                });
+            }
+            
+            document.getElementById('result').innerHTML = html;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('result').innerHTML = '<p>Error: ' + error.message + '</p>';
+        });
+    </script>
+</body>
+</html> 

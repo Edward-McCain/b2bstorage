@@ -16,6 +16,12 @@ export default defineConfig({
     },
   },
   server: {
+    headers: {
+      'Permissions-Policy': 'microphone=*, camera=*, geolocation=*',
+      'Cross-Origin-Embedder-Policy': 'unsafe-none',
+      'Cross-Origin-Opener-Policy': 'unsafe-none',
+      'Content-Security-Policy': "default-src 'self' http: https: data: blob: 'unsafe-inline' 'unsafe-eval'; connect-src 'self' http://localhost:* http://127.0.0.1:* https: wss: https://webrtc.b2bsklad.uz wss://webrtc.b2bsklad.uz; frame-src 'self' https://webrtc.b2bsklad.uz/; media-src 'self' https://webrtc.b2bsklad.uz/; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://webrtc.b2bsklad.uz/;"
+    },
     proxy: {
       '/api': {
         target: 'http://localhost:8000',

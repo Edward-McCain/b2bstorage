@@ -85,6 +85,8 @@ import AdminTransfersPage from '../components/admin/products/AdminTransfersPage.
 import AdminBalancesPage from '../components/admin/products/AdminBalancesPage.vue'
 import AdminWarehousesPage from '../components/admin/products/AdminWarehousesPage.vue'
 import ApiDocumentationPage from '../components/ApiDocumentationPage.vue'
+import WebRTCTestPage from '../components/WebRTCTestPage.vue'
+import UsersListPage from '../components/UsersListPage.vue'
 
 const routes = [
   {
@@ -464,6 +466,16 @@ const routes = [
     path: '/docs_api',
     name: 'ApiDocumentation',
     component: ApiDocumentationPage
+  },
+  {
+    path: '/webrtc-test',
+    name: 'WebRTCTest',
+    component: WebRTCTestPage
+  },
+  {
+    path: '/users-list',
+    name: 'UsersList',
+    component: UsersListPage
   }
 ]
 
@@ -474,11 +486,20 @@ const router = createRouter({
 
 // Навигационные guards для защиты роутов
 router.beforeEach((to, from, next) => {
+  console.log('Router: Переход с', from.path, 'на', to.path)
+  
+  // Проверяем, что путь не undefined
+  if (!to.path || to.path === '/undefined') {
+    console.log('Router: Обнаружен undefined путь, перенаправляем на /')
+    next('/')
+    return
+  }
+  
   const isAuthenticated = localStorage.getItem('auth_token')
   
   // Список роутов, требующих авторизации
   const protectedRoutes = [
-    '/products', '/purchases', '/sales', '/analytics', '/counterparties', '/account-settings', '/warehouses', '/admin'
+    '/products', '/purchases', '/sales', '/analytics', '/counterparties', '/account-settings', '/warehouses', '/admin', '/users-list'
   ]
   
   // Проверяем, требует ли роут авторизации
@@ -492,6 +513,14 @@ router.beforeEach((to, from, next) => {
     next('/')
   } else {
     next()
+  }
+})
+
+// Обработка ошибок роутера
+router.onError((error) => {
+  console.error('Router Error:', error)
+  if (error.message.includes('undefined')) {
+    router.push('/')
   }
 })
 
