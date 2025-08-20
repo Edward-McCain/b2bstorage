@@ -1,5 +1,5 @@
 <template>
-  <div class="users-page" data-version="1.0.0" style="margin-top: 100px;">
+  <div class="users-page" data-version="1.0.0" style="">
 
     <!-- Загрузка -->
     <div v-if="loading" class="loading-state">
