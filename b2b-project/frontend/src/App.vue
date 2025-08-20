@@ -45,7 +45,7 @@ onMounted(async () => {
 
 main {
   flex: 1;
-  padding-top: 80px; /* Отступ для фиксированного header */
+  padding-top: 0px; /* Отступ для фиксированного header */
 }
 
 .admin-main {
