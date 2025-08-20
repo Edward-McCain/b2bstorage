@@ -261,20 +261,20 @@ import { Users, AlertCircle, Phone, Video, RefreshCw, LogIn, ChevronLeft, Chevro
 const router = useRouter()
 
 // Отладочная информация
-console.log('=== DEBUG INFO ===')
+//console.log('=== DEBUG INFO ===')
 const debugToken = localStorage.getItem('auth_token')
 const debugUser = localStorage.getItem('user')
-console.log('Auth token:', debugToken)
-console.log('Token length:', debugToken ? debugToken.length : 0)
-console.log('Token starts with:', debugToken ? debugToken.substring(0, 20) + '...' : 'null')
-console.log('User data:', debugUser)
+//console.log('Auth token:', debugToken)
+//console.log('Token length:', debugToken ? debugToken.length : 0)
+//console.log('Token starts with:', debugToken ? debugToken.substring(0, 20) + '...' : 'null')
+//console.log('User data:', debugUser)
 try {
   const parsedUser = debugUser ? JSON.parse(debugUser) : null
-  console.log('Parsed user:', parsedUser)
+  //console.log('Parsed user:', parsedUser)
 } catch (e) {
-  console.log('Error parsing user data:', e)
+  //console.log('Error parsing user data:', e)
 }
-console.log('=================')
+//console.log('=================')
 
 // Реактивные данные
 const loading = ref(false)
@@ -325,12 +325,12 @@ const checkAuth = () => {
   const token = localStorage.getItem('auth_token')
   const user = localStorage.getItem('user')
   
-  console.log('Проверка авторизации:')
-  console.log('- Токен:', token ? 'есть' : 'нет')
-  console.log('- Пользователь:', user ? 'есть' : 'нет')
+  //console.log('Проверка авторизации:')
+  //console.log('- Токен:', token ? 'есть' : 'нет')
+  //console.log('- Пользователь:', user ? 'есть' : 'нет')
   
   if (!token || !user) {
-    console.log('Пользователь не авторизован')
+    //console.log('Пользователь не авторизован')
     error.value = 'Пользователь не авторизован. Необходимо войти в систему.'
     // Перенаправляем на правильный роут авторизации
     // router.push('/auth')
@@ -343,7 +343,7 @@ const checkAuth = () => {
 // Загрузка онлайн пользователей из WebRTC API
 const loadOnlineUsers = async () => {
   try {
-    console.log('🌐 Загружаем онлайн пользователей из WebRTC...')
+    //console.log('🌐 Загружаем онлайн пользователей из WebRTC...')
     const response = await fetch('https://webrtc.b2bsklad.uz/api/online/online')
     const data = await response.json()
     
@@ -355,9 +355,9 @@ const loadOnlineUsers = async () => {
         userMap.set(user.id, user)
       })
       onlineUsersMap.value = userMap
-      console.log(`✅ Загружено ${data.users.length} онлайн пользователей из WebRTC`)
+      //console.log(`✅ Загружено ${data.users.length} онлайн пользователей из WebRTC`)
     } else {
-      console.log('❌ Ошибка загрузки онлайн пользователей:', data.message)
+      //console.log('❌ Ошибка загрузки онлайн пользователей:', data.message)
     }
   } catch (error) {
     console.error('❌ Ошибка загрузки онлайн пользователей:', error)
@@ -382,30 +382,30 @@ const loadUsers = async (page = 1) => {
     error.value = ''
     
     // Используем готовую функцию apiRequest из конфигурации
-    console.log('🔍 Проверяем авторизацию с /api/me...')
+    //console.log('🔍 Проверяем авторизацию с /api/me...')
     try {
       const meResponse = await apiRequest('/me')
-      console.log('✅ /api/me ответ:', meResponse.status, meResponse.data)
+      //console.log('✅ /api/me ответ:', meResponse.status, meResponse.data)
     } catch (e) {
-      console.log('❌ /api/me ошибка:', e)
+      //console.log('❌ /api/me ошибка:', e)
     }
     
-    console.log('📡 Отправляем запрос к /users...')
+    //console.log('📡 Отправляем запрос к /users...')
     const response = await apiRequest('/users')
-    console.log('✅ /users ответ:', response.status, response.data)
+    //console.log('✅ /users ответ:', response.status, response.data)
     
     const data = response.data
     
     if (!response.ok) {
-      console.log('=== ОШИБКА API ===')
-      console.log('Status:', response.status)
-      console.log('Response:', data)
-      console.log('================')
+      //console.log('=== ОШИБКА API ===')
+      //console.log('Status:', response.status)
+      //console.log('Response:', data)
+      //console.log('================')
       
       // Если 401, очищаем токены и перенаправляем
       if (response.status === 401) {
-        console.log('❌ Получен 401 - токен недействителен или истек')
-        console.log('Текущий токен:', localStorage.getItem('auth_token'))
+        //console.log('❌ Получен 401 - токен недействителен или истек')
+        //console.log('Текущий токен:', localStorage.getItem('auth_token'))
         
         // Временно отключаем автоматическое удаление для отладки
         // localStorage.removeItem('auth_token')
@@ -439,7 +439,7 @@ const loadUsers = async (page = 1) => {
         stats.value = null
       }
       
-      console.log('✅ Пользователи загружены:', users.value.length)
+      //console.log('✅ Пользователи загружены:', users.value.length)
       
       // Загружаем онлайн статус пользователей параллельно
       loadOnlineUsers()
@@ -452,8 +452,8 @@ const loadUsers = async (page = 1) => {
     
     // Если ошибка авторизации, перенаправляем на страницу входа
     if (err.message?.includes('401') || err.message?.includes('Unauthorized') || err.message?.includes('Unauthenticated')) {
-      console.log('🔍 Обнаружена ошибка авторизации в catch блоке')
-      console.log('Ошибка:', err.message)
+      //console.log('🔍 Обнаружена ошибка авторизации в catch блоке')
+      //console.log('Ошибка:', err.message)
       
       // Временно отключаем автоматическое удаление для отладки
       // localStorage.removeItem('auth_token')
@@ -483,7 +483,7 @@ const makeAudioCall = async (user) => {
   const userId = user.user_id || user.id
   const userName = user.user_name || user.first_name || 'Пользователь'
   
-  console.log(`newRTC:: Direct API audio call to: ${userName} (${userId})`)
+  //console.log(`newRTC:: Direct API audio call to: ${userName} (${userId})`)
   
   try {
     if (window.callUser) {
@@ -522,7 +522,7 @@ const makeVideoCall = async (user) => {
   const userId = user.user_id || user.id
   const userName = user.user_name || user.first_name || 'Пользователь'
   
-  console.log(`newRTC:: Direct API video call to: ${userName} (${userId})`)
+  //console.log(`newRTC:: Direct API video call to: ${userName} (${userId})`)
   
   try {
     if (window.callUser) {
@@ -564,13 +564,13 @@ const checkWebRTCStatus = () => {
 
 // Минимальная инициализация - только проверка готовности
 const initializeWebRTCEvents = () => {
-  console.log('newRTC:: API-First approach - all logic in embed.js')
+  //console.log('newRTC:: API-First approach - all logic in embed.js')
   
   // Проверяем готовность API каждые 2 секунды
   const checkInterval = setInterval(() => {
     checkWebRTCStatus()
     if (webrtcReady.value) {
-      console.log('newRTC:: WebRTC API ready!')
+      //console.log('newRTC:: WebRTC API ready!')
       clearInterval(checkInterval)
     }
   }, 2000)
