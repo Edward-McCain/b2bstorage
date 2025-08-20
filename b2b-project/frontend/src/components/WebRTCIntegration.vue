@@ -30,8 +30,8 @@ onMounted(() => {
 
   // Загружаем API-First embed скрипт - ВСЯ ЛОГИКА ТЕПЕРЬ В НЕМ!
   const script = document.createElement('script')
-              const version = '20250818-022' // ПРИНУДИТЕЛЬНАЯ ОЧИСТКА КЭША
-              script.src = `https://webrtc.b2bsklad.uz/embed/webrtc-embed-20250818-022.js?nocache=${Date.now()}&v=${version}`
+              const version = '20250818-023' // ПРИНУДИТЕЛЬНАЯ ОЧИСТКА КЭША
+              script.src = `https://webrtc.b2bsklad.uz/embed/webrtc-embed-20250818-023.js?nocache=${Date.now()}&v=${version}`
   // Определяем userId из разных возможных ключей
   const userId = userData.user_id || userData.id || userData.uuid || null
   const userName = userData.name || (userData.first_name + ' ' + (userData.last_name || ''))
